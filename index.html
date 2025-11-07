@@ -99,8 +99,20 @@
     .pad{padding:clamp(14px,1.6vw,20px)}
 
     /* Reel frame: keep player inside border at all sizes */
-    .reel{ position:relative; aspect-ratio:16/9; width:100%; border-radius:14px; overflow:hidden; background:#000; border:1px solid rgba(0,255,156,.34); outline:1px solid rgba(0,255,156,.2); box-shadow:0 0 20px rgba(0,255,156,.12) inset, 0 0 18px rgba(0,0,0,.6); contain:layout paint; isolation:isolate; }
-    .reel > iframe, .reel > .embed-wrap{ position:absolute; inset:0; width:100%; height:100%; border:0; display:block; }
+    .reel{
+      position:relative;
+      aspect-ratio:16/9;
+      width:100%;
+      border-radius:14px;
+      overflow:hidden;
+      background:#000;
+      border:1px solid rgba(0,255,156,.34);
+      outline:1px solid rgba(0,255,156,.2);
+      box-shadow:0 0 20px rgba(0,255,156,.12) inset, 0 0 18px rgba(0,0,0,.6);
+      contain:layout paint;
+      isolation:isolate;
+    }
+    .reel > iframe{position:absolute; inset:0; width:100%; height:100%; border:0; display:block; box-sizing:border-box}
     .reel iframe{ max-width:100%; max-height:100%; }
     @media (min-height:900px){ .reel{min-height:560px} }
 
@@ -133,10 +145,6 @@
     details.summaryless > summary{list-style:none}
     details.summaryless > summary::-webkit-details-marker{display:none}
 
-    /* Rapid flicker bursts */
-    .burst body::before, .burst body::after { animation-duration: .2s; }
-    .burst .brand .dot{ animation: blinkFast .2s infinite; }
-  
     /* Tiny toast for copy feedback */
     .toast{ position:fixed; z-index:9999; padding:.5em .75em; border-radius:10px; background:#0b1414; color:#caffec; border:1px solid rgba(66,255,209,.4); box-shadow:var(--shadow); font-size:.9em; opacity:0; transform:translateY(-6px); transition:opacity .15s ease, transform .15s ease; }
     .toast.show{ opacity:1; transform:translateY(0); }
@@ -161,7 +169,7 @@
           <div class="dot" aria-hidden="true"></div>
           <h1 id="siteTitle" class="crt-glow">Loading data for SUBJECT: ARI FEBLOWITZ</h1>
           <a id="siteSubtitle" class="pill crt-glow" href="https://www.imdb.me/ArielFeblowitz" target="_blank" rel="noopener">Techvis & Virtual Production Supervisor</a>
-          
+          <a id="sysStatus" class="pill crt-glow" href="https://linktr.ee/admin/links" target="_blank" rel="noopener">Routing request to MOTHER…</a>
           <div id="topContact" class="badges" style="margin-left:6px"></div>
         </div>
       </div>
@@ -295,8 +303,6 @@
   // Preload defaults immediately
   setTopContact(DEFAULT_PHONE, DEFAULT_EMAIL);
   setContactSection(DEFAULT_PHONE, DEFAULT_EMAIL);
-  // Desktop copy-to-clipboard behavior for contact links
-  enhanceContactLinks();
 
   /********************** UTILITIES ***********************/
   const $ = (sel, el=document) => el.querySelector(sel);
@@ -339,17 +345,8 @@
         else if (hdr.includes('type') && hdr.includes('video_id')) map['Personal Youtube']=gid;
         else if (hdr.includes('key') && hdr.includes('value')) map['Main site info']=gid;
       }
-    }catch(e){}
+    }catch(e){ console.error('[discoverGids]', e); }
     return { ...map, ...TAB_MAP };
-  }
-
-  function titlePlaceholderSVG(title){
-    const safe = (title||'Untitled').replace(/&/g,'&amp;').replace(/</g,'&lt;');
-    const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 800'>
-      <rect width='100%' height='100%' fill='#000'/>
-      <text x='50%' y='50%' fill='#9fffcf' font-family='Inter, Segoe UI, Roboto, Arial, sans-serif' font-size='36' text-anchor='middle' dominant-baseline='middle'>${safe}</text>
-    </svg>`;
-    return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
   }
 
   /********************** BANNER (arrows + hover pause; click opens link) ***********************/
@@ -395,216 +392,203 @@
   const loaded = { main:false, reel:false, sections:false, banner:false };
 
   (async function init(){
-    const onError = (e,msg)=>{ console.error('[Site init]', msg||e?.message||e, e); };
-    setStatus('Routing request to MOTHER…', sysStatus.href);
-    const gids = await discoverGids(PUBHTML);
+    try{
+      setStatus('Routing request to MOTHER…', sysStatus.href);
+      const gids = await discoverGids(PUBHTML);
 
-    async function pullTab(name){
-      const gid = gids[name]; if(!gid) return [];
-      const key = `csv:${gid}`; const cached = cache.get(key);
-      if (cached && cached.txt){ try { return csvToObjects(cached.txt); } catch{} }
-      const txt = await fetch(buildCsvUrlFromGid(PUBHTML, gid)).then(r=>r.text());
-      cache.set(key, {ts:Date.now(), txt}); return csvToObjects(txt);
-    }
-
-    /* Phase 1: Main info fast */
-    const mainInfoRows = await pullTab('Main site info');
-    const mainInfo = {}; (mainInfoRows||[]).forEach(r=> mainInfo[(r.key||'').trim()] = (r.value||'').trim());
-
-    $('#siteTitle').textContent = mainInfo.site_title || 'Ariel (Ari) Feblowitz';
-    const imdbUrl = fixImdb(mainInfo.imdb_url || 'https://www.imdb.me/ArielFeblowitz');
-    const subtitleTxt = mainInfo.site_subtitle || 'Techvis & Virtual Production Supervisor';
-    const subtitleEl = $('#siteSubtitle'); subtitleEl.textContent = subtitleTxt; subtitleEl.href = imdbUrl;
-
-    $('#about1').textContent = mainInfo.about_paragraph_1 || $('#about1').textContent;
-    $('#about2').textContent = mainInfo.about_paragraph_2 || $('#about2').textContent;
-
-    const linksHref = mainInfo.all_links_url || 'https://linktr.ee/admin/links';
-    $('#btnIMDb').href = imdbUrl; $('#btnYouTube').href = mainInfo.youtube_url || $('#btnYouTube').href; $('#btnLinks').href = linksHref;
-    if (mainInfo.news_url) $('#btnNews').href = mainInfo.news_url; if (mainInfo.resume_url) $('#btnResume').href = mainInfo.resume_url;
-    setStatus('Link established', linksHref);
-    const aboutStatus = $('#aboutStatus'); if (aboutStatus) aboutStatus.style.display = 'none';
-    document.body.classList.add('ready'); $('#reelHeader').textContent = 'Demo Reel'; $('#aboutHeader').textContent = 'About'; loaded.main = true;
-    // Override contact with sheet values when present
-    const phone = (mainInfo.phone||DEFAULT_PHONE).trim();
-    const email = (mainInfo.email||DEFAULT_EMAIL).trim();
-    setTopContact(phone, email);
-    setContactSection(phone, email);
-    enhanceContactLinks();
-
-    // Skills pills
-    const skills = (mainInfo.skills||'').split('|').map(s=>s.trim()).filter(Boolean);
-    const half = Math.ceil(skills.length/2); const pill = t => { const s=document.createElement('span'); s.className='pill'; s.textContent=t; return s; };
-    const row1=$('#skillsRow1'), row2=$('#skillsRow2'); skills.slice(0,half).forEach(s=>row1.appendChild(pill(s))); skills.slice(half).forEach(s=>row2.appendChild(pill(s)));
-
-    /* Phase 2: Reel (supports YouTube/Vimeo IDs, full URLs, or raw <iframe> embed snippets) */
-    (function loadReel(){
-      const reelInput = (mainInfo.reel_youtube_id||'').trim();
-      const reelFrame = $('#reelFrame'); const reelBox = $('#reelBox');
-      const setIframe = src => { reelFrame.loading='lazy'; reelFrame.decoding='async'; reelFrame.fetchPriority='low'; reelFrame.src = src; };
-
-      // If a raw embed was pasted, extract the iframe src safely and ignore external <script> tags
-      if (/^\s*</i.test(reelInput)){
-        const tmp = document.createElement('div'); tmp.innerHTML = reelInput;
-        const ifr = tmp.querySelector('iframe');
-        if (ifr && ifr.src){ setIframe(ifr.src); loaded.reel=true; return; }
+      async function pullTab(name){
+        const gid = gids[name]; if(!gid) return [];
+        const key = `csv:${gid}`; const cached = cache.get(key);
+        if (cached && cached.txt){ try { return csvToObjects(cached.txt); } catch{ /* fallthrough */ } }
+        const txt = await fetch(buildCsvUrlFromGid(PUBHTML, gid)).then(r=>r.text());
+        cache.set(key, {ts:Date.now(), txt}); return csvToObjects(txt);
       }
-      // Vimeo full URL
-      const vimeoM = reelInput.match(/vimeo\.com\/(?:video\/)?(\d+)/i);
-      if (vimeoM){ setIframe(`https://player.vimeo.com/video/${vimeoM[1]}?badge=0&autopause=0&title=0&byline=0`); loaded.reel=true; return; }
-      // Vimeo numeric ID
-      if (/^\d{7,}$/.test(reelInput)){ setIframe(`https://player.vimeo.com/video/${reelInput}?badge=0&autopause=0&title=0&byline=0`); loaded.reel=true; return; }
-      // YouTube URL or ID
-      const ytM = reelInput.match(/[?&]v=([\w-]{6,})/) || reelInput.match(/youtu\.be\/([\w-]{6,})/);
-      if (ytM){ setIframe(`https://www.youtube.com/embed/${ytM[1]}?rel=0&modestbranding=1`); loaded.reel=true; return; }
-      if (/^[\w-]{6,}$/.test(reelInput)){ setIframe(`https://www.youtube.com/embed/${reelInput}?rel=0&modestbranding=1`); loaded.reel=true; return; }
-      // Else: keep default Vimeo already set in markup
-      loaded.reel=true;
-    })();
 
-    /* Phase 3: Sections (defer to idle, else on first tab click) */
-    const defer = window.requestIdleCallback || (fn=>setTimeout(fn, 0));
-    defer(loadSections);
+      /* Phase 1: Main info fast */
+      const mainInfoRows = await pullTab('Main site info');
+      const mainInfo = {}; (mainInfoRows||[]).forEach(r=> mainInfo[(r.key||'').trim()] = (r.value||'').trim());
 
-    /* Phase 4: Banner after sections (double-defer) */
-    defer(()=> setTimeout(buildBannerDeferred, 400));
+      $('#siteTitle').textContent = mainInfo.site_title || 'Ariel (Ari) Feblowitz';
+      const imdbUrl = fixImdb(mainInfo.imdb_url || 'https://www.imdb.me/ArielFeblowitz');
+      const subtitleTxt = mainInfo.site_subtitle || 'Techvis & Virtual Production Supervisor';
+      const subtitleEl = $('#siteSubtitle'); subtitleEl.textContent = subtitleTxt; subtitleEl.href = imdbUrl;
 
-    async function loadSections(){
-      if (loaded.sections) return; loaded.sections = true;
-      const [personalTab, proRows, ridesRows] = await Promise.all([
-        pullTab('Personal Youtube'), pullTab('Ariel_Feblowitz_Works'), pullTab('Rides')
-      ]);
+      $('#about1').textContent = mainInfo.about_paragraph_1 || $('#about1').textContent;
+      $('#about2').textContent = mainInfo.about_paragraph_2 || $('#about2').textContent;
 
-      // Personal meta & videos
-      const meta = {}; const videos=[];
-      (personalTab||[]).forEach(r=>{
-        const type=(r.type||'').toLowerCase();
-        if (type==='meta'){
-          meta[(r.key||'').trim()] = (r.value||'').trim();
-        } else if (type==='video'){
-          const videoId=(r.video_id||'').trim();
-          const url=(r.youtube_url||'').trim() || (videoId?`https://www.youtube.com/watch?v=${videoId}`:'');
-          const thumb=(r.thumb_url||'').trim() || (videoId? ytThumb(videoId) : '');
-          videos.push({ prio:normNum(r.prio), includeInBanner: normBool(r.include_in_banner) || normNum(r.prio)>=5, featured: normBool(r.featured), videoId, title:(r.title||'').trim(), role:(r.role||'').trim(), url, thumb });
+      const linksHref = mainInfo.all_links_url || 'https://linktr.ee/admin/links';
+      $('#btnIMDb').href = imdbUrl; $('#btnYouTube').href = mainInfo.youtube_url || $('#btnYouTube').href; $('#btnLinks').href = linksHref;
+      if (mainInfo.news_url) $('#btnNews').href = mainInfo.news_url; if (mainInfo.resume_url) $('#btnResume').href = mainInfo.resume_url;
+      setStatus('Link established', linksHref);
+      const aboutStatus = $('#aboutStatus'); if (aboutStatus) aboutStatus.style.display = 'none';
+      document.body.classList.add('ready'); $('#reelHeader').textContent = 'Demo Reel'; $('#aboutHeader').textContent = 'About'; loaded.main = true;
+
+      // Override contact with sheet values when present
+      const phone = (mainInfo.phone||DEFAULT_PHONE).trim();
+      const email = (mainInfo.email||DEFAULT_EMAIL).trim();
+      setTopContact(phone, email);
+      setContactSection(phone, email);
+      enhanceContactLinks();
+
+      /* Phase 2: Reel */
+      (function loadReel(){
+        const reelInput = (mainInfo.reel_youtube_id||'').trim();
+        const reelFrame = $('#reelFrame');
+        const setIframe = src => { reelFrame.loading='lazy'; reelFrame.decoding='async'; reelFrame.fetchPriority='low'; reelFrame.src = src; };
+        if (/^\s*</i.test(reelInput)){
+          const tmp = document.createElement('div'); tmp.innerHTML = reelInput;
+          const ifr = tmp.querySelector('iframe'); if (ifr && ifr.src){ setIframe(ifr.src); loaded.reel=true; return; }
         }
-      });
+        const vimeoM = reelInput.match(/vimeo\.com\/(?:video\/)?(\d+)/i);
+        if (vimeoM){ setIframe(`https://player.vimeo.com/video/${vimeoM[1]}?badge=0&autopause=0&title=0&byline=0`); loaded.reel=true; return; }
+        if (/^\d{7,}$/.test(reelInput)){ setIframe(`https://player.vimeo.com/video/${reelInput}?badge=0&autopause=0&title=0&byline=0`); loaded.reel=true; return; }
+        const ytM = reelInput.match(/[?&]v=([\w-]{6,})/) || reelInput.match(/youtu\.be\/([\w-]{6,})/);
+        if (ytM){ setIframe(`https://www.youtube.com/embed/${ytM[1]}?rel=0&modestbranding=1`); loaded.reel=true; return; }
+        if (/^[\w-]{6,}$/.test(reelInput)){ setIframe(`https://www.youtube.com/embed/${reelInput}?rel=0&modestbranding=1`); loaded.reel=true; return; }
+        loaded.reel=true; // keep default Vimeo
+      })();
 
-      // FebzFoundFootage feature (from meta)
-      const febzId = (meta.febz_video_id || '').trim();
-      if (febzId){
-        const febzHeading = meta.febz_heading || "Also archiving my father's documentary work: FebzFoundFootage";
-        const febzBody = meta.febz_body || "A growing archive of Gary Feblowitz’s documentary footage and rare segments.";
-        $('#febzHeading').textContent = febzHeading;
-        $('#febzBody').textContent = febzBody;
-        $('#febzLink').href = `https://www.youtube.com/watch?v=${febzId}`;
-        $('#febzThumb').src = ytThumb(febzId);
-        $('#febzBox').style.display = 'block';
+      /* Phase 3: Sections (defer to idle, else on first tab click) */
+      const defer = window.requestIdleCallback || (fn=>setTimeout(fn, 0));
+      defer(loadSections);
+
+      /* Phase 4: Banner after sections (double-defer) */
+      defer(()=> setTimeout(buildBannerDeferred, 400));
+
+      async function loadSections(){
+        try{
+          if (loaded.sections) return; loaded.sections = true;
+          const [personalTab, proRows, ridesRows] = await Promise.all([
+            pullTab('Personal Youtube'), pullTab('Ariel_Feblowitz_Works'), pullTab('Rides')
+          ]);
+
+          // Personal meta & videos
+          const meta = {}; const videos=[];
+          (personalTab||[]).forEach(r=>{
+            const type=(r.type||'').toLowerCase();
+            if (type==='meta'){
+              meta[(r.key||'').trim()] = (r.value||'').trim();
+            } else if (type==='video'){
+              const videoId=(r.video_id||'').trim();
+              const url=(r.youtube_url||'').trim() || (videoId?`https://www.youtube.com/watch?v=${videoId}`:'');
+              const thumb=(r.thumb_url||'').trim() || (videoId? ytThumb(videoId) : '');
+              videos.push({ prio:normNum(r.prio), includeInBanner: normBool(r.include_in_banner) || normNum(r.prio)>=5, featured: normBool(r.featured), videoId, title:(r.title||'').trim(), role:(r.role||'').trim(), url, thumb });
+            }
+          });
+
+          // FebzFoundFootage feature (from meta)
+          const febzId = (meta.febz_video_id || '').trim();
+          if (febzId){
+            const febzHeading = meta.febz_heading || "Also archiving my father's documentary work: FebzFoundFootage";
+            const febzBody = meta.febz_body || "A growing archive of Gary Feblowitz’s documentary footage and rare segments.";
+            $('#febzHeading').textContent = febzHeading;
+            $('#febzBody').textContent = febzBody;
+            $('#febzLink').href = `https://www.youtube.com/watch?v=${febzId}`;
+            $('#febzThumb').src = ytThumb(febzId);
+            $('#febzBox').style.display = 'block';
+          }
+
+          // Latest uploads (optional auto mode)
+          const showLatest = (String(meta.latest_mode||'').toLowerCase()==='auto') || false;
+          if (showLatest && meta.latest_playlist_or_channel_id){
+            const channelId = meta.latest_playlist_or_channel_id;
+            if (channelId.startsWith('UC')){
+              const uploadsId = 'UU'+channelId.slice(2);
+              $('#latestFrame').src = `https://www.youtube.com/embed/videoseries?list=${uploadsId}&rel=0`;
+              $('#latestBox').style.display = 'block';
+            }
+          }
+
+          // Professional
+          const proItems = (proRows||[]).map(r=>({
+            title:(r['Name']||'').trim(), url:fixImdb((r['URL']||'').trim()), role:(r['My Role']||'').trim(), prod:(r['Production Co.']||'').trim(),
+            onSet: normBool(r['On Set?']), prio:normNum(r['Prio?']), posters:[(r['Primary image']||'').trim()].filter(Boolean)
+          })).filter(x=>x.title && x.prio>0)
+            .sort((a,b)=> (a.onSet!==b.onSet)? (a.onSet? -1:1) : (b.prio-a.prio) || a.title.localeCompare(b.title));
+
+          // Rides
+          const rideItems = (ridesRows||[]).map(r=>({
+            title:(r['Ride Name']||'').trim(), url:(r['Ride Link']||'').trim(), role:(r['My Role']||'').trim(), company:(r['Ride Company']||'').trim(),
+            desc:(r['Description']||'').trim(), prio:normNum(r['Prio']), posters:[(r['Ride Image']||'').trim()].filter(Boolean)
+          })).filter(x=>x.title && x.prio>0).sort((a,b)=> b.prio-a.prio || a.title.localeCompare(b.title));
+
+          renderPro(proItems); renderRides(rideItems); renderPersonal(videos, (meta.featured_video_id||'').trim());
+
+          // Save for banner building
+          window.__tilesData = {
+            pro:  proItems.filter(p=>p.prio>=5).map(p=>({type:'pro', title:p.title, img:p.posters[0]||'', url:p.url||'#'})),
+            ride: rideItems.filter(r=>r.prio===10).map(r=>({type:'ride', title:r.title, img:r.posters[0]||'', url:r.url||'#'})),
+            per:  videos.filter(v=>(v.prio||0)>=5 || v.includeInBanner).map(v=>({type:'personal', title:v.title, img:v.thumb||'', url:v.url||'#'}))
+          };
+        }catch(err){ console.error('[loadSections]', err); }
       }
 
-      // Latest uploads (optional auto mode)
-      const showLatest = (String(meta.latest_mode||'').toLowerCase()==='auto') || false;
-      if (showLatest && meta.latest_playlist_or_channel_id){
-        const channelId = meta.latest_playlist_or_channel_id;
-        if (channelId.startsWith('UC')){
-          const uploadsId = 'UU'+channelId.slice(2);
-          $('#latestFrame').src = `https://www.youtube.com/embed/videoseries?list=${uploadsId}&rel=0`;
-          $('#latestBox').style.display = 'block';
-        }
+      function renderPro(items){
+        const grid = $('#proGrid'); grid.innerHTML='';
+        if (!items.length){ grid.innerHTML = `<div class=\"muted\">No items yet — add rows in the “Ariel_Feblowitz_Works” tab.</div>`; return; }
+        items.forEach(p=>{
+          const c=document.createElement('a'); c.className='proj card'; c.href=p.url||'#'; c.target='_blank'; c.rel='noopener';
+          const wrap=document.createElement('div'); wrap.className='thumb poster';
+          const img=new Image(); img.alt=''; img.loading='lazy'; img.decoding='async'; img.fetchPriority='low'; img.src = p.posters[0] || titlePlaceholderSVG(p.title); wrap.appendChild(img);
+          const meta=document.createElement('div'); meta.className='meta'; const info=[p.role, p.prod].filter(Boolean).join(' • ');
+          meta.innerHTML = `<div class=\"title\">${p.title}</div><div class=\"role\">${info}</div>`;
+          c.appendChild(wrap); c.appendChild(meta); grid.appendChild(c);
+        });
       }
 
-      // Professional
-      const proItems = (proRows||[]).map(r=>({
-        title:(r['Name']||'').trim(), url:fixImdb((r['URL']||'').trim()), role:(r['My Role']||'').trim(), prod:(r['Production Co.']||'').trim(),
-        onSet: normBool(r['On Set?']), prio:normNum(r['Prio?']), posters:[(r['Primary image']||'').trim()].filter(Boolean)
-      })).filter(x=>x.title && x.prio>0)
-        .sort((a,b)=> (a.onSet!==b.onSet)? (a.onSet? -1:1) : (b.prio-a.prio) || a.title.localeCompare(b.title));
+      function renderRides(items){
+        const grid = $('#ridesGrid'); grid.innerHTML='';
+        if (!items.length){ grid.innerHTML = `<div class=\"muted\">No items yet — add rows in the “Rides” tab.</div>`; return; }
+        items.forEach(p=>{
+          const c=document.createElement('a'); c.className='proj card'; c.href=p.url||'#'; c.target='_blank'; c.rel='noopener';
+          const wrap=document.createElement('div'); wrap.className='thumb';
+          const img=new Image(); img.alt=''; img.loading='lazy'; img.decoding='async'; img.fetchPriority='low'; img.src = p.posters[0] || titlePlaceholderSVG(p.title); wrap.appendChild(img);
+          const meta=document.createElement('div'); meta.className='meta'; const info=[p.role, p.company].filter(Boolean).join(' • ');
+          let body=''; if (p.desc){ body = `<details class=\"summaryless\" style=\"margin-top:.45em; font-size:.95em\">
+              <summary class=\"btn\" style=\"display:inline-flex; margin:0; padding:.35em .6em;\">Details</summary>
+              <div class=\"muted\" style=\"margin-top:.6em\">${p.desc}</div>
+            </details>`; }
+          meta.innerHTML = `<div class=\"title\">${p.title}</div><div class=\"role\">${info}</div>${body}`;
+          c.appendChild(wrap); c.appendChild(meta); grid.appendChild(c);
+        });
+      }
 
-      // Rides
-      const rideItems = (ridesRows||[]).map(r=>({
-        title:(r['Ride Name']||'').trim(), url:(r['Ride Link']||'').trim(), role:(r['My Role']||'').trim(), company:(r['Ride Company']||'').trim(),
-        desc:(r['Description']||'').trim(), prio:normNum(r['Prio']), posters:[(r['Ride Image']||'').trim()].filter(Boolean)
-      })).filter(x=>x.title && x.prio>0).sort((a,b)=> b.prio-a.prio || a.title.localeCompare(b.title));
+      function renderPersonal(videos, featuredId){
+        const grid = $('#personalGrid'); grid.innerHTML='';
+        if (!videos.length){ grid.innerHTML = `<div class=\"muted\">No videos yet — add rows in the “Personal Youtube” tab.</div>`; return; }
+        const fIdx = videos.findIndex(v=>v.videoId===featuredId); if (fIdx>0){ const [f]=videos.splice(fIdx,1); videos.unshift(f); }
+        videos.forEach(v=>{
+          const c=document.createElement('a'); c.className='proj card'; c.href=v.url||'#'; c.target='_blank'; c.rel='noopener';
+          const wrap=document.createElement('div'); wrap.className='thumb';
+          const img=new Image(); img.alt=''; img.loading='lazy'; img.decoding='async'; img.fetchPriority='low'; img.src = v.thumb || (v.videoId? ytThumb(v.videoId) : titlePlaceholderSVG(v.title)); wrap.appendChild(img);
+          const meta=document.createElement('div'); meta.className='meta'; meta.innerHTML = `<div class=\"title\">${v.title||''}</div><div class=\"role\">${v.role||''}</div>`;
+          c.appendChild(wrap); c.appendChild(meta); grid.appendChild(c);
+        });
+      }
 
-      renderPro(proItems); renderRides(rideItems); renderPersonal(videos, (meta.featured_video_id||'').trim());
+      function buildBannerDeferred(){
+        if (loaded.banner || !window.__tilesData) return; loaded.banner = true;
+        const {pro, ride, per} = window.__tilesData; const interleaved=[]; const L=Math.max(pro.length, ride.length, per.length);
+        for(let i=0;i<L;i++){ if(pro[i]) interleaved.push(pro[i]); if(ride[i]) interleaved.push(ride[i]); if(per[i]) interleaved.push(per[i]); }
+        fillBanner(interleaved);
+      }
 
-      // Save for banner building
-      window.__tilesData = {
-        pro:  proItems.filter(p=>p.prio>=5).map(p=>({type:'pro', title:p.title, img:p.posters[0]||'', url:p.url||'#'})),
-        ride: rideItems.filter(r=>r.prio===10).map(r=>({type:'ride', title:r.title, img:r.posters[0]||'', url:r.url||'#'})),
-        per:  videos.filter(v=>(v.prio||0)>=5 || v.includeInBanner).map(v=>({type:'personal', title:v.title, img:v.thumb||'', url:v.url||'#'}))
-      };
-
-      // Contact section from Main site info (phone/email)
-      const phone = (mainInfo.phone||'').trim(); const email=(mainInfo.email||'').trim();
-      const contactWrap = $('#contactInfo'); contactWrap.innerHTML='';
-      if (phone){ const a=document.createElement('a'); a.className='btn'; a.href=`tel:${phone.replace(/[^\d+]/g,'')}`; a.textContent=`${phone}`; contactWrap.appendChild(a); }
-      if (email){ const a=document.createElement('a'); a.className='btn'; a.href=`mailto:${email}`; a.textContent=`${email}`; contactWrap.appendChild(a); }
-      if (!phone && !email){ const s=document.createElement('small'); s.className='muted'; s.textContent='Add phone/email in “Main site info” to show contact buttons.'; contactWrap.appendChild(s); }
-    }
-
-    function renderPro(items){
-      const grid = $('#proGrid'); grid.innerHTML='';
-      if (!items.length){ grid.innerHTML = `<div class="muted">No items yet — add rows in the “Ariel_Feblowitz_Works” tab.</div>`; return; }
-      items.forEach(p=>{
-        const c=document.createElement('a'); c.className='proj card'; c.href=p.url||'#'; c.target='_blank'; c.rel='noopener';
-        const wrap=document.createElement('div'); wrap.className='thumb poster';
-        const img=new Image(); img.alt=''; img.loading='lazy'; img.decoding='async'; img.fetchPriority='low'; img.src = p.posters[0] || titlePlaceholderSVG(p.title); wrap.appendChild(img);
-        const meta=document.createElement('div'); meta.className='meta'; const info=[p.role, p.prod].filter(Boolean).join(' • ');
-        meta.innerHTML = `<div class="title">${p.title}</div><div class="role">${info}</div>`;
-        c.appendChild(wrap); c.appendChild(meta); grid.appendChild(c);
-      });
-    }
-
-    function renderRides(items){
-      const grid = $('#ridesGrid'); grid.innerHTML='';
-      if (!items.length){ grid.innerHTML = `<div class="muted">No items yet — add rows in the “Rides” tab.</div>`; return; }
-      items.forEach(p=>{
-        const c=document.createElement('a'); c.className='proj card'; c.href=p.url||'#'; c.target='_blank'; c.rel='noopener';
-        const wrap=document.createElement('div'); wrap.className='thumb';
-        const img=new Image(); img.alt=''; img.loading='lazy'; img.decoding='async'; img.fetchPriority='low'; img.src = p.posters[0] || titlePlaceholderSVG(p.title); wrap.appendChild(img);
-        const meta=document.createElement('div'); meta.className='meta'; const info=[p.role, p.company].filter(Boolean).join(' • ');
-        let body=''; if (p.desc){ body = `<details class="summaryless" style="margin-top:.45em; font-size:.95em">
-            <summary class="btn" style="display:inline-flex; margin:0; padding:.35em .6em;">Details</summary>
-            <div class="muted" style="margin-top:.6em">${p.desc}</div>
-          </details>`; }
-        meta.innerHTML = `<div class="title">${p.title}</div><div class="role">${info}</div>${body}`;
-        c.appendChild(wrap); c.appendChild(meta); grid.appendChild(c);
-      });
-    }
-
-    function renderPersonal(videos, featuredId){
-      const grid = $('#personalGrid'); grid.innerHTML='';
-      if (!videos.length){ grid.innerHTML = `<div class="muted">No videos yet — add rows in the “Personal Youtube” tab.</div>`; return; }
-      const fIdx = videos.findIndex(v=>v.videoId===featuredId); if (fIdx>0){ const [f]=videos.splice(fIdx,1); videos.unshift(f); }
-      videos.forEach(v=>{
-        const c=document.createElement('a'); c.className='proj card'; c.href=v.url||'#'; c.target='_blank'; c.rel='noopener';
-        const wrap=document.createElement('div'); wrap.className='thumb';
-        const img=new Image(); img.alt=''; img.loading='lazy'; img.decoding='async'; img.fetchPriority='low'; img.src = v.thumb || (v.videoId? ytThumb(v.videoId) : titlePlaceholderSVG(v.title)); wrap.appendChild(img);
-        const meta=document.createElement('div'); meta.className='meta'; meta.innerHTML = `<div class="title">${v.title||''}</div><div class="role">${v.role||''}</div>`;
-        c.appendChild(wrap); c.appendChild(meta); grid.appendChild(c);
-      });
-    }
-
-    function buildBannerDeferred(){
-      if (loaded.banner || !window.__tilesData) return; loaded.banner = true;
-      const {pro, ride, per} = window.__tilesData; const interleaved=[]; const L=Math.max(pro.length, ride.length, per.length);
-      for(let i=0;i<L;i++){ if(pro[i]) interleaved.push(pro[i]); if(ride[i]) interleaved.push(ride[i]); if(per[i]) interleaved.push(per[i]); }
-      fillBanner(interleaved);
+    }catch(err){
+      console.error('[init]', err);
     }
   })();
 
-  /********************** FLICKER BURSTS (random + hover/click) ***********************/
-  (function dotOnlyFlicker(){
-    const dot = document.querySelector('.brand .dot');
-    if (!dot) return;
-    const trigger = ()=>{ dot.classList.add('flick'); setTimeout(()=>dot.classList.remove('flick'), 950); };
-    const isInteractive = el => el && el.closest && el.closest('a, button, .tab-btn, .tile, .btn');
-    document.addEventListener('mouseover', e => { if (isInteractive(e.target)) trigger(); }, {passive:true});
-    document.addEventListener('click',    e => { if (isInteractive(e.target)) trigger(); }, {passive:true});
-  })();
-    
-  <script>
-  // Enhance tel/mailto: mobile = open; desktop = copy
+  // Helper: Title placeholder SVG
+  function titlePlaceholderSVG(title){
+    const safe = (title||'Untitled').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+    const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 800'>
+      <rect width='100%' height='100%' fill='#000'/>
+      <text x='50%' y='50%' fill='#9fffcf' font-family='Inter, Segoe UI, Roboto, Arial, sans-serif' font-size='36' text-anchor='middle' dominant-baseline='middle'>${safe}</text>
+    </svg>`;
+    return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+  }
+
+  // Enhance tel/mailto: mobile = open; desktop = copy-to-clipboard + toast
   function enhanceContactLinks(){
     const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
     const scope = [document.getElementById('topContact'), document.getElementById('contactInfo')].filter(Boolean);
@@ -631,6 +615,16 @@
       });
     });
   }
+
+  /* ===== dot-only flicker: background stays calm ===== */
+  (function dotOnlyFlicker(){
+    const dot = document.querySelector('.brand .dot');
+    if (!dot) return;
+    const trigger = ()=>{ dot.classList.add('flick'); setTimeout(()=>dot.classList.remove('flick'), 950); };
+    const isInteractive = el => el && el.closest && el.closest('a, button, .tab-btn, .tile, .btn');
+    document.addEventListener('mouseover', e => { if (isInteractive(e.target)) trigger(); }, {passive:true});
+    document.addEventListener('click',    e => { if (isInteractive(e.target)) trigger(); }, {passive:true});
+  })();
   </script>
 </body>
 </html>
