@@ -1,132 +1,92 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Ariel (Ari) Feblowitz — Portfolio</title>
-  <meta name="description" content="Ariel (Ari) Feblowitz — Techvis & Virtual Production Supervisor / Previs-Postvis Artist. Demo reel, credits, projects, and links." />
-  <meta property="og:title" content="Ariel (Ari) Feblowitz — Portfolio" />
-  <meta property="og:description" content="Techvis & Virtual Production Supervisor. Demo reel, IMDb credits, projects, and links." />
-  <meta property="og:type" content="website" />
-  <meta name="theme-color" content="#0c0f12" />
-  <style>
-    :root{
-      --bg:#0b0f11;
-      --panel:#020405;
-      --card:#05090b;
-      --txt:#9fffcf;
-      --muted:#74cdaa;
-      --accent:#00ff9c;
-      --accent-2:#42ffd1;
-      --grid:clamp(14px, 1.8vw, 24px);
-      --radius:18px;
-      --shadow:0 14px 40px rgba(0,0,0,.45);
-      /* NEW: banner sizing */
-      --tile: clamp(140px, 16vw, 220px); /* square tile size */
-      --tile-gap: clamp(10px,1.2vw,16px);
-    }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Ariel (Ari) Feblowitz — Portfolio</title>
+<meta name="description" content="Ariel (Ari) Feblowitz — Techvis & Virtual Production Supervisor / Previs-Postvis Artist. Demo reel, credits, projects, and links." />
+<meta property="og:title" content="Ariel (Ari) Feblowitz — Portfolio" />
+<meta property="og:description" content="Techvis & Virtual Production Supervisor. Demo reel, IMDb credits, projects, and links." />
+<meta property="og:type" content="website" />
+<meta name="theme-color" content="#0c0f12" />
+<style>
+  :root{
+    --bg:#0b0f11; --panel:#020405; --card:#05090b; --txt:#9fffcf; --muted:#74cdaa;
+    --accent:#00ff9c; --accent-2:#42ffd1; --grid:clamp(14px, 1.8vw, 24px);
+    --radius:18px; --shadow:0 14px 40px rgba(0,0,0,.45);
+    --tile: clamp(140px, 16vw, 220px); --tile-gap: clamp(10px,1.2vw,16px);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; color:var(--txt);
+    background:
+      radial-gradient(1200px 700px at 20% -10%, #122e29 0%, transparent 60%),
+      radial-gradient(1000px 600px at 120% 10%, #142027 0%, transparent 60%),
+      linear-gradient(#080b0e, var(--bg) 40%);
+    font:clamp(15px, 1.1vw, 18px)/1.65 Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    overflow-y:overlay; letter-spacing:.15px; min-height:100svh;
+  }
+  body::after{content:""; position:fixed; inset:0; pointer-events:none;
+    background-image:repeating-linear-gradient(to bottom, rgba(66,255,209,.06), rgba(66,255,209,.06) 1px, transparent 2px, transparent 3px);
+    mix-blend-mode:soft-light; opacity:.35; z-index:0}
+  a{color:var(--accent); text-decoration:none} a:hover{filter:brightness(1.18)}
 
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0; color:var(--txt);
-      background:
-        radial-gradient(1200px 700px at 20% -10%, #122e29 0%, transparent 60%),
-        radial-gradient(1000px 600px at 120% 10%, #142027 0%, transparent 60%),
-        linear-gradient(#080b0e, var(--bg) 40%);
-      font:clamp(15px, 1.1vw, 18px)/1.65 Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-      overflow-y:overlay;
-      letter-spacing:.15px;
-      min-height:100svh;
-    }
-    body::after{content:""; position:fixed; inset:0; pointer-events:none; background-image:repeating-linear-gradient(to bottom, rgba(66,255,209,.06), rgba(66,255,209,.06) 1px, transparent 2px, transparent 3px); mix-blend-mode:soft-light; opacity:.35; z-index:0}
+  /* Banner (square, overlap-proof) */
+  .banner{position:relative; width:100vw; left:50%; right:50%; margin-left:-50vw; margin-right:-50vw; padding:clamp(8px,1.2vw,14px) 0; z-index:1}
+  .banner .rail{height:var(--tile); position:relative; overflow:hidden; border-radius:clamp(10px,1.4vw,18px);
+    background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0)); border:1px solid rgba(0,255,156,.15); box-shadow:var(--shadow)}
+  .marquee{position:absolute; inset:0; display:flex; align-items:center; gap:0; width:max-content;
+    animation:scrollX linear infinite; will-change:transform}
+  @keyframes scrollX{from{transform:translateX(0)} to{transform:translateX(-100%)}}
+  .marquee .track{display:inline-flex; align-items:center}
+  .tile{flex:0 0 auto; width:var(--tile); height:var(--tile); position:relative; border-radius:clamp(8px,1vw,14px);
+    overflow:hidden; background:#0b1414; border:1px solid rgba(66,255,209,.18); margin-right:var(--tile-gap)}
+  .tile img{height:100%; width:100%; object-fit:cover; object-position:center; display:block}
+  .tile[data-missing="1"]{display:none}
+  .tile::after{content:attr(data-title); position:absolute; left:0; right:0; bottom:0; font-size:clamp(10px,.9vw,12px);
+    padding:.45em .6em; color:#caffec; background:linear-gradient(180deg, transparent, rgba(0,0,0,.75)); text-shadow:0 1px 2px rgba(0,0,0,.55)}
 
-    a{color:var(--accent); text-decoration:none}
-    a:hover{filter:brightness(1.18)}
+  .wrap{max-width:min(1200px, 92vw); margin:0 auto; padding:clamp(16px,2vw,28px); position:relative; z-index:1}
+  .nav{display:flex; gap:clamp(8px,1vw,12px); align-items:center; justify-content:space-between; flex-wrap:wrap; margin:clamp(6px,.8vw,10px) 0}
+  .brand{display:flex; gap:clamp(10px,1.2vw,14px); align-items:center}
+  .brand .dot{width:clamp(10px,1vw,14px); height:clamp(10px,1vw,14px); border-radius:50%; background:radial-gradient(circle at 30% 30%, var(--accent), #0f4630 70%); box-shadow:0 0 16px var(--accent)}
+  .brand h1{margin:0; font-weight:800; font-size:clamp(18px,2.2vw,28px); letter-spacing:.12em; text-transform:uppercase; color:#d9fff1}
+  .pill{border:1px dashed rgba(66,255,209,.35); border-radius:999px; padding:.4em .8em; font-size:clamp(11px,1vw,12px); color:var(--muted)}
+  .tabs{display:flex; gap:clamp(6px,.8vw,10px); flex-wrap:wrap}
+  .tab-btn{padding:.6em .9em; border-radius:12px; background:var(--panel); color:var(--txt); border:1px solid rgba(66,255,209,.18); cursor:pointer; font-weight:600}
+  .tab-btn.active{outline:1px solid var(--accent); box-shadow:0 0 0 2px rgba(0,255,156,.12) inset}
+  .hero{margin:clamp(12px,1.6vw,20px) 0; display:grid; grid-template-columns:1.1fr .9fr; gap:var(--grid)}
+  @media (max-width:920px){ .hero{grid-template-columns:1fr} }
+  .card{background:var(--panel); border:1px solid rgba(66,255,209,.2); border-radius:var(--radius); box-shadow:var(--shadow)}
+  .pad{padding:clamp(14px,1.6vw,20px)}
+  .reel{position:relative; aspect-ratio:16/9; border-radius:14px; overflow:hidden; background:#000; border:1px solid rgba(66,255,209,.22)}
+  .reel iframe{position:absolute; inset:0; width:100%; height:100%}
+  .badges{display:flex; flex-wrap:wrap; gap:clamp(8px,1vw,12px); margin-top:clamp(8px,1vw,12px)}
+  .btn{--b:rgba(66,255,209,.18); display:inline-flex; align-items:center; gap:.5em; border:1px solid var(--b);
+    background:linear-gradient(180deg, rgba(66,255,209,.09), rgba(66,255,209,0)); padding:.65em 1em; border-radius:12px; color:var(--txt); cursor:pointer; font-weight:700}
+  .btn:hover{border-color:var(--accent); box-shadow:0 0 0 1px rgba(0,255,156,.15) inset}
+  .btn.primary{background:linear-gradient(180deg, rgba(0,255,156,.28), rgba(0,255,156,.12)); color:#eafff6; text-shadow:0 1px 0 rgba(0,0,0,.6); font-weight:800}
 
-    /* Full-bleed, looping banner (fixed-size, overlap-proof) */
-    .banner{position:relative; width:100vw; left:50%; right:50%; margin-left:-50vw; margin-right:-50vw; padding:clamp(8px,1.2vw,14px) 0; z-index:1}
-    .banner .rail{
-      height:var(--tile);
-      position:relative; overflow:hidden; border-radius:clamp(10px,1.4vw,18px);
-      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0));
-      border:1px solid rgba(0,255,156,.15); box-shadow:var(--shadow)
-    }
-    .marquee{
-      position:absolute; inset:0;
-      display:flex; align-items:center; gap:0;
-      will-change:transform; flex-wrap:nowrap;
-      width:max-content; /* width equals content width */
-      animation-name:scrollX; animation-timing-function:linear; animation-iteration-count:infinite;
-    }
-    /* animate one full content-width (-100%) for a seamless loop */
-    @keyframes scrollX{ from{ transform:translateX(0) } to{ transform:translateX(-100%) } }
-
-    .marquee .track{
-      display:inline-flex; align-items:center; flex-wrap:nowrap;
-    }
-
-    .tile{
-      flex:0 0 auto;
-      width:var(--tile); height:var(--tile); /* square slots */
-      position:relative; border-radius:clamp(8px,1vw,14px);
-      overflow:hidden; background:#0b1414; border:1px solid rgba(66,255,209,.18);
-      margin-right:var(--tile-gap);
-    }
-    .tile img{height:100%; width:100%; object-fit:cover; object-position:center; display:block}
-    .tile[data-missing="1"]{display:none}
-    .tile::after{
-      content:attr(data-title); position:absolute; left:0; right:0; bottom:0;
-      font-size:clamp(10px,.9vw,12px); padding:.45em .6em; color:#caffec;
-      background:linear-gradient(180deg, transparent, rgba(0,0,0,.75)); text-shadow:0 1px 2px rgba(0,0,0,.55)
-    }
-
-    .wrap{max-width:min(1200px, 92vw); margin:0 auto; padding:clamp(16px,2vw,28px); position:relative; z-index:1}
-
-    .nav{display:flex; gap:clamp(8px,1vw,12px); align-items:center; justify-content:space-between; flex-wrap:wrap; margin:clamp(6px,.8vw,10px) 0}
-    .brand{display:flex; gap:clamp(10px,1.2vw,14px); align-items:center}
-    .brand .dot{width:clamp(10px,1vw,14px); height:clamp(10px,1vw,14px); border-radius:50%; background:radial-gradient(circle at 30% 30%, var(--accent), #0f4630 70%); box-shadow:0 0 16px var(--accent)}
-    .brand h1{margin:0; font-weight:800; font-size:clamp(18px,2.2vw,28px); letter-spacing:.12em; text-transform:uppercase; color:#d9fff1}
-    .pill{border:1px dashed rgba(66,255,209,.35); border-radius:999px; padding:.4em .8em; font-size:clamp(11px,1vw,12px); color:var(--muted)}
-
-    .tabs{display:flex; gap:clamp(6px,.8vw,10px); flex-wrap:wrap}
-    .tab-btn{padding:.6em .9em; border-radius:12px; background:var(--panel); color:var(--txt); border:1px solid rgba(66,255,209,.18); cursor:pointer; font-weight:600}
-    .tab-btn.active{outline:1px solid var(--accent); box-shadow:0 0 0 2px rgba(0,255,156,.12) inset}
-
-    .hero{margin:clamp(12px,1.6vw,20px) 0; display:grid; grid-template-columns:1.1fr .9fr; gap:var(--grid)}
-    @media (max-width:920px){ .hero{grid-template-columns:1fr} }
-
-    .card{background:var(--panel); border:1px solid rgba(66,255,209,.2); border-radius:var(--radius); box-shadow:var(--shadow)}
-    .pad{padding:clamp(14px,1.6vw,20px)}
-
-    .reel{position:relative; aspect-ratio:16/9; border-radius:14px; overflow:hidden; background:#000; border:1px solid rgba(66,255,209,.22)}
-    .reel iframe{position:absolute; inset:0; width:100%; height:100%}
-
-    .badges{display:flex; flex-wrap:wrap; gap:clamp(8px,1vw,12px); margin-top:clamp(8px,1vw,12px)}
-    .btn{--b:rgba(66,255,209,.18); display:inline-flex; align-items:center; gap:.5em; border:1px solid var(--b); background:linear-gradient(180deg, rgba(66,255,209,.09), rgba(66,255,209,0)); padding:.65em 1em; border-radius:12px; color:var(--txt); cursor:pointer; font-weight:700}
-    .btn:hover{border-color:var(--accent); box-shadow:0 0 0 1px rgba(0,255,156,.15) inset}
-    .btn.primary{background:linear-gradient(180deg, rgba(0,255,156,.28), rgba(0,255,156,.12)); color:#eafff6; text-shadow:0 1px 0 rgba(0,0,0,.6); font-weight:800}
-
-    section{display:none}
-    section.active{display:block}
-    .grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:var(--grid)}
-    @media (max-width:1000px){ .grid{grid-template-columns:repeat(2, 1fr)} }
-    @media (max-width:620px){ .grid{grid-template-columns:1fr} }
-    .proj{overflow:hidden}
-    .thumb{position:relative; aspect-ratio:16/9; overflow:hidden; border-radius:14px; border:1px solid rgba(66,255,209,.22)}
-    .thumb img{width:100%; height:100%; object-fit:cover; display:block}
-    .proj .meta{padding:.7em .9em 1em}
-    .proj .title{font-weight:800; color:#e2fff5}
-    .proj .role{color:var(--muted); font-size:.9em}
-
-    footer{opacity:.8; font-size:.85em; padding:clamp(28px,2.5vw,40px) 0 20px}
-  </style>
+  section{display:none}
+  section.active{display:block}
+  .grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:var(--grid)}
+  @media (max-width:1000px){ .grid{grid-template-columns:repeat(2, 1fr)} }
+  @media (max-width:620px){ .grid{grid-template-columns:1fr} }
+  .proj{overflow:hidden}
+  .thumb{position:relative; aspect-ratio:16/9; overflow:hidden; border-radius:14px; border:1px solid rgba(66,255,209,.22)}
+  .thumb img{width:100%; height:100%; object-fit:cover; display:block}
+  .proj .meta{padding:.7em .9em 1em}
+  .proj .title{font-weight:800; color:#e2fff5}
+  .proj .role{color:var(--muted); font-size:.9em}
+  footer{opacity:.8; font-size:.85em; padding:clamp(28px,2.5vw,40px) 0 20px}
+</style>
 </head>
 <body>
-  <!-- FULL-BLEED BANNER -->
+  <!-- Banner -->
   <div class="banner">
     <div class="rail card">
-      <div class="marquee" id="bannerTrack" aria-label="Professional & Personal">
+      <div class="marquee" id="bannerTrack">
         <div class="track" id="trackA"></div>
         <div class="track" id="trackB"></div>
       </div>
@@ -138,12 +98,13 @@
     <div class="nav">
       <div class="brand">
         <div class="dot" aria-hidden="true"></div>
-        <h1>Ariel (Ari) Feblowitz</h1>
-        <span class="pill">Techvis & Virtual Production Supervisor</span>
+        <h1 id="siteTitle">Ariel (Ari) Feblowitz</h1>
+        <span id="siteSubtitle" class="pill">Techvis & Virtual Production Supervisor</span>
       </div>
       <div class="tabs" role="tablist" aria-label="Sections">
         <button class="tab-btn active" data-tab="home" role="tab" aria-selected="true">Home</button>
         <button class="tab-btn" data-tab="professional" role="tab" aria-selected="false">Professional</button>
+        <button class="tab-btn" data-tab="rides" role="tab" aria-selected="false">Rides</button>
         <button class="tab-btn" data-tab="personal" role="tab" aria-selected="false">Personal</button>
       </div>
     </div>
@@ -166,348 +127,460 @@
         </div>
         <div class="card pad">
           <h2 style="margin:0 0 .6em">About</h2>
-          <p>Bridging virtual and physical storytelling across techvis, previs/postvis, and virtual production. I translate complex sequences into precise, repeatable camera plans — trusted by directors, DPs, and VFX supervisors.</p>
-          <p class="muted">Credits include Avatar: The Way of Water, Avengers: Endgame, Ant-Man and the Wasp, Guardians of the Galaxy Vol. 3, Twisters, and more.</p>
-          <div class="badges">
-            <span class="pill">Motion Control</span>
-            <span class="pill">Unreal Engine</span>
-            <span class="pill">Maya</span>
-            <span class="pill">Shot Design</span>
-          </div>
-          <div class="badges">
-            <span class="pill">Virtual Production</span>
-            <span class="pill">On-Set Techvis</span>
-            <span class="pill">Cyclops VP</span>
-            <span class="pill">Technodolly</span>
-            <span class="pill">Spydercam</span>
-            <span class="pill">Sequencer</span>
-            <span class="pill">Maya Python</span>
-            <span class="pill">Camera Planning</span>
-          </div>
+          <p id="about1">Loading…</p>
+          <p id="about2" class="muted">Loading…</p>
+          <div id="skillsRow1" class="badges"></div>
+          <div id="skillsRow2" class="badges"></div>
         </div>
       </div>
     </section>
 
-    <!-- PROFESSIONAL PROJECTS -->
+    <!-- PROFESSIONAL -->
     <section id="professional" role="tabpanel">
       <div class="card pad">
         <div class="nav" style="gap:8px; justify-content:space-between; align-items:flex-end">
           <h2 style="margin:0">Professional Projects</h2>
-          <small class="muted">(Curated via CONFIG • Posters auto-fallback & title-on-black if all fail)</small>
+          <small class="muted">(Live from Google Sheets • On-Set first, then Prio)</small>
         </div>
         <div id="proGrid" class="grid"></div>
       </div>
     </section>
 
-    <!-- PERSONAL PROJECTS -->
+    <!-- RIDES -->
+    <section id="rides" role="tabpanel">
+      <div class="card pad">
+        <div class="nav" style="gap:8px; justify-content:space-between; align-items:flex-end">
+          <h2 style="margin:0">Rides</h2>
+          <small class="muted">(Live from Google Sheets • Sorted by Prio)</small>
+        </div>
+        <div id="ridesGrid" class="grid"></div>
+      </div>
+    </section>
+
+    <!-- PERSONAL -->
     <section id="personal" role="tabpanel">
       <div class="card pad">
         <div class="nav" style="gap:8px; justify-content:space-between; align-items:flex-end">
           <h2 style="margin:0">Personal Projects</h2>
-          <small class="muted">(Hand-picked videos • Shorts excluded)</small>
+          <small class="muted">(Live from Google Sheets)</small>
         </div>
         <div id="personalGrid" class="grid"></div>
 
-        <!-- NEW: FebzFoundFootage Feature (above Latest from YouTube) -->
-        <div class="card pad" id="febzBox" style="margin-top:var(--grid);">
-          <h3 style="margin-top:0">Also archiving my father's documentary work: <a href="https://www.youtube.com/@FebzFoundFootage" target="_blank" rel="noopener">FebzFoundFootage</a></h3>
+        <!-- Febz block -->
+        <div class="card pad" id="febzBox" style="margin-top:var(--grid); display:none">
+          <h3 style="margin-top:0"><span id="febzHeading"></span> <a href="https://www.youtube.com/@FebzFoundFootage" target="_blank" rel="noopener">@FebzFoundFootage</a></h3>
           <a id="febzLink" href="#" target="_blank" rel="noopener" class="thumb" style="display:block; aspect-ratio:16/9;">
             <img id="febzThumb" alt="FebzFoundFootage — Featured" style="width:100%; height:100%; object-fit:cover; display:block; border-radius:14px; border:1px solid rgba(66,255,209,.22)" />
           </a>
+          <small id="febzBody" class="muted"></small>
         </div>
 
-        <!-- Latest from YouTube (auto-updating uploads playlist) -->
+        <!-- Latest from YouTube (optional, controlled via sheet) -->
         <div class="card pad" id="latestBox" style="margin-top:var(--grid); display:none">
           <h3 style="margin-top:0">Latest from YouTube</h3>
           <div class="reel" style="aspect-ratio:16/9">
             <iframe id="latestFrame" src="" title="YouTube uploads" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
           </div>
-          <small class="muted">This auto-pulls your uploads feed from YouTube. Shorts may still appear inside the feed.</small>
+          <small class="muted">Auto-pulls your uploads feed from YouTube. Shorts may still appear in the feed.</small>
         </div>
       </div>
     </section>
 
-    <footer class="muted">© <span id="year"></span> Ariel (Ari) Feblowitz • Single-file GitHub Page • Theme: Tech-Noir</footer>
+    <footer class="muted">© <span id="year"></span> Ariel (Ari) Feblowitz • Live-linked to Google Sheets • Theme: Tech-Noir</footer>
   </div>
 
-  <script>
-    /* =========================
-       CONFIG — EDIT THIS ONLY
-       ========================= */
-    const CONFIG = {
-      youtubeId: "REPLACE_WITH_YOUTUBE_ID",
-      imdbUrl: "https://www.imdb.com/name/nm4409645/",
-      youtubeUrl: "https://www.youtube.com/@DirectorPsycho",
-      allLinksUrl: "https://linktr.ee/arielfeblowitz",
-      newsUrl: "https://www.youtube.com/watch?v=gM5H6vsGIcs",
-      resumeFile: "https://raw.githubusercontent.com/arifeblowitzvfx/AriFeblowitzvfx.com-v3/main/Ari_Feblowitz_Resume_2025.pdf",
+<script>
+/* ================
+   SHEET SETTINGS
+   ================ */
+const PUBHTML = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQxBxTbb-Ax7rpnnn5zWDUW6fGq1nUGIEPJb5qfaxifqKyZexNLK28gwpQLS5T5vpeuSvZicAEg69U1/pubhtml";
 
-      showLatestFromYouTube: true,
-      youtubeChannelId: "UC926CKBvQdno5vqAav7DKlg",
+/* Optional: override GIDs here if auto-discovery ever fails */
+const TAB_MAP = {
+  // "Ariel_Feblowitz_Works": "#########",
+  // "Rides": "#########",
+  // "Personal Youtube": "#########",
+  // "Main site info": "#########",
+};
 
-      /* NEW: FebzFoundFootage feature video */
-      febzFeaturedVideoId: "AAebMfrFtWs",
+/* ================
+   UTILITIES
+   ================ */
+const $ = (sel, el=document) => el.querySelector(sel);
+const $$ = (sel, el=document) => [...el.querySelectorAll(sel)];
+const ytThumb = id => `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
+const ytMax = id => `https://img.youtube.com/vi/${id}/maxresdefault.jpg`;
 
-      // Professional — newest/high-profile first
-      proProjects: [
-        { title:"Predator: Badlands (TBA)", role:"Visualization", posters:[
-          "https://upload.wikimedia.org/wikipedia/en/9/90/Predator_Badlands_Poster.jpg",
-          "https://upload.wikimedia.org/wikipedia/en/9/9b/Predator_%281987%29_poster.jpg"
-        ], url:"https://www.imdb.com/title/tt31227572/" },
-        { title:"Fantastic Four — First Steps (Pre-Prod)", role:"Visualization / Techvis", posters:[
-          "https://upload.wikimedia.org/wikipedia/commons/2/2f/Fantastic_Four_text_logo.svg",
-          "https://upload.wikimedia.org/wikipedia/commons/0/0c/Marvel_Studios_2016_logo.svg"
-        ], url:"#" },
-        { title:"Avatar: Fire and Ash", role:"Virtual Production / Motion control co-Supervisor", posters:[
-          "https://upload.wikimedia.org/wikipedia/en/8/81/Avatar_3_logo.jpg",
-          "https://upload.wikimedia.org/wikipedia/en/2/2c/Avatar_The_Way_of_Water_poster.jpg"
-        ], url:"https://www.imdb.com/title/tt1757678/" },
-        { title:"Star Wars: Skeleton Crew (2023)", role:"On Set Techvis Supervisor", posters:[
-          "https://upload.wikimedia.org/wikipedia/en/5/5f/Skeleton_Crew_logo.jpg",
-          "https://upload.wikimedia.org/wikipedia/commons/6/6c/Star_Wars_Logo.svg"
-        ], url:"https://www.imdb.com/title/tt13918776/" },
-        { title:"Shazam! Fury of the Gods (2023)", role:"On Set Virtual Production with Cyclops and Techvis", posters:[
-          "https://upload.wikimedia.org/wikipedia/en/1/1a/Shazam!_Fury_of_the_Gods_poster.jpg"
-        ], url:"https://www.imdb.com/title/tt10151854/" },
-        { title:"Guardians of the Galaxy Vol. 3 (2023)", role:"On Set Visual Effects Techvis Supervisor", posters:[
-          "https://upload.wikimedia.org/wikipedia/en/5/50/Guardians_of_the_Galaxy_Vol._3_poster.jpg",
-          "https://upload.wikimedia.org/wikipedia/en/4/4f/Guardians_of_the_Galaxy_Vol._3_teaser_poster.jpg"
-        ], url:"https://www.imdb.com/title/tt6791350/" },
-        { title:"Twisters (2024)", role:"Visualization", posters:[
-          "https://upload.wikimedia.org/wikipedia/en/8/8f/Twisters_film_poster.jpg"
-        ], url:"https://www.imdb.com/title/tt12584954/" },
-        { title:"Avatar: The Way of Water (2022)", role:"Virtual Production / Techvis / Motion Control — On-Set", posters:[
-          "https://upload.wikimedia.org/wikipedia/en/2/2c/Avatar_The_Way_of_Water_poster.jpg"
-        ], url:"https://www.imdb.com/title/tt1630029/" },
-        { title:"Avengers: Endgame (2019)", role:"Techvis / Previs — On-Set", posters:[
-          "https://upload.wikimedia.org/wikipedia/en/0/0d/Avengers_Endgame_poster.jpg"
-        ], url:"https://www.imdb.com/title/tt4154796/" },
-        { title:"Ant-Man and the Wasp (2018)", role:"Techvis — On-Set; scale & motion planning", posters:[
-          "https://upload.wikimedia.org/wikipedia/en/2/2c/Ant-Man_and_the_Wasp_poster.jpg"
-        ], url:"https://www.imdb.com/title/tt5095030/" },
-        { title:"The Mandalorian (TV)", role:"Virtual Production / Visualization — On-Set", posters:[
-          "https://upload.wikimedia.org/wikipedia/en/c/c5/The_Mandalorian_season_2_poster.jpg",
-          "https://upload.wikimedia.org/wikipedia/en/c/c4/The_Mandalorian_season_3_poster.jpg"
-        ], url:"https://www.imdb.com/title/tt8111088/" }
-      ],
-
-      // Personal — manual curation (Shorts excluded)
-      personalProjects: [
-        { title:"Deadpool vs Alien vs Terminator", role:"Animated Fan Parody (Unreal) — viral hit", videoId:"7YIVcQLS9Cw" },
-        { title:"Alien vs Terminator", role:"Animated Fan Parody (Unreal) — viral hit", videoId:"HtgCTlpi47s" },
-        { title:"Pumpkin Smashers", role:"Animated Short (Unreal). Award-Winning — Chicago Horror Film Fest: Best Animation.", videoId:"q_MFAiCeWUk" },
-        { title:"Siren Vs Syren — Siren Tales", role:"Animated Short (Unreal)", videoId:"W5PPhhmMw_g" },
-        { title:"Rusalky — Ukrainian Sirens vs Russian Soldiers", role:"Animated Short (Unreal)", videoId:"Jvd-ZTLviOc" },
-        { title:"Krampus Night — Animated Christmas Horror Short", role:"Animated Short (Unreal)", videoId:"psCIvWKpHnU" },
-        { title:"Siren Tales — Trailer", role:"Series Trailer", videoId:"1OazLvklmdE" },
-        { title:"Spirits of Lake Minnetonka — Trailer", role:"Series Trailer", videoId:"Z-UX4szq2LI" },
-        { title:"Jurassic Park in Real Life with AR! | Reverse Virtual Production with Cyclops", role:"Reverse Virtual Production", videoId:"yxAMZs1wERQ" }
-      ]
-    };
-
-    /* =========================
-       RUNTIME
-       ========================= */
-    const $ = (sel, el=document) => el.querySelector(sel);
-    const $$ = (sel, el=document) => [...el.querySelectorAll(sel)];
-
-    // Tabs
-    $$(".tab-btn").forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        $$(".tab-btn").forEach(b=>{ b.classList.toggle('active', b===btn); b.setAttribute('aria-selected', b===btn) });
-        const name = btn.dataset.tab; $$("section").forEach(s=>s.classList.toggle('active', s.id===name));
-        window.scrollTo({ top: $('.wrap').offsetTop, behavior: 'smooth' });
-      })
-    });
-
-    // Links & Reel
-    const reel = $("#reelFrame");
-    if (CONFIG.youtubeId && CONFIG.youtubeId !== 'REPLACE_WITH_YOUTUBE_ID') {
-      reel.src = `https://www.youtube.com/embed/${CONFIG.youtubeId}?rel=0&modestbranding=1`;
+function csvToObjects(csvText){
+  // Minimal CSV parser that supports quoted fields and commas
+  const rows = [];
+  let i=0, field="", row=[], inQuotes=false;
+  for (let c of csvText.replace(/\r/g,'')){
+    if (c === '"'){
+      if (inQuotes && field.endsWith('"')) { field = field.slice(0,-1) + '"'; }
+      inQuotes = !inQuotes;
+      field += '"'; // keep quotes to detect escaped quotes
+    } else if (c === ',' && !inQuotes){
+      rows.pushIfNew = null; row.push(field.replace(/^"|"$/g,'').replace(/""/g,'"')); field="";
+    } else if (c === '\n' && !inQuotes){
+      row.push(field.replace(/^"|"$/g,'').replace(/""/g,'"')); field="";
+      rows.push(row); row=[];
     } else {
-      reel.srcdoc = `
-        <style>body{margin:0;display:grid;place-items:center;background:#000;color:#9fb5b8;font:16px system-ui} .box{opacity:.8;text-align:center} .box b{color:#fff}</style>
-        <div class='box'>Add your <b>YouTube ID</b> in CONFIG to show the reel.</div>`;
+      field += c;
     }
-    $("#btnIMDb").href = CONFIG.imdbUrl;
-    $("#btnYouTube").href = CONFIG.youtubeUrl;
-    $("#btnLinks").href = CONFIG.allLinksUrl;
-    if (CONFIG.newsUrl) $("#btnNews").href = CONFIG.newsUrl; else $("#btnNews").classList.add('hide');
-    if (CONFIG.resumeFile) $("#btnResume").href = CONFIG.resumeFile;
+  }
+  if (field.length || row.length){ row.push(field.replace(/^"|"$/g,'').replace(/""/g,'"')); rows.push(row); }
+  if (!rows.length) return [];
+  const headers = rows[0].map(h => h.trim());
+  return rows.slice(1).filter(r=>r.length>1).map(r=>{
+    const o={};
+    headers.forEach((h,ix)=>o[h]=r[ix]!==undefined?r[ix]:"");
+    return o;
+  });
+}
 
-    // Latest from YouTube (auto-updating uploads playlist)
-    if (CONFIG.showLatestFromYouTube && CONFIG.youtubeChannelId){
-      const uploadsId = 'UU' + CONFIG.youtubeChannelId.slice(2);
-      const latestBox = document.getElementById('latestBox');
-      const latestFrame = document.getElementById('latestFrame');
-      latestFrame.src = `https://www.youtube.com/embed/videoseries?list=${uploadsId}&rel=0`;
-      latestBox.style.display = 'block';
+function normalizeBool(v){
+  return String(v||"").trim().toLowerCase() === "true" || String(v||"").trim().toLowerCase() === "yes";
+}
+function normalizeNum(v){
+  const n = Number(String(v||"").replace(/[^\d.-]/g,""));
+  return isNaN(n)? 0 : n;
+}
+function buildCsvUrlFromGid(pubhtml, gid){
+  const base = pubhtml.replace(/\/pubhtml.*/,"/pub");
+  const url = `${base}?gid=${gid}&single=true&output=csv`;
+  return url;
+}
+
+async function discoverGids(pubhtml){
+  // Try to fetch the published HTML and regex out (gid, tab name) pairs
+  const map = {};
+  try{
+    const html = await fetch(pubhtml, {mode:"cors"}).then(r=>r.text());
+    // The published HTML contains anchor URLs with gid=X and the tab names in the markup
+    const gidMatches = [...html.matchAll(/gid=(\d+)/g)].map(m=>m[1]);
+    // Try to find names near occurrences of "sheet-button" or menu anchors
+    const nameMatches = [...html.matchAll(/<a[^>]*>([^<]{1,80})<\/a>/g)].map(m=>m[1].trim()).filter(Boolean);
+    // Heuristic: build a unique set of gids, then later we’ll probe each with CSV and read its first header to identify the tab
+    const uniqueGids = [...new Set(gidMatches)];
+    for (const gid of uniqueGids){
+      const testCsv = await fetch(buildCsvUrlFromGid(pubhtml, gid)).then(r=>r.text()).catch(()=>null);
+      if (!testCsv) continue;
+      const rows = csvToObjects(testCsv);
+      // Identify by distinctive header fields
+      const headers = Object.keys(rows[0]||{});
+      const headerStr = headers.join("|").toLowerCase();
+      if (headerStr.includes("primary image") && headerStr.includes("on set?")) map["Ariel_Feblowitz_Works"] = gid;
+      else if (headerStr.includes("ride image") && headerStr.includes("ride name")) map["Rides"] = gid;
+      else if (headerStr.includes("type") && headerStr.includes("video_id")) map["Personal Youtube"] = gid;
+      else if (headerStr.includes("key") && headerStr.includes("value")) map["Main site info"] = gid;
     }
+  }catch(e){ /* ignore; rely on TAB_MAP fallback */ }
+  // Merge overrides
+  return { ...map, ...TAB_MAP };
+}
 
-    // FebzFoundFootage feature
-    (function setupFebz(){
-      const id = CONFIG.febzFeaturedVideoId;
-      const link = $("#febzLink");
-      const img  = $("#febzThumb");
-      if (!id){ link.style.display = 'none'; return; }
-      link.href = `https://www.youtube.com/watch?v=${id}`;
-      // prefer maxresdefault if present; fall back to hqdefault automatically
-      img.src = `https://img.youtube.com/vi/${id}/maxresdefault.jpg`;
-      img.addEventListener('error', ()=>{ img.src = `https://img.youtube.com/vi/${id}/hqdefault.jpg`; }, { once:true });
-    })();
+/* ================
+   RENDER HELPERS
+   ================ */
+function placeholderTile(){
+  return 'data:image/svg+xml;utf8,' + encodeURIComponent(
+    "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 800'><rect width='100%' height='100%' fill='#000'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' fill='#74cdaa' font-family='monospace' font-size='22'>Poster unavailable</text></svg>"
+  );
+}
+function titlePlaceholderSVG(title){
+  const safe = (title||'Untitled').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 800'>
+    <rect width='100%' height='100%' fill='#000'/>
+    <text x='50%' y='50%' fill='#9fffcf' font-family='Inter, Segoe UI, Roboto, Arial, sans-serif' font-size='36' text-anchor='middle' dominant-baseline='middle'>${safe}</text>
+  </svg>`;
+  return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+}
+function mkPosterImg(srcList, fallbackTitle){
+  const img = document.createElement('img'); img.loading='lazy'; img.alt='';
+  const candidates = [];
+  if (Array.isArray(srcList)){
+    srcList.filter(Boolean).forEach(s=>candidates.push(s));
+  } else if (srcList){ candidates.push(srcList); }
+  candidates.push(fallbackTitle ? titlePlaceholderSVG(fallbackTitle) : placeholderTile());
+  let i=0; const setNext=()=>{ if (i<candidates.length){ img.src = candidates[i++]; } };
+  img.addEventListener('error', setNext); setNext();
+  return img;
+}
+function clear(el){ while(el.firstChild) el.removeChild(el.firstChild); }
 
-    // ===== Helpers
-    function placeholderTile(){
-      return 'data:image/svg+xml;utf8,' + encodeURIComponent(
-        "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 800'><rect width='100%' height='100%' fill='#000'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' fill='#74cdaa' font-family='monospace' font-size='22'>Poster unavailable</text></svg>"
-      );
+/* ================
+   BANNER BUILD
+   ================ */
+const bannerRegistry = new Set();
+const BANNER_REFRESH_MS = 30000, BANNER_LOAD_TIMEOUT_MS = 2500, BANNER_MAX_RETRIES = 5;
+
+function loadWithTimeout(src){
+  return new Promise((resolve)=>{
+    const img = new Image(); let done=false;
+    const timer = setTimeout(()=>{ if(!done){done=true; resolve(false);} }, BANNER_LOAD_TIMEOUT_MS);
+    img.onload = ()=>{ if(!done){done=true; clearTimeout(timer); resolve(true);} };
+    img.onerror = ()=>{ if(!done){done=true; clearTimeout(timer); resolve(false);} };
+    img.src = src + (src.includes('?') ? `&cb=${Date.now()}` : `?cb=${Date.now()}`);
+  });
+}
+async function attemptBannerImage(tileEl){
+  const desired = tileEl.getAttribute('data-src');
+  let retries = +(tileEl.getAttribute('data-retries')||0);
+  if (!desired || retries >= BANNER_MAX_RETRIES) return;
+  const ok = await loadWithTimeout(desired);
+  if (ok){
+    const img = tileEl.querySelector('img'); img.src = desired; tileEl.removeAttribute('data-missing');
+  } else {
+    retries += 1; tileEl.setAttribute('data-retries', String(retries)); tileEl.setAttribute('data-missing','1');
+  }
+}
+function scheduleBannerRefresh(){
+  setInterval(()=>{ bannerRegistry.forEach(tile=>{
+    if (tile.isConnected && tile.getAttribute('data-missing') === '1'){ attemptBannerImage(tile); }
+  })}, BANNER_REFRESH_MS);
+}
+
+function setBannerDuration(){
+  const marquee = $("#bannerTrack"), trackA = $("#trackA"), trackB = $("#trackB");
+  const fullWidth = trackA.scrollWidth + trackB.scrollWidth;
+  const pxPerSec = 60;
+  const dur = Math.max(20, Math.round(fullWidth / pxPerSec));
+  marquee.style.animationDuration = dur + 's';
+}
+function buildBanner(tiles){
+  const trackA = $("#trackA"), trackB = $("#trackB");
+  clear(trackA); clear(trackB);
+  if (!tiles.length){
+    const a = document.createElement('a'); a.className='tile'; a.href='#'; a.setAttribute('data-title','Add items in your Sheet');
+    const img = new Image(); img.src = placeholderTile(); a.appendChild(img);
+    trackA.appendChild(a.cloneNode(true)); trackB.appendChild(a.cloneNode(true));
+    setBannerDuration(); return;
+  }
+  function mk(t){
+    const a = document.createElement('a'); a.className='tile'; a.href=t.url||'#'; a.target='_blank'; a.rel='noopener'; a.setAttribute('data-title', t.title||'');
+    const img = new Image(); img.loading='lazy'; img.alt=''; img.src = placeholderTile(); a.appendChild(img);
+    a.setAttribute('data-src', t.img); a.setAttribute('data-retries','0'); bannerRegistry.add(a);
+    setTimeout(()=>attemptBannerImage(a), 250); return a;
+  }
+  tiles.forEach(t=>trackA.appendChild(mk(t)));
+  tiles.forEach(t=>trackB.appendChild(mk(t)));
+  requestAnimationFrame(setBannerDuration);
+}
+
+/* ================
+   TABS + YEAR
+   ================ */
+$$(".tab-btn").forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    $$(".tab-btn").forEach(b=>{ b.classList.toggle('active', b===btn); b.setAttribute('aria-selected', b===btn) });
+    const name = btn.dataset.tab; $$("section").forEach(s=>s.classList.toggle('active', s.id===name));
+    window.scrollTo({ top: $('.wrap').offsetTop, behavior: 'smooth' });
+  });
+});
+$("#year").textContent = new Date().getFullYear();
+
+/* ================
+   LOAD + RENDER
+   ================ */
+(async function init(){
+  scheduleBannerRefresh();
+
+  // Discover tab GIDs
+  const gids = await discoverGids(PUBHTML);
+
+  // Fetch each CSV
+  async function pullTab(name){
+    const gid = gids[name];
+    if (!gid){ console.warn("Missing gid for tab:", name); return []; }
+    const url = buildCsvUrlFromGid(PUBHTML, gid);
+    const txt = await fetch(url).then(r=>r.text());
+    return csvToObjects(txt);
+  }
+
+  // Pull main info first (titles, links, reel, skills)
+  const mainInfo = await pullTab("Main site info").then(rows=>{
+    const obj={}; rows.forEach(r=>obj[(r.key||"").trim()] = (r.value||"").trim()); return obj;
+  });
+
+  // Apply main info to UI
+  $("#siteTitle").textContent = mainInfo.site_title || "Ariel (Ari) Feblowitz";
+  $("#siteSubtitle").textContent = mainInfo.site_subtitle || "Techvis & Virtual Production Supervisor";
+  $("#about1").textContent = mainInfo.about_paragraph_1 || "";
+  $("#about2").textContent = mainInfo.about_paragraph_2 || "";
+  $("#btnIMDb").href = mainInfo.imdb_url || "#";
+  $("#btnYouTube").href = mainInfo.youtube_url || "#";
+  $("#btnLinks").href = mainInfo.all_links_url || "#";
+  if (mainInfo.news_url) $("#btnNews").href = mainInfo.news_url; else $("#btnNews").style.display = "none";
+  if (mainInfo.resume_url) $("#btnResume").href = mainInfo.resume_url;
+  const reelId = mainInfo.reel_youtube_id || "";
+  const reel = $("#reelFrame");
+  if (reelId && reelId !== "REPLACE_WITH_YOUTUBE_ID"){
+    reel.src = `https://www.youtube.com/embed/${reelId}?rel=0&modestbranding=1`;
+  } else {
+    reel.srcdoc = `<style>body{margin:0;display:grid;place-items:center;background:#000;color:#9fb5b8;font:16px system-ui}.box{opacity:.8;text-align:center}.box b{color:#fff}</style><div class='box'>Add your <b>reel_youtube_id</b> in the "Main site info" tab.</div>`;
+  }
+  // Skills (pipe-delimited)
+  const skills = (mainInfo.skills||"").split("|").map(s=>s.trim()).filter(Boolean);
+  const half = Math.ceil(skills.length/2);
+  const row1 = $("#skillsRow1"), row2 = $("#skillsRow2");
+  function pill(t){ const s=document.createElement('span'); s.className='pill'; s.textContent=t; return s; }
+  skills.slice(0,half).forEach(s=>row1.appendChild(pill(s)));
+  skills.slice(half).forEach(s=>row2.appendChild(pill(s)));
+
+  // Pull Personal Youtube
+  const personalTab = await pullTab("Personal Youtube");
+  const meta = {}; const videos=[];
+  personalTab.forEach(r=>{
+    const type = (r.type||"").toLowerCase();
+    if (type === "meta"){ meta[(r.key||"").trim()] = (r.value||"").trim(); }
+    else if (type === "video"){ videos.push({
+      prio: normalizeNum(r.prio), includeInBanner: normalizeBool(r.include_in_banner) || normalizeNum(r.prio) >= 5,
+      featured: normalizeBool(r.featured),
+      videoId: (r.video_id||"").trim(),
+      title: (r.title||"").trim(), role: (r.role||"").trim(),
+      desc: (r.description||"").trim(),
+      url: (r.youtube_url||"").trim() || ((r.video_id||"")? `https://www.youtube.com/watch?v=${r.video_id}` : ""),
+      thumb: (r.thumb_url||"").trim() || ((r.video_id||"")? ytThumb(r.video_id) : "")
+    });}
+  });
+
+  // Featured + Febz blocks
+  const featuredId = (meta.featured_video_id || (videos.find(v=>v.featured)?.videoId) || "").trim();
+  if (featuredId){
+    // Put the featured at the top of the personal grid when rendering later (we'll keep grid uniform)
+    // (Optional: You can add a dedicated hero block here if you want a larger featured)
+  }
+  const febzId = (meta.febz_video_id||"").trim();
+  if (febzId){
+    $("#febzBox").style.display = 'block';
+    $("#febzHeading").textContent = meta.febz_heading || "Also archiving my father's documentary work:";
+    $("#febzBody").textContent = meta.febz_body || "";
+    $("#febzLink").href = `https://www.youtube.com/watch?v=${febzId}`;
+    const img = $("#febzThumb"); img.src = ytMax(febzId);
+    img.addEventListener('error', ()=>{ img.src = ytThumb(febzId); }, {once:true});
+  }
+
+  // Latest box (uploads playlist)
+  const showLatest = String(mainInfo.show_latest_from_youtube||meta.latest_mode||"").toLowerCase().includes("true") || (meta.latest_mode||"") === "auto";
+  if (showLatest){
+    const channelId = meta.latest_playlist_or_channel_id || mainInfo.youtube_channel_id || "";
+    if (channelId.startsWith("UC")){
+      const uploadsId = 'UU' + channelId.slice(2);
+      $("#latestFrame").src = `https://www.youtube.com/embed/videoseries?list=${uploadsId}&rel=0`;
+      $("#latestBox").style.display = 'block';
     }
-    function titlePlaceholderSVG(title){
-      const safe = (title||'Untitled').replace(/&/g,'&amp;').replace(/</g,'&lt;');
-      const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 800'>
-        <rect width='100%' height='100%' fill='#000'/>
-        <text x='50%' y='50%' fill='#9fffcf' font-family='Inter, Segoe UI, Roboto, Arial, sans-serif' font-size='36' text-anchor='middle' dominant-baseline='middle'>${safe}</text>
-      </svg>`;
-      return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
-    }
+  }
 
-    // Banner image loader with timeout + retry + periodic refresh
-    const BANNER_REFRESH_MS = 30000;
-    const BANNER_LOAD_TIMEOUT_MS = 2500;
-    const BANNER_MAX_RETRIES = 5;
-    const bannerRegistry = new Set();
+  // Pull Professional
+  const proRows = await pullTab("Ariel_Feblowitz_Works");
+  const proItems = proRows.map(r=>({
+    title: (r["Name"]||"").trim(),
+    url: (r["URL"]||"").trim(),
+    role: (r["My Role"]||"").trim(),
+    prod: (r["Production Co."]||"").trim(),
+    onSet: normalizeBool(r["On Set?"]),
+    prio: normalizeNum(r["Prio?"]),
+    posters: [(r["Primary image"]||"").trim()].filter(Boolean)
+  })).filter(x=>x.title && x.prio>0);
 
-    function loadWithTimeout(src){
-      return new Promise((resolve)=>{
-        const img = new Image();
-        let done = false;
-        const timer = setTimeout(()=>{ if (!done){ done = true; resolve(false); } }, BANNER_LOAD_TIMEOUT_MS);
-        img.onload = ()=>{ if (!done){ done = true; clearTimeout(timer); resolve(true); } };
-        img.onerror = ()=>{ if (!done){ done = true; clearTimeout(timer); resolve(false); } };
-        img.src = src + (src.includes('?') ? `&cb=${Date.now()}` : `?cb=${Date.now()}`);
-      });
-    }
+  // Sort: On-Set first, then prio desc, then title
+  proItems.sort((a,b)=>{
+    if (a.onSet !== b.onSet) return a.onSet? -1: 1;
+    if (b.prio !== a.prio) return b.prio - a.prio;
+    return a.title.localeCompare(b.title);
+  });
 
-    async function attemptBannerImage(tileEl){
-      const desired = tileEl.getAttribute('data-src');
-      let retries = +(tileEl.getAttribute('data-retries')||0);
-      if (!desired || retries >= BANNER_MAX_RETRIES) return;
-      const ok = await loadWithTimeout(desired);
-      if (ok){
-        const img = tileEl.querySelector('img');
-        img.src = desired;
-        tileEl.removeAttribute('data-missing');
-      } else {
-        retries += 1;
-        tileEl.setAttribute('data-retries', String(retries));
-        tileEl.setAttribute('data-missing','1');
-      }
-    }
+  // Pull Rides
+  const ridesRows = await pullTab("Rides");
+  const rideItems = ridesRows.map(r=>({
+    title: (r["Ride Name"]||"").trim(),
+    url: (r["Ride Link"]||"").trim(),
+    role: (r["My Role"]||"").trim(),
+    company: (r["Ride Company"]||"").trim(),
+    desc: (r["Description"]||"").trim(),
+    prio: normalizeNum(r["Prio"]),
+    posters: [(r["Ride Image"]||"").trim()].filter(Boolean)
+  })).filter(x=>x.title && x.prio>0)
+    .sort((a,b)=> b.prio - a.prio || a.title.localeCompare(b.title));
 
-    function scheduleBannerRefresh(){
-      setInterval(()=>{
-        bannerRegistry.forEach(tile=>{
-          if (tile.isConnected && tile.getAttribute('data-missing') === '1'){
-            attemptBannerImage(tile);
-          }
-        })
-      }, BANNER_REFRESH_MS);
-    }
+  /* ===== Render Professional ===== */
+  const proGrid = $("#proGrid"); clear(proGrid);
+  if (!proItems.length) proGrid.innerHTML = `<div class="muted">No items yet — add rows in the “Ariel_Feblowitz_Works” tab.</div>`;
+  proItems.forEach(p=>{
+    const c = document.createElement('a'); c.className='proj card'; c.href=p.url||'#'; c.target='_blank'; c.rel='noopener';
+    const wrap = document.createElement('div'); wrap.className='thumb';
+    wrap.appendChild(mkPosterImg(p.posters, p.title));
+    const meta = document.createElement('div'); meta.className='meta';
+    const info = [p.role, p.prod].filter(Boolean).join(' • ');
+    meta.innerHTML = `<div class="title">${p.title}</div><div class="role">${info}</div>`;
+    c.appendChild(wrap); c.appendChild(meta); proGrid.appendChild(c);
+  });
 
-    const ytThumb = (id) => `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
+  /* ===== Render Rides ===== */
+  const ridesGrid = $("#ridesGrid"); clear(ridesGrid);
+  if (!rideItems.length) ridesGrid.innerHTML = `<div class="muted">No items yet — add rows in the “Rides” tab.</div>`;
+  rideItems.forEach(p=>{
+    const c = document.createElement('a'); c.className='proj card'; c.href=p.url||'#'; c.target='_blank'; c.rel='noopener';
+    const wrap = document.createElement('div'); wrap.className='thumb';
+    wrap.appendChild(mkPosterImg(p.posters, p.title));
+    const meta = document.createElement('div'); meta.className='meta';
+    const info = [p.role, p.company].filter(Boolean).join(' • ');
+    const desc = p.desc ? `<div class="muted" style="margin-top:.35em; font-size:.9em">${p.desc}</div>` : "";
+    meta.innerHTML = `<div class="title">${p.title}</div><div class="role">${info}</div>${desc}`;
+    c.appendChild(wrap); c.appendChild(meta); ridesGrid.appendChild(c);
+  });
 
-    // ===== Banner — built from pro posters + personal thumbs (interleaved)
-    const marquee = document.getElementById('bannerTrack');
-    const trackA = document.getElementById('trackA');
-    const trackB = document.getElementById('trackB');
+  /* ===== Render Personal (videos) ===== */
+  const personalGrid = $("#personalGrid"); clear(personalGrid);
+  if (!videos.length) personalGrid.innerHTML = `<div class="muted">No videos yet — add rows in the “Personal Youtube” tab.</div>`;
+  // Bring featured (if any) to the front
+  const featuredIdx = videos.findIndex(v=>v.videoId === featuredId);
+  if (featuredIdx > 0){ const [f] = videos.splice(featuredIdx,1); videos.unshift(f); }
+  videos.forEach(v=>{
+    const c = document.createElement('a'); c.className='proj card'; c.href=v.url||'#'; c.target='_blank'; c.rel='noopener';
+    const wrap = document.createElement('div'); wrap.className='thumb';
+    const img = document.createElement('img'); img.loading='lazy'; img.alt='';
+    img.src = v.thumb || (v.videoId? ytThumb(v.videoId) : placeholderTile());
+    wrap.appendChild(img);
+    const meta = document.createElement('div'); meta.className='meta';
+    meta.innerHTML = `<div class="title">${v.title||''}</div><div class="role">${v.role||''}</div>`;
+    c.appendChild(wrap); c.appendChild(meta); personalGrid.appendChild(c);
+  });
 
-    function buildBanner(){
-      const pro = (CONFIG.proProjects||[]).flatMap(p => {
-        const posters = Array.isArray(p.posters)? p.posters.filter(Boolean) : [];
-        return posters.map(src => ({ title:p.title, img:src, url:p.url||'#' }));
-      });
-      const personal = (CONFIG.personalProjects||[]).map(v => ({
-        title: v.title,
-        img: ytThumb(v.videoId),
-        url: `https://www.youtube.com/watch?v=${v.videoId}`
-      }));
-      const tiles = [];
-      const maxLen = Math.max(pro.length, personal.length);
-      for(let i=0;i<maxLen;i++){ if (i<pro.length) tiles.push(pro[i]); if (i<personal.length) tiles.push(personal[i]); }
+  /* ===== Build Banner (Pro high-prio + Rides prio=10 + Personal prio≥5) ===== */
+  const bannerTiles = [];
+  // Pro: prio ≥ 5
+  proItems.filter(p=>p.prio>=5).forEach(p=>{
+    bannerTiles.push({ title:p.title, img:(p.posters[0]||placeholderTile()), url:p.url||'#' });
+  });
+  // Rides: only prio = 10
+  rideItems.filter(r=>r.prio===10).forEach(r=>{
+    bannerTiles.push({ title:r.title, img:(r.posters[0]||placeholderTile()), url:r.url||'#' });
+  });
+  // Personal: prio ≥ 5 (or include_in_banner true)
+  videos.filter(v=> (v.prio||0)>=5 || v.includeInBanner ).forEach(v=>{
+    bannerTiles.push({ title:v.title, img:(v.thumb||placeholderTile()), url:v.url||'#' });
+  });
 
-      const mk = t => {
-        const a = document.createElement('a'); a.className='tile'; a.href=t.url||'#'; a.target='_blank'; a.rel='noopener'; a.setAttribute('data-title', t.title||'');
-        const img = new Image(); img.loading='lazy'; img.alt=''; img.src = placeholderTile();
-        a.appendChild(img);
-        a.setAttribute('data-src', t.img);
-        a.setAttribute('data-retries', '0');
-        bannerRegistry.add(a);
-        setTimeout(()=>attemptBannerImage(a), 250);
-        return a;
-      };
+  // Interleave a bit: Pro/Ride/Personal repeating
+  const proB = bannerTiles.filter(t=> proItems.some(p=>p.title===t.title));
+  const rideB = bannerTiles.filter(t=> rideItems.some(p=>p.title===t.title));
+  const perB = bannerTiles.filter(t=> videos.some(v=>v.title===t.title));
+  const interleaved=[];
+  const maxLen = Math.max(proB.length, rideB.length, perB.length);
+  for (let i=0; i<maxLen; i++){
+    if (i<proB.length) interleaved.push(proB[i]);
+    if (i<rideB.length) interleaved.push(rideB[i]);
+    if (i<perB.length) interleaved.push(perB[i]);
+  }
+  buildBanner(interleaved);
 
-      trackA.innerHTML = ''; trackB.innerHTML = '';
-      if (!tiles.length){
-        const ph = mk({ title:'Add projects/videos in CONFIG', img: placeholderTile(), url:'#' });
-        trackA.appendChild(ph.cloneNode(true)); trackB.appendChild(ph.cloneNode(true));
-      } else {
-        tiles.forEach(t=> trackA.appendChild(mk(t)));
-        // duplicate for seamless loop
-        tiles.forEach(t=> trackB.appendChild(mk(t)));
-      }
-
-      // Set duration by content width to avoid “compression”
-      requestAnimationFrame(()=>{
-        const fullWidth = trackA.scrollWidth + trackB.scrollWidth;
-        const pxPerSec = 60; // adjust to taste
-        const dur = Math.max(20, Math.round(fullWidth / pxPerSec));
-        marquee.style.animationDuration = dur + 's';
-      });
-    }
-
-    // ===== Grids
-    function mkPosterImg(posterList, opts={}){
-      const img = document.createElement('img');
-      img.loading='lazy'; img.alt='';
-      const posters = (Array.isArray(posterList)? posterList : []).filter(Boolean);
-      const candidates = posters.slice();
-      if (opts.placeholderTitle){
-        candidates.push(titlePlaceholderSVG(opts.placeholderTitle));
-      } else {
-        candidates.push(placeholderTile());
-      }
-      let i = 0;
-      const setNext = ()=>{ if (i < candidates.length){ img.src = candidates[i++]; } };
-      img.addEventListener('error', setNext);
-      setNext();
-      return img;
-    }
-
-    function renderGrid(el, arr){
-      el.innerHTML = '';
-      if (!arr || !arr.length){ el.innerHTML = `<div class="muted">No items yet. Edit <b>CONFIG</b> in this file to add projects.</div>`; return; }
-      arr.forEach(p=>{
-        const c = document.createElement('a'); c.className='proj card'; c.href=p.url||'#'; c.target='_blank'; c.rel='noopener';
-        const poster = mkPosterImg(p.posters||[], { placeholderTitle: p.title });
-        const wrap = document.createElement('div'); wrap.className='thumb'; wrap.appendChild(poster);
-        const meta = document.createElement('div'); meta.className='meta';
-        meta.innerHTML = `<div class="title">${p.title||''}</div><div class="role">${p.role||''}</div>`;
-        c.appendChild(wrap); c.appendChild(meta);
-        el.appendChild(c);
-      })
-    }
-
-    function renderPersonal(el, arr){
-      const items = (arr||[]).map(v=>({ title:v.title, role:v.role, url:`https://www.youtube.com/watch?v=${v.videoId}`, posters:[ytThumb(v.videoId)] }));
-      renderGrid(el, items);
-    }
-
-    // ===== Init
-    buildBanner();
-    scheduleBannerRefresh();
-    renderGrid($("#proGrid"), CONFIG.proProjects);
-    renderPersonal($("#personalGrid"), CONFIG.personalProjects);
-    $("#year").textContent = new Date().getFullYear();
-  </script>
+  console.log("GIDs discovered:", gids);
+})().catch(err=>{
+  console.error(err);
+  alert("Error loading Google Sheets data. If this persists, set TAB_MAP with your tab GIDs.");
+});
+</script>
 </body>
 </html>
