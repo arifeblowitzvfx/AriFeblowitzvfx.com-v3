@@ -136,6 +136,10 @@
     /* Rapid flicker bursts */
     .burst body::before, .burst body::after { animation-duration: .2s; }
     .burst .brand .dot{ animation: blinkFast .2s infinite; }
+  
+    /* Tiny toast for copy feedback */
+    .toast{ position:fixed; z-index:9999; padding:.5em .75em; border-radius:10px; background:#0b1414; color:#caffec; border:1px solid rgba(66,255,209,.4); box-shadow:var(--shadow); font-size:.9em; opacity:0; transform:translateY(-6px); transition:opacity .15s ease, transform .15s ease; }
+    .toast.show{ opacity:1; transform:translateY(0); }
   </style>
 </head>
 <body>
@@ -157,7 +161,7 @@
           <div class="dot" aria-hidden="true"></div>
           <h1 id="siteTitle" class="crt-glow">Loading data for SUBJECT: ARI FEBLOWITZ</h1>
           <a id="siteSubtitle" class="pill crt-glow" href="https://www.imdb.me/ArielFeblowitz" target="_blank" rel="noopener">Techvis & Virtual Production Supervisor</a>
-          $1
+          
           <div id="topContact" class="badges" style="margin-left:6px"></div>
         </div>
       </div>
@@ -291,6 +295,8 @@
   // Preload defaults immediately
   setTopContact(DEFAULT_PHONE, DEFAULT_EMAIL);
   setContactSection(DEFAULT_PHONE, DEFAULT_EMAIL);
+  // Desktop copy-to-clipboard behavior for contact links
+  enhanceContactLinks();
 
   /********************** UTILITIES ***********************/
   const $ = (sel, el=document) => el.querySelector(sel);
@@ -389,6 +395,7 @@
   const loaded = { main:false, reel:false, sections:false, banner:false };
 
   (async function init(){
+    const onError = (e,msg)=>{ console.error('[Site init]', msg||e?.message||e, e); };
     setStatus('Routing request to MOTHER…', sysStatus.href);
     const gids = await discoverGids(PUBHTML);
 
@@ -423,6 +430,7 @@
     const email = (mainInfo.email||DEFAULT_EMAIL).trim();
     setTopContact(phone, email);
     setContactSection(phone, email);
+    enhanceContactLinks();
 
     // Skills pills
     const skills = (mainInfo.skills||'').split('|').map(s=>s.trim()).filter(Boolean);
@@ -594,6 +602,35 @@
     document.addEventListener('mouseover', e => { if (isInteractive(e.target)) trigger(); }, {passive:true});
     document.addEventListener('click',    e => { if (isInteractive(e.target)) trigger(); }, {passive:true});
   })();
+    
+  <script>
+  // Enhance tel/mailto: mobile = open; desktop = copy
+  function enhanceContactLinks(){
+    const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const scope = [document.getElementById('topContact'), document.getElementById('contactInfo')].filter(Boolean);
+    const showToast = (text, x, y)=>{
+      const t=document.createElement('div'); t.className='toast'; t.textContent=text; document.body.appendChild(t);
+      const px = Math.min(window.innerWidth-160, Math.max(12, x|| (window.innerWidth-160)/2));
+      const py = Math.min(window.innerHeight-60, Math.max(8, y|| 18));
+      t.style.left = px+'px'; t.style.top = py+'px';
+      requestAnimationFrame(()=> t.classList.add('show'));
+      setTimeout(()=>{ t.classList.remove('show'); setTimeout(()=>t.remove(),180); }, 1100);
+    };
+    scope.forEach(root=>{
+      root.querySelectorAll('a[href^="tel:"], a[href^="mailto:"]').forEach(a=>{
+        a.addEventListener('click', e=>{
+          if (isMobile) return; // Let phones open dialer/mail
+          e.preventDefault();
+          const text = a.textContent.trim();
+          navigator.clipboard?.writeText(text).then(()=>{
+            showToast('Copied: '+text, e.clientX, e.clientY);
+          }).catch(()=>{
+            showToast(text, e.clientX, e.clientY);
+          });
+        }, {passive:false});
+      });
+    });
+  }
   </script>
 </body>
 </html>
