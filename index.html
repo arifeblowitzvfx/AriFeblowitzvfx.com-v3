@@ -383,7 +383,7 @@ function setStatus(msg){ if(sysStatus) sysStatus.textContent = msg; }
   $('#btnYouTube').href= mainInfo.youtube_url || '#';
   $('#btnLinks').href  = mainInfo.all_links_url || '#';
   if (mainInfo.news_url) $('#btnNews').href = mainInfo.news_url; else $('#btnNews').style.display='none';
-  $1
+  if (mainInfo.resume_url) $('#btnResume').href = mainInfo.resume_url;
   setStatus('Data stream acquired.');
 
   // Reel: accept YouTube ID/URL, Vimeo URL/ID, or full iframe embed
