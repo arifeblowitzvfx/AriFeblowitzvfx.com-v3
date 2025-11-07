@@ -337,17 +337,38 @@
       return img;
     }
 
-    function buildBanner(){
-      const tiles = (CONFIG.knownFor||[]).length ? CONFIG.knownFor : [ { title:"Add posters via CONFIG", posters:[placeholderTile()], url:'#' } ];
-      const mk = t => {
-        const a = document.createElement('a'); a.className='tile'; a.href=t.url||'#'; a.target='_blank'; a.rel='noopener'; a.setAttribute('data-title', t.title||'');
-        a.appendChild(mkPosterImg(t.posters||[]));
-        return a;
-      };
-      trackA.innerHTML = ''; trackB.innerHTML = '';
-      tiles.forEach(t=> trackA.appendChild(mk(t)));
-      tiles.forEach(t=> trackB.appendChild(mk(t))); // duplicate set for seamless -50% scroll
-    }
+    function ytThumb(id){ return `https://img.youtube.com/vi/${id}/hqdefault.jpg`; }
+
+function buildBanner(){
+  // Build banner tiles from PRO posters + PERSONAL video thumbnails
+  const pro = (CONFIG.proProjects||[]).flatMap(p => {
+    const posters = Array.isArray(p.posters)? p.posters.filter(Boolean) : [];
+    return posters.map(src => ({ title:p.title, img:src, url:p.url||'#' }));
+  });
+  const personal = (CONFIG.personalProjects||[]).map(v => ({
+    title: v.title,
+    img: ytThumb(v.videoId),
+    url: `https://www.youtube.com/watch?v=${v.videoId}`
+  }));
+
+  const tiles = [...pro, ...personal];
+  const mk = t => {
+    const a = document.createElement('a'); a.className='tile'; a.href=t.url||'#'; a.target='_blank'; a.rel='noopener'; a.setAttribute('data-title', t.title||'');
+    a.appendChild(mkPosterImg([t.img]));
+    return a;
+  };
+  trackA.innerHTML = ''; trackB.innerHTML = '';
+  if (!tiles.length){
+    // fallback placeholder tile so rail height remains
+    const a = document.createElement('a'); a.className='tile'; a.href='#'; a.setAttribute('data-title','Add posters/videos in CONFIG');
+    a.appendChild(mkPosterImg([placeholderTile()]));
+    trackA.appendChild(a.cloneNode(true));
+    trackB.appendChild(a.cloneNode(true));
+    return;
+  }
+  tiles.forEach(t=> trackA.appendChild(mk(t)));
+  tiles.forEach(t=> trackB.appendChild(mk(t))); // duplicate for seamless -50% scroll
+}
 
     // Project grids (with poster fallbacks)
     function renderGrid(el, arr){
