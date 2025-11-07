@@ -83,7 +83,7 @@
     .badges{display:flex; flex-wrap:wrap; gap:clamp(8px,1vw,12px); margin-top:clamp(8px,1vw,12px)}
     .btn{--b:rgba(66,255,209,.18); display:inline-flex; align-items:center; gap:.5em; border:1px solid var(--b); background:linear-gradient(180deg, rgba(66,255,209,.09), rgba(66,255,209,0)); padding:.65em 1em; border-radius:12px; color:var(--txt); cursor:pointer; font-weight:700}
     .btn:hover{border-color:var(--accent); box-shadow:0 0 0 1px rgba(0,255,156,.15) inset}
-    .btn.primary{background:linear-gradient(180deg, rgba(0,255,156,.28), rgba(0,255,156,.12)); color:#07251a; text-shadow:0 1px 0 rgba(255,255,255,.35)} /* brighter text for résumé */
+    .btn.primary{background:linear-gradient(180deg, rgba(0,255,156,.28), rgba(0,255,156,.12)); color:#eafff6; text-shadow:0 1px 0 rgba(0,0,0,.6); font-weight:800} /* brighter text for résumé */
 
     section{display:none}
     section.active{display:block}
@@ -135,11 +135,20 @@
             <iframe id="reelFrame" src="" title="Ari Feblowitz — Demo Reel" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
           </div>
           <div class="badges">
-            <a id="btnIMDb" class="btn" href="#" target="_blank" rel="noopener">IMDb</a>
-            <a id="btnYouTube" class="btn" href="#" target="_blank" rel="noopener">YouTube</a>
-            <a id="btnLinks" class="btn" href="#" target="_blank" rel="noopener">All My Links</a>
-            <a id="btnResume" class="btn primary" href="#" download>Download Résumé</a>
-            <a id="btnNews" class="btn" href="#" target="_blank" rel="noopener">Ari in the News</a>
+            <span class="pill">Motion Control</span>
+            <span class="pill">Unreal Engine</span>
+            <span class="pill">Maya</span>
+            <span class="pill">Shot Design</span>
+          </div>
+          <div class="badges">
+            <span class="pill">Virtual Production</span>
+            <span class="pill">On‑Set Techvis</span>
+            <span class="pill">Cyclops VP</span>
+            <span class="pill">Technodolly</span>
+            <span class="pill">Spidercam</span>
+            <span class="pill">Sequencer</span>
+            <span class="pill">Maya Python</span>
+            <span class="pill">Camera Planning</span>
           </div>
         </div>
         <div class="card pad">
@@ -217,21 +226,43 @@
         { title:"Ant-Man and the Wasp", posters:[
           "https://upload.wikimedia.org/wikipedia/en/2/2c/Ant-Man_and_the_Wasp_poster.jpg"
         ], url:"https://www.imdb.com/title/tt5095030/" }
+      ], url:"https://www.imdb.com/title/tt1630029/" },
+        { title:"Avengers: Endgame", posters:[
+          "https://upload.wikimedia.org/wikipedia/en/0/0d/Avengers_Endgame_poster.jpg"
+        ], url:"https://www.imdb.com/title/tt4154796/" },
+        { title:"Guardians of the Galaxy Vol. 3", posters:[
+          "https://upload.wikimedia.org/wikipedia/en/5/50/Guardians_of_the_Galaxy_Vol._3_poster.jpg",
+          "https://upload.wikimedia.org/wikipedia/en/4/4f/Guardians_of_the_Galaxy_Vol._3_teaser_poster.jpg"
+        ], url:"https://www.imdb.com/title/tt6791350/" },
+        { title:"Twisters", posters:[
+          "https://upload.wikimedia.org/wikipedia/en/8/8f/Twisters_film_poster.jpg"
+        ], url:"https://www.imdb.com/title/tt12584954/" },
+        { title:"The Mandalorian (TV)", posters:[
+          "https://upload.wikimedia.org/wikipedia/en/c/c5/The_Mandalorian_season_2_poster.jpg",
+          "https://upload.wikimedia.org/wikipedia/en/c/c4/The_Mandalorian_season_3_poster.jpg"
+        ], url:"https://www.imdb.com/title/tt8111088/" },
+        { title:"Ant-Man and the Wasp", posters:[
+          "https://upload.wikimedia.org/wikipedia/en/2/2c/Ant-Man_and_the_Wasp_poster.jpg"
+        ], url:"https://www.imdb.com/title/tt5095030/" }
       ],
 
       // Professional — newest/high-profile first (you can expand freely)
       proProjects: [
         { title:"Predator: Badlands (TBA)", role:"Visualization", posters:[
-          "https://upload.wikimedia.org/wikipedia/en/9/90/Predator_Badlands_Poster.jpg"
+          "https://upload.wikimedia.org/wikipedia/en/9/90/Predator_Badlands_Poster.jpg",
+          "https://upload.wikimedia.org/wikipedia/en/9/9b/Predator_%281987%29_poster.jpg"
         ], url:"https://www.imdb.com/title/tt31227572/" },
         { title:"Fantastic Four — First Steps (Pre-Prod)", role:"Visualization / Techvis", posters:[
-          "https://upload.wikimedia.org/wikipedia/commons/2/2f/Fantastic_Four_text_logo.svg"
+          "https://upload.wikimedia.org/wikipedia/commons/2/2f/Fantastic_Four_text_logo.svg",
+          "https://upload.wikimedia.org/wikipedia/commons/0/0c/Marvel_Studios_2016_logo.svg"
         ], url:"#" },
         { title:"Avatar: Fire and Ash", role:"Virtual Production / Motion control co-Supervisor", posters:[
-          "https://upload.wikimedia.org/wikipedia/en/8/81/Avatar_3_logo.jpg"
+          "https://upload.wikimedia.org/wikipedia/en/8/81/Avatar_3_logo.jpg",
+          "https://upload.wikimedia.org/wikipedia/en/2/2c/Avatar_The_Way_of_Water_poster.jpg"
         ], url:"https://www.imdb.com/title/tt1757678/" },
         { title:"Star Wars: Skeleton Crew (2023)", role:"On Set Techvis Supervisor", posters:[
-          "https://upload.wikimedia.org/wikipedia/en/5/5f/Skeleton_Crew_logo.jpg"
+          "https://upload.wikimedia.org/wikipedia/en/5/5f/Skeleton_Crew_logo.jpg",
+          "https://upload.wikimedia.org/wikipedia/commons/6/6c/Star_Wars_Logo.svg"
         ], url:"https://www.imdb.com/title/tt13918776/" },
         { title:"Shazam! Fury of the Gods (2023)", role:"On Set Virtual Production with Cyclops and Techvis", posters:[
           "https://upload.wikimedia.org/wikipedia/en/1/1a/Shazam!_Fury_of_the_Gods_poster.jpg"
@@ -256,24 +287,52 @@
           "https://upload.wikimedia.org/wikipedia/en/c/c5/The_Mandalorian_season_2_poster.jpg",
           "https://upload.wikimedia.org/wikipedia/en/c/c4/The_Mandalorian_season_3_poster.jpg"
         ], url:"https://www.imdb.com/title/tt8111088/" }
+      ], url:"https://www.imdb.com/title/tt31227572/" },
+        { title:"Fantastic Four — First Steps (Pre-Prod)", role:"Visualization / Techvis", posters:[
+          "https://upload.wikimedia.org/wikipedia/commons/2/2f/Fantastic_Four_text_logo.svg"
+        ], url:"#" },
+        { title:"Avatar 3 (Working Title)", role:"Virtual Production / Techvis", posters:[
+          "https://upload.wikimedia.org/wikipedia/en/8/81/Avatar_3_logo.jpg"
+        ], url:"https://www.imdb.com/title/tt1757678/" },
+        { title:"Star Wars: Skeleton Crew (2023)", role:"Visualization", posters:[
+          "https://upload.wikimedia.org/wikipedia/en/5/5f/Skeleton_Crew_logo.jpg"
+        ], url:"https://www.imdb.com/title/tt13918776/" },
+        { title:"Shazam! Fury of the Gods (2023)", role:"Visualization", posters:[
+          "https://upload.wikimedia.org/wikipedia/en/1/1a/Shazam!_Fury_of_the_Gods_poster.jpg"
+        ], url:"https://www.imdb.com/title/tt10151854/" },
+        { title:"Guardians of the Galaxy Vol. 3 (2023)", role:"Visualization", posters:[
+          "https://upload.wikimedia.org/wikipedia/en/5/50/Guardians_of_the_Galaxy_Vol._3_poster.jpg",
+          "https://upload.wikimedia.org/wikipedia/en/4/4f/Guardians_of_the_Galaxy_Vol._3_teaser_poster.jpg"
+        ], url:"https://www.imdb.com/title/tt6791350/" },
+        { title:"Twisters (2024)", role:"Visualization", posters:[
+          "https://upload.wikimedia.org/wikipedia/en/8/8f/Twisters_film_poster.jpg"
+        ], url:"https://www.imdb.com/title/tt12584954/" },
+        { title:"Avatar: The Way of Water (2022)", role:"Virtual Production / Techvis / Motion Control — On-Set", posters:[
+          "https://upload.wikimedia.org/wikipedia/en/2/2c/Avatar_The_Way_of_Water_poster.jpg"
+        ], url:"https://www.imdb.com/title/tt1630029/" },
+        { title:"Avengers: Endgame (2019)", role:"Techvis / Previs — On-Set", posters:[
+          "https://upload.wikimedia.org/wikipedia/en/0/0d/Avengers_Endgame_poster.jpg"
+        ], url:"https://www.imdb.com/title/tt4154796/" },
+        { title:"Ant-Man and the Wasp (2018)", role:"Techvis — On-Set; scale & motion planning", posters:[
+          "https://upload.wikimedia.org/wikipedia/en/2/2c/Ant-Man_and_the_Wasp_poster.jpg"
+        ], url:"https://www.imdb.com/title/tt5095030/" },
+        { title:"The Mandalorian (TV)", role:"Virtual Production / Visualization — On-Set", posters:[
+          "https://upload.wikimedia.org/wikipedia/en/c/c5/The_Mandalorian_season_2_poster.jpg",
+          "https://upload.wikimedia.org/wikipedia/en/c/c4/The_Mandalorian_season_3_poster.jpg"
+        ], url:"https://www.imdb.com/title/tt8111088/" }
       ],
 
       // Personal — manual curation (Shorts excluded)
       personalProjects: [
-        { title:"Deadpool vs Alien vs Terminator", role:"Animated Fan Parody (Unreal) — viral hit", videoId:"7YIVcQLS9Cw" }, 
+        { title:"Deadpool vs Alien vs Terminator", role:"Animated Fan Parody (Unreal) — viral hit", videoId:"7YIVcQLS9Cw" },
         { title:"Alien vs Terminator", role:"Animated Fan Parody (Unreal) — viral hit", videoId:"HtgCTlpi47s" },
-        { title:"Pumpkin Smashers", role:"Animated Short (Unreal). Award-Winning — Chicago Horror Film Fest: Best Animation.", videoId:"q_MFAiCeWUk" }
+        { title:"Pumpkin Smashers", role:"Animated Short (Unreal). Award-Winning — Chicago Horror Film Fest: Best Animation.", videoId:"q_MFAiCeWUk" },
         { title:"Siren Vs Syren — Siren Tales", role:"Animated Short (Unreal)", videoId:"W5PPhhmMw_g" },
         { title:"Rusalky — Ukrainian Sirens vs Russian Soldiers", role:"Animated Short (Unreal)", videoId:"Jvd-ZTLviOc" },
         { title:"Krampus Night — Animated Christmas Horror Short", role:"Animated Short (Unreal)", videoId:"psCIvWKpHnU" },
-        { title:"Siren Tales — Trailer", role:"Series Trailer", videoId:"1OazLvklmdE" }, 
+        { title:"Siren Tales — Trailer", role:"Series Trailer", videoId:"1OazLvklmdE" },
         { title:"Spirits of Lake Minnetonka — Trailer", role:"Series Trailer", videoId:"Z-UX4szq2LI" },
-        { title:"Jurassic Park in Real Life with AR! | Reverse Virtual Production with Cyclops", role:"Reverse Virtual Production", videoId:"yxAMZs1wERQ" }, 
-        { title:"Gary Feblowitz - A Photojournalist and Fathers life works Tribute / Memorial compilation", role:"Digitized/Edited Memorial video of My Dads lifes works", videoId:"yxAMZs1wERQ" },
-          
-          
-        // Add your Cyclops VP piece here when ready:
-        // { title:"Jurassic Park in Real Life | Reverse Virtual Production with Cyclops", role:"VP Test / Breakdown", videoId:"REPLACE_WITH_ID" }
+        { title:"Jurassic Park in Real Life with AR! | Reverse Virtual Production with Cyclops", role:"Reverse Virtual Production", videoId:"yxAMZs1wERQ" }
       ]
     };
 
