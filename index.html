@@ -29,7 +29,7 @@
     font:clamp(15px, 1.1vw, 18px)/1.65 Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
     overflow-y:overlay; letter-spacing:.15px; min-height:100svh;
   }
-  /* CRT scanlines + subtle flicker */
+  /* CRT scanlines + subtle flicker (base) */
   body::after{content:""; position:fixed; inset:0; pointer-events:none;
     background-image:repeating-linear-gradient(to bottom, rgba(66,255,209,.07), rgba(66,255,209,.07) 1px, transparent 2px, transparent 3px);
     mix-blend-mode:soft-light; opacity:.42; z-index:0; animation:scan 18s linear infinite}
@@ -62,7 +62,8 @@
   .wrap{max-width:min(1200px, 92vw); margin:0 auto; padding:clamp(16px,2vw,28px); position:relative; z-index:1}
   .nav{display:flex; gap:clamp(8px,1vw,12px); align-items:center; justify-content:space-between; flex-wrap:wrap; margin:clamp(6px,.8vw,10px) 0}
   .brand{display:flex; gap:clamp(10px,1.2vw,14px); align-items:center}
-  .brand .dot{width:clamp(10px,1vw,14px); height:clamp(10px,1vw,14px); border-radius:50%; background:radial-gradient(circle at 30% 30%, var(--accent), #0f4630 70%); box-shadow:0 0 18px var(--accent)}
+  .brand .dot{width:clamp(10px,1vw,14px); height:clamp(10px,1vw,14px); border-radius:50%;
+    background:radial-gradient(circle at 30% 30%, var(--accent), #0f4630 70%); box-shadow:0 0 18px var(--accent)}
   .brand h1{margin:0; font-weight:800; font-size:clamp(18px,2.2vw,28px); letter-spacing:.12em; text-transform:uppercase; color:#d9fff1}
   .pill{border:1px dashed rgba(66,255,209,.35); border-radius:999px; padding:.4em .8em; font-size:clamp(11px,1vw,12px); color:var(--muted)}
   .tabs{display:flex; gap:clamp(6px,.8vw,10px); flex-wrap:wrap}
@@ -104,6 +105,38 @@
 
   details.summaryless > summary{list-style:none}
   details.summaryless > summary::-webkit-details-marker{display:none}
+
+  /* === UPGRADED GLOW/CRT EFFECTS (override base) === */
+  /* Stronger scanlines + gentle global glow pulse */
+  body::after{
+    background-image:repeating-linear-gradient(
+      to bottom,
+      rgba(66,255,209,.12), rgba(66,255,209,.12) 2px,
+      transparent 3px, transparent 6px
+    );
+    opacity:.6;
+    animation:scan 18s linear infinite, glowPulse 8s ease-in-out infinite;
+  }
+  @keyframes glowPulse{0%,100%{opacity:.55}50%{opacity:.85}}
+
+  /* Soft radial “monitor” bloom layer */
+  body::before{
+    content:""; position:fixed; inset:0; pointer-events:none;
+    background:radial-gradient(70% 55% at 50% 45%, rgba(0,255,156,.08), transparent 60%);
+    filter:blur(2px); z-index:0; opacity:.8; animation:glowPulse 8s ease-in-out infinite;
+  }
+
+  /* Subtle green text glow on key UI */
+  h1,h2,h3,.title,.pill,.tab-btn,.btn,.role, footer{
+    text-shadow:0 0 6px rgba(0,255,156,.18), 0 0 12px rgba(0,255,156,.1);
+  }
+
+  /* Brand dot: blink + breathe */
+  .brand .dot{
+    animation:blink 7s infinite steps(120), breathe 5s ease-in-out infinite;
+  }
+  @keyframes blink{0%,97%,100%{opacity:1}98%{opacity:.3}99%{opacity:.75}}
+  @keyframes breathe{0%,100%{box-shadow:0 0 14px rgba(0,255,156,.8)}50%{box-shadow:0 0 22px rgba(0,255,156,1)}}
 </style>
 </head>
 <body>
@@ -123,6 +156,7 @@
         <div class="dot flicker" aria-hidden="true"></div>
         <h1 id="siteTitle">Ariel (Ari) Feblowitz</h1>
         <span id="siteSubtitle" class="pill">Techvis & Virtual Production Supervisor</span>
+        <span id="sysStatus" class="pill">Initializing: Weyland Yutani–Cyberdyne link…</span>
       </div>
       <div class="tabs" role="tablist" aria-label="Sections">
         <button class="tab-btn active" data-tab="home" role="tab" aria-selected="true">Home</button>
@@ -208,7 +242,7 @@
       </div>
     </section>
 
-    <footer class="muted">© <span id="year"></span> Ariel (Ari) Feblowitz • Live‑linked to Skynet • Theme: Tech‑Noir</footer>
+    <footer class="muted">© <span id="year"></span> Ariel (Ari) Feblowitz • WY–Cyberdyne Systems in compliance with Weyland Yutani Mother Ai - Hosted from Skynet • Theme: Tech-Noir</footer>
   </div>
 
 <script>
@@ -325,7 +359,7 @@ $('#bnPrev').addEventListener('click', ()=>{ rail.scrollLeft -= 260; });
 $('#bnNext').addEventListener('click', ()=>{ rail.scrollLeft += 260; });
 
 /**********************
-  TABS + YEAR
+  TABS + YEAR + STATUS
 ***********************/
 $$('.tab-btn').forEach(btn=>{
   btn.addEventListener('click', ()=>{
@@ -336,10 +370,16 @@ $$('.tab-btn').forEach(btn=>{
 });
 $('#year').textContent = new Date().getFullYear();
 
+// status pill helper
+const sysStatus = document.getElementById('sysStatus');
+function setStatus(msg){ if(sysStatus) sysStatus.textContent = msg; }
+
 /**********************
   LOAD + RENDER
 ***********************/
 (async function init(){
+  setStatus('Routing request to MOTHER…');
+
   // Discover GIDs
   const gids = await discoverGids(PUBHTML);
 
@@ -371,13 +411,14 @@ $('#year').textContent = new Date().getFullYear();
   if (mainInfo.news_url) $('#btnNews').href = mainInfo.news_url; else $('#btnNews').style.display='none';
   if (mainInfo.resume_url) $('#btnResume').href = mainInfo.resume_url;
 
+  setStatus('Data stream acquired.');
+
   // Reel: accept YouTube ID/URL, Vimeo URL/ID, or full iframe embed
   const reelInput = (mainInfo.reel_youtube_id||'').trim();
   const reelFrame = $('#reelFrame');
   const reelBox = $('#reelBox');
   function setIframe(src){ reelFrame.src = src; }
   if (/^\s*<iframe/i.test(reelInput)){
-    // Treat as full embed code: inject safely inside box
     reelBox.innerHTML = reelInput;
   } else if (/vimeo\.com\/(?:video\/)?(\d+)/i.test(reelInput)){
     const id = reelInput.match(/vimeo\.com\/(?:video\/)?(\d+)/i)[1];
@@ -385,7 +426,6 @@ $('#year').textContent = new Date().getFullYear();
   } else if (/^\d{7,}$/.test(reelInput)){
     setIframe(`https://player.vimeo.com/video/${reelInput}?badge=0&autopause=0&title=0&byline=0`);
   } else if (/youtu(?:\.be|be\.com)\/.+/.test(reelInput)){
-    // URL; pull the ID
     const m = reelInput.match(/[?&]v=([\w-]{6,})/) || reelInput.match(/youtu\.be\/([\w-]{6,})/);
     const id = m? m[1] : '';
     if (id) setIframe(`https://www.youtube.com/embed/${id}?rel=0&modestbranding=1`);
@@ -520,6 +560,8 @@ $('#year').textContent = new Date().getFullYear();
     $('#febzLink').href = `https://www.youtube.com/watch?v=${febzId}`;
     const img=$('#febzThumb'); img.src = ytMax(febzId); img.addEventListener('error', ()=> img.src=ytThumb(febzId), {once:true});
   }
+
+  setStatus('Link established');
 })();
 </script>
 </body>
