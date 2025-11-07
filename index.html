@@ -1,113 +1,118 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Ariel (Ari) Feblowitz — Portfolio</title>
-  <meta name="description" content="Ariel (Ari) Feblowitz — Techvis & Virtual Production Supervisor / Previs-Postvis Artist. Demo reel, credits, projects, and links." />
-  <meta property="og:title" content="Ariel (Ari) Feblowitz — Portfolio" />
-  <meta property="og:description" content="Techvis & Virtual Production Supervisor. Demo reel, IMDb credits, projects, and links." />
-  <meta property="og:type" content="website" />
-  <meta name="theme-color" content="#0c0f12" />
-  <style>
-    :root{
-      --bg:#0b0f11; --panel:#020405; --card:#05090b; --txt:#9fffcf; --muted:#74cdaa;
-      --accent:#00ff9c; --accent-2:#42ffd1; --grid:clamp(14px,1.8vw,24px);
-      --radius:18px; --shadow:0 14px 40px rgba(0,0,0,.45); --scanOpacity:.35;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{margin:0; color:var(--txt);
-      background:
-        radial-gradient(1200px 700px at 20% -10%, #122e29 0%, transparent 60%),
-        radial-gradient(1000px 600px at 120% 10%, #142027 0%, transparent 60%),
-        linear-gradient(#080b0e, var(--bg) 40%);
-      font:clamp(15px,1.1vw,18px)/1.65 Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-      overflow-y:overlay; letter-spacing:.15px; min-height:100svh;
-    }
-    /* animated CRT scanlines */
-    body::after{content:""; position:fixed; inset:0; pointer-events:none;
-      background-image:repeating-linear-gradient(to bottom,
-        rgba(66,255,209,var(--scanOpacity)), rgba(66,255,209,var(--scanOpacity)) 1px,
-        transparent 2px, transparent 3px);
-      mix-blend-mode:soft-light; opacity:1; z-index:0; animation:scanMove 40s linear infinite;
-    }
-    @keyframes scanMove{from{background-position-y:0} to{background-position-y:-300px}}
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Ariel (Ari) Feblowitz — Portfolio</title>
+<meta name="description" content="Ariel (Ari) Feblowitz — Techvis & Virtual Production Supervisor / Previs-Postvis Artist. Demo reel, credits, projects, and links." />
+<meta property="og:title" content="Ariel (Ari) Feblowitz — Portfolio" />
+<meta property="og:description" content="Techvis & Virtual Production Supervisor. Demo reel, IMDb credits, projects, and links." />
+<meta property="og:type" content="website" />
+<meta name="theme-color" content="#0c0f12" />
+<style>
+  :root{
+    --bg:#0b0f11; --panel:#020405; --card:#05090b; --txt:#9fffcf; --muted:#74cdaa;
+    --accent:#00ff9c; --accent-2:#42ffd1; --grid:clamp(14px, 1.8vw, 24px);
+    --radius:18px; --shadow:0 14px 40px rgba(0,0,0,.45);
+    --tileH: clamp(120px, 14vw, 220px); /* uniform height */
+    --tileGap: clamp(10px,1.2vw,16px);
+    --speed: 55; /* px/sec */
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; color:var(--txt);
+    background:
+      radial-gradient(1200px 700px at 20% -10%, #123329 0%, transparent 60%),
+      radial-gradient(1000px 600px at 120% 10%, #142027 0%, transparent 60%),
+      linear-gradient(#080b0e, var(--bg) 40%);
+    font:clamp(15px, 1.1vw, 18px)/1.65 Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    overflow-y:overlay; letter-spacing:.15px; min-height:100svh;
+  }
+  /* CRT scanlines + subtle flicker */
+  body::after{content:""; position:fixed; inset:0; pointer-events:none;
+    background-image:repeating-linear-gradient(to bottom, rgba(66,255,209,.07), rgba(66,255,209,.07) 1px, transparent 2px, transparent 3px);
+    mix-blend-mode:soft-light; opacity:.42; z-index:0; animation:scan 18s linear infinite}
+  @keyframes scan{0%{transform:translateY(0)} 100%{transform:translateY(-20px)}}
+  .flicker{animation:flicker 4.5s infinite steps(100)}
+  @keyframes flicker{0%, 100%{filter:drop-shadow(0 0 6px rgba(0,255,156,.35))} 50%{filter:drop-shadow(0 0 10px rgba(0,255,156,.6))}}
 
-    a{color:var(--accent); text-decoration:none}
-    a:hover{filter:brightness(1.18)}
+  a{color:var(--accent); text-decoration:none} a:hover{filter:brightness(1.18)}
 
-    /* Full-bleed, looping banner */
-    .banner{position:relative; width:100vw; left:50%; right:50%; margin-left:-50vw; margin-right:-50vw; padding:clamp(8px,1.2vw,14px) 0; z-index:1}
-    .banner .rail{height:clamp(110px,16vw,220px); position:relative; overflow:hidden; border-radius:clamp(10px,1.4vw,18px); background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0)); border:1px solid rgba(0,255,156,.15); box-shadow:var(--shadow)}
-    .marquee{position:absolute; inset:0; display:flex; align-items:center; gap:clamp(10px,1.2vw,16px); animation:scrollX 42s linear infinite; will-change:transform}
-    .rail:hover .marquee{animation-play-state:paused}
-    @keyframes scrollX{from{transform:translateX(0)} to{transform:translateX(-50%)}}
-    .track{display:flex; align-items:center; flex-wrap:nowrap}
-    .tile{flex:0 0 auto; height:calc(100% - clamp(8px,1vw,12px)); aspect-ratio:16/9; position:relative; border-radius:clamp(8px,1vw,14px); overflow:hidden; background:#0b1414; border:1px solid rgba(66,255,209,.18)}
-    .tile.poster{aspect-ratio:2/3}
-    .tile img{height:100%; width:100%; object-fit:cover; display:block}
-    .tile::after{content:attr(data-title); position:absolute; left:0; right:0; bottom:0; font-size:clamp(10px,.9vw,12px); padding:.45em .6em; color:#caffec; background:linear-gradient(180deg, transparent, rgba(0,0,0,.75)); text-shadow:0 1px 2px rgba(0,0,0,.55)}
+  /* Banner */
+  .banner{position:relative; width:100vw; left:50%; right:50%; margin-left:-50vw; margin-right:-50vw; padding:clamp(8px,1.2vw,14px) 0; z-index:1}
+  .rail{height:calc(var(--tileH) + 10px); position:relative; overflow:hidden; border-radius:clamp(10px,1.4vw,18px);
+    background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0)); border:1px solid rgba(0,255,156,.18); box-shadow:var(--shadow)}
+  .rail .scroll{height:100%; display:flex; align-items:center; gap:var(--tileGap); padding:8px; will-change:transform}
+  .tile{flex:0 0 auto; height:var(--tileH); position:relative; border-radius:clamp(8px,1vw,14px);
+    overflow:hidden; background:#0b1414; border:1px solid rgba(66,255,209,.18)}
+  .tile img{height:100%; width:100%; object-fit:cover; object-position:center; display:block}
+  .tile::after{content:attr(data-title); position:absolute; left:0; right:0; bottom:0; font-size:clamp(10px,.9vw,12px);
+    padding:.45em .6em; color:#caffec; background:linear-gradient(180deg, transparent, rgba(0,0,0,.78)); text-shadow:0 1px 2px rgba(0,0,0,.55)}
+  /* variable widths by type */
+  .tile.poster{width:clamp(90px, 8.5vw, 160px)} /* tall + skinny */
+  .tile.wide{width:clamp(160px, 16vw, 320px)}    /* yt/thumbs */
 
-    .wrap{max-width:min(1200px,92vw); margin:0 auto; padding:clamp(16px,2vw,28px); position:relative; z-index:1}
+  /* Banner controls */
+  .banner .ctrl{position:absolute; top:50%; translate:0 -50%; z-index:2; display:grid; place-items:center}
+  .banner .prev{left:10px} .banner .next{right:10px}
+  .ctrl button{cursor:pointer; border:1px solid rgba(66,255,209,.25); background:rgba(4,10,10,.6); color:var(--txt); border-radius:12px; padding:.5em .7em; backdrop-filter:blur(4px)}
+  .ctrl button:hover{border-color:var(--accent)}
 
-    .nav{display:flex; gap:clamp(8px,1vw,12px); align-items:center; justify-content:space-between; flex-wrap:wrap; margin:clamp(6px,.8vw,10px) 0}
-    .brand{display:flex; gap:clamp(10px,1.2vw,14px); align-items:center}
-    .brand .dot{width:clamp(10px,1vw,14px); height:clamp(10px,1vw,14px); border-radius:50%; background:radial-gradient(circle at 30% 30%, var(--accent), #0f4630 70%); box-shadow:0 0 10px var(--accent), 0 0 20px rgba(0,255,156,.35); animation:dotGlow 3.6s ease-in-out infinite alternate}
-    @keyframes dotGlow{from{box-shadow:0 0 6px var(--accent), 0 0 14px rgba(0,255,156,.25)} to{box-shadow:0 0 14px var(--accent), 0 0 28px rgba(0,255,156,.5)}}
-    .brand h1{margin:0; font-weight:800; font-size:clamp(18px,2.2vw,28px); letter-spacing:.12em; text-transform:uppercase; color:#d9fff1}
-    .pill{border:1px dashed rgba(66,255,209,.35); border-radius:999px; padding:.4em .8em; font-size:clamp(11px,1vw,12px); color:var(--muted)}
+  .wrap{max-width:min(1200px, 92vw); margin:0 auto; padding:clamp(16px,2vw,28px); position:relative; z-index:1}
+  .nav{display:flex; gap:clamp(8px,1vw,12px); align-items:center; justify-content:space-between; flex-wrap:wrap; margin:clamp(6px,.8vw,10px) 0}
+  .brand{display:flex; gap:clamp(10px,1.2vw,14px); align-items:center}
+  .brand .dot{width:clamp(10px,1vw,14px); height:clamp(10px,1vw,14px); border-radius:50%; background:radial-gradient(circle at 30% 30%, var(--accent), #0f4630 70%); box-shadow:0 0 18px var(--accent)}
+  .brand h1{margin:0; font-weight:800; font-size:clamp(18px,2.2vw,28px); letter-spacing:.12em; text-transform:uppercase; color:#d9fff1}
+  .pill{border:1px dashed rgba(66,255,209,.35); border-radius:999px; padding:.4em .8em; font-size:clamp(11px,1vw,12px); color:var(--muted)}
+  .tabs{display:flex; gap:clamp(6px,.8vw,10px); flex-wrap:wrap}
+  .tab-btn{padding:.6em .9em; border-radius:12px; background:var(--panel); color:var(--txt); border:1px solid rgba(66,255,209,.18); cursor:pointer; font-weight:600}
+  .tab-btn.active{outline:1px solid var(--accent); box-shadow:0 0 0 2px rgba(0,255,156,.12) inset}
+  .hero{margin:clamp(12px,1.6vw,20px) 0; display:grid; grid-template-columns:1.1fr .9fr; gap:var(--grid)}
+  @media (max-width:920px){ .hero{grid-template-columns:1fr} }
+  .card{background:var(--panel); border:1px solid rgba(66,255,209,.2); border-radius:var(--radius); box-shadow:var(--shadow)}
+  .pad{padding:clamp(14px,1.6vw,20px)}
+  .reel{position:relative; aspect-ratio:16/9; border-radius:14px; overflow:hidden; background:#000; border:1px solid rgba(66,255,209,.22)}
+  .reel iframe{position:absolute; inset:0; width:100%; height:100%}
+  .badges{display:flex; flex-wrap:wrap; gap:clamp(8px,1vw,12px); margin-top:clamp(8px,1vw,12px)}
+  .btn{--b:rgba(66,255,209,.18); display:inline-flex; align-items:center; gap:.5em; border:1px solid var(--b);
+    background:linear-gradient(180deg, rgba(66,255,209,.09), rgba(66,255,209,0)); padding:.65em 1em; border-radius:12px; color:var(--txt); cursor:pointer; font-weight:700}
+  .btn:hover{border-color:var(--accent); box-shadow:0 0 0 1px rgba(0,255,156,.15) inset}
+  .btn.primary{background:linear-gradient(180deg, rgba(0,255,156,.28), rgba(0,255,156,.12)); color:#eafff6; text-shadow:0 1px 0 rgba(0,0,0,.6); font-weight:800}
 
-    .tabs{display:flex; gap:clamp(6px,.8vw,10px); flex-wrap:wrap}
-    .tab-btn{padding:.6em .9em; border-radius:12px; background:var(--panel); color:var(--txt); border:1px solid rgba(66,255,209,.18); cursor:pointer; font-weight:600}
-    .tab-btn.active{outline:1px solid var(--accent); box-shadow:0 0 0 2px rgba(0,255,156,.12) inset}
+  section{display:none}
+  section.active{display:block}
 
-    .hero{margin:clamp(12px,1.6vw,20px) 0; display:grid; grid-template-columns:1.1fr .9fr; gap:var(--grid)}
-    @media (max-width:920px){ .hero{grid-template-columns:1fr} }
+  /* Grids */
+  .grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:var(--grid)}
+  @media (max-width:1000px){ .grid{grid-template-columns:repeat(2, 1fr)} }
+  @media (max-width:620px){ .grid{grid-template-columns:1fr} }
+  .proj{overflow:hidden}
+  .thumb{position:relative; aspect-ratio:16/9; overflow:hidden; border-radius:14px; border:1px solid rgba(66,255,209,.22)}
+  .thumb.poster{aspect-ratio:2/3} /* tall for Professional */
+  .thumb img{width:100%; height:100%; object-fit:cover; display:block}
+  .proj .meta{padding:.7em .9em 1em}
+  .proj .title{font-weight:800; color:#e2fff5}
+  .proj .role{color:var(--muted); font-size:.9em}
+  footer{opacity:.85; font-size:.9em; padding:clamp(28px,2.5vw,40px) 0 20px}
 
-    .card{background:var(--panel); border:1px solid rgba(66,255,209,.2); border-radius:var(--radius); box-shadow:var(--shadow)}
-    .pad{padding:clamp(14px,1.6vw,20px)}
+  /* Professional grid: 4 per row on desktop */
+  #professional .grid{grid-template-columns:repeat(4, 1fr)}
+  @media (max-width:1100px){ #professional .grid{grid-template-columns:repeat(3, 1fr)} }
+  @media (max-width:820px){ #professional .grid{grid-template-columns:repeat(2, 1fr)} }
+  @media (max-width:520px){ #professional .grid{grid-template-columns:1fr} }
 
-    .reel{position:relative; aspect-ratio:16/9; border-radius:14px; overflow:hidden; background:#000; border:1px solid rgba(66,255,209,.22)}
-    .reel iframe{position:absolute; inset:0; width:100%; height:100%}
-
-    .badges{display:flex; flex-wrap:wrap; gap:clamp(8px,1vw,12px); margin-top:clamp(8px,1vw,12px)}
-    .btn{--b:rgba(66,255,209,.18); display:inline-flex; align-items:center; gap:.5em; border:1px solid var(--b); background:linear-gradient(180deg, rgba(66,255,209,.09), rgba(66,255,209,0)); padding:.65em 1em; border-radius:12px; color:var(--txt); cursor:pointer; font-weight:700}
-    .btn:hover{border-color:var(--accent); box-shadow:0 0 0 1px rgba(0,255,156,.15) inset}
-    .btn.primary{background:linear-gradient(180deg, rgba(0,255,156,.28), rgba(0,255,156,.12)); color:#eafff6; text-shadow:0 1px 0 rgba(0,0,0,.6); font-weight:800}
-
-    section{display:none}
-    section.active{display:block}
-
-    /* Default grid */
-    .grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:var(--grid)}
-    @media (max-width:1000px){ .grid{grid-template-columns:repeat(2, 1fr)} }
-    @media (max-width:620px){ .grid{grid-template-columns:1fr} }
-    .proj{overflow:hidden}
-    .thumb{position:relative; aspect-ratio:16/9; overflow:hidden; border-radius:14px; border:1px solid rgba(66,255,209,.22)}
-    .thumb img{width:100%; height:100%; object-fit:cover; display:block}
-    .proj .meta{padding:.7em .9em 1em}
-    .proj .title{font-weight:800; color:#e2fff5}
-    .proj .role{color:var(--muted); font-size:.9em}
-
-    /* Professional: portrait posters + 4-up */
-    #professional .grid{grid-template-columns:repeat(4,1fr)}
-    #professional .thumb{aspect-ratio:2/3}
-    @media (max-width:1100px){ #professional .grid{grid-template-columns:repeat(3,1fr)} }
-    @media (max-width:820px){ #professional .grid{grid-template-columns:repeat(2,1fr)} }
-    @media (max-width:520px){ #professional .grid{grid-template-columns:1fr} }
-
-    footer{opacity:.85; font-size:.9em; padding:clamp(28px,2.5vw,40px) 0 20px}
-  </style>
+  details.summaryless > summary{list-style:none}
+  details.summaryless > summary::-webkit-details-marker{display:none}
+</style>
 </head>
 <body>
-  <!-- FULL-BLEED BANNER (CSS marquee loop) -->
+  <!-- Banner -->
   <div class="banner">
-    <div class="rail card">
-      <div class="marquee" aria-label="Professional & Personal">
-        <div class="track" id="trackA"></div>
-        <div class="track" id="trackB"></div>
-      </div>
+    <div class="ctrl prev"><button id="bnPrev" aria-label="Previous">◀</button></div>
+    <div class="ctrl next"><button id="bnNext" aria-label="Next">▶</button></div>
+    <div class="rail card" id="bannerRail" aria-label="Featured work carousel">
+      <div class="scroll" id="bannerScroll" role="list"></div>
     </div>
   </div>
 
@@ -115,13 +120,14 @@
     <!-- NAV -->
     <div class="nav">
       <div class="brand">
-        <div class="dot" aria-hidden="true"></div>
-        <h1>Ariel (Ari) Feblowitz</h1>
-        <span class="pill">Techvis & Virtual Production Supervisor</span>
+        <div class="dot flicker" aria-hidden="true"></div>
+        <h1 id="siteTitle">Ariel (Ari) Feblowitz</h1>
+        <span id="siteSubtitle" class="pill">Techvis & Virtual Production Supervisor</span>
       </div>
       <div class="tabs" role="tablist" aria-label="Sections">
         <button class="tab-btn active" data-tab="home" role="tab" aria-selected="true">Home</button>
         <button class="tab-btn" data-tab="professional" role="tab" aria-selected="false">Professional</button>
+        <button class="tab-btn" data-tab="rides" role="tab" aria-selected="false">Rides</button>
         <button class="tab-btn" data-tab="personal" role="tab" aria-selected="false">Personal</button>
       </div>
     </div>
@@ -131,7 +137,9 @@
       <div class="hero">
         <div class="card pad">
           <h2 style="margin:0 0 .6em">Demo Reel</h2>
-          <div class="reel"><iframe id="reelFrame" src="" title="Ari Feblowitz — Demo Reel" frameborder="0" allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" allowfullscreen></iframe></div>
+          <div class="reel" id="reelBox">
+            <iframe id="reelFrame" src="" title="Ari Feblowitz — Demo Reel" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+          </div>
           <div class="badges">
             <a id="btnIMDb" class="btn" href="#" target="_blank" rel="noopener">IMDb</a>
             <a id="btnYouTube" class="btn" href="#" target="_blank" rel="noopener">YouTube</a>
@@ -142,195 +150,377 @@
         </div>
         <div class="card pad">
           <h2 style="margin:0 0 .6em">About</h2>
-          <p>Bridging virtual and physical storytelling across techvis, previs/postvis, and virtual production. I translate complex sequences into precise, repeatable camera plans — trusted by directors, DPs, and VFX supervisors.</p>
-          <p class="muted">Credits include Avatar: The Way of Water, Avengers: Endgame, Ant-Man and the Wasp, Guardians of the Galaxy Vol. 3, Twisters, and more.</p>
-          <div class="badges">
-            <span class="pill">Motion Control</span>
-            <span class="pill">Unreal Engine</span>
-            <span class="pill">Maya</span>
-            <span class="pill">Shot Design</span>
-            <span class="pill">Virtual Production</span>
-            <span class="pill">On‑Set Techvis</span>
-            <span class="pill">Cyclops VP</span>
-            <span class="pill">Technodolly</span>
-            <span class="pill">Spydercam</span>
-            <span class="pill">Sequencer</span>
-            <span class="pill">Maya Python</span>
-            <span class="pill">Camera Planning</span>
-          </div>
+          <p id="about1">Dialing the matrix…</p>
+          <p id="about2" class="muted">Fetching details…</p>
+          <div id="skillsRow1" class="badges"></div>
+          <div id="skillsRow2" class="badges"></div>
         </div>
       </div>
     </section>
 
-    <!-- PROFESSIONAL PROJECTS -->
+    <!-- PROFESSIONAL -->
     <section id="professional" role="tabpanel">
       <div class="card pad">
         <div class="nav" style="gap:8px; justify-content:space-between; align-items:flex-end">
           <h2 style="margin:0">Professional Projects</h2>
-          <small class="muted">Examples of projects I worked on</small>
+          <small class="muted">Selected credits</small>
         </div>
         <div id="proGrid" class="grid"></div>
       </div>
     </section>
 
-    <!-- PERSONAL PROJECTS -->
+    <!-- RIDES -->
+    <section id="rides" role="tabpanel">
+      <div class="card pad">
+        <div class="nav" style="gap:8px; justify-content:space-between; align-items:flex-end">
+          <h2 style="margin:0">Rides</h2>
+          <small class="muted">Themed entertainment</small>
+        </div>
+        <div id="ridesGrid" class="grid"></div>
+      </div>
+    </section>
+
+    <!-- PERSONAL -->
     <section id="personal" role="tabpanel">
       <div class="card pad">
         <div class="nav" style="gap:8px; justify-content:space-between; align-items:flex-end">
           <h2 style="margin:0">Personal Projects</h2>
+          <small class="muted">Original shorts & experiments</small>
         </div>
         <div id="personalGrid" class="grid"></div>
+
+        <!-- Febz block -->
+        <div class="card pad" id="febzBox" style="margin-top:var(--grid); display:none">
+          <h3 style="margin-top:0"><span id="febzHeading"></span> <a href="https://www.youtube.com/@FebzFoundFootage" target="_blank" rel="noopener">@FebzFoundFootage</a></h3>
+          <a id="febzLink" href="#" target="_blank" rel="noopener" class="thumb" style="display:block; aspect-ratio:16/9;">
+            <img id="febzThumb" alt="FebzFoundFootage — Featured" style="width:100%; height:100%; object-fit:cover; display:block; border-radius:14px; border:1px solid rgba(66,255,209,.22)" />
+          </a>
+          <small id="febzBody" class="muted"></small>
+        </div>
+
+        <!-- Latest from YouTube (optional) -->
         <div class="card pad" id="latestBox" style="margin-top:var(--grid); display:none">
           <h3 style="margin-top:0">Latest from YouTube</h3>
-          <div class="reel" style="aspect-ratio:16/9"><iframe id="latestFrame" src="" title="YouTube uploads" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>
+          <div class="reel" style="aspect-ratio:16/9">
+            <iframe id="latestFrame" src="" title="YouTube uploads" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+          </div>
         </div>
-        <div class="muted" style="margin-top:1rem;font-size:.9em">Also archiving my father's documentary work: <a href="https://www.youtube.com/@FebzFoundFootage" target="_blank" rel="noopener">FebzFoundFootage</a>.</div>
       </div>
     </section>
 
-    <footer class="muted">© <span id="year"></span> Ariel (Ari) Feblowitz • Live‑linked to Skynet</footer>
+    <footer class="muted">© <span id="year"></span> Ariel (Ari) Feblowitz • Live‑linked to Skynet • Theme: Tech‑Noir</footer>
   </div>
 
-  <script>
-    /* =========================
-       CONFIG — EDIT THIS ONLY
-       ========================= */
-    const CONFIG = {
-      // Publish your Google Sheet and paste its URL (CSV or GVIZ JSON). Leave empty to skip.
-      sheetUrl: "",
+<script>
+/**********************
+  SHEET SETTINGS
+***********************/
+const PUBHTML = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQxBxTbb-Ax7rpnnn5zWDUW6fGq1nUGIEPJb5qfaxifqKyZexNLK28gwpQLS5T5vpeuSvZicAEg69U1/pubhtml";
+const TAB_MAP = {
+  // optional manual overrides per tab name
+};
 
-      // Fallbacks when sheet isn't available yet
-      reel: "REPLACE_WITH_YOUTUBE_ID_OR_VIMEO",
-      imdbUrl: "https://www.imdb.com/name/nm4409645/",
-      youtubeUrl: "https://www.youtube.com/@DirectorPsycho",
-      allLinksUrl: "https://linktr.ee/arielfeblowitz",
-      newsUrl: "https://www.youtube.com/watch?v=gM5H6vsGIcs",
-      resumeFile: "https://raw.githubusercontent.com/arifeblowitzvfx/AriFeblowitzvfx.com-v3/main/Ari_Feblowitz_Resume_2025.pdf",
+/**********************
+  UTILITIES
+***********************/
+const $ = (sel, el=document) => el.querySelector(sel);
+const $$ = (sel, el=document) => [...el.querySelectorAll(sel)];
+const ytThumb = id => `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
+const ytMax = id => `https://img.youtube.com/vi/${id}/maxresdefault.jpg`;
 
-      showLatestFromYouTube: true,
-      youtubeChannelId: "UC926CKBvQdno5vqAav7DKlg",
+function csvToObjects(csvText){
+  const rows = []; let field="", row=[], inQ=false;
+  for (let c of String(csvText||"").replace(/\r/g,'')){
+    if (c==='"'){ inQ = !inQ; field+=c; }
+    else if (c===',' && !inQ){ row.push(field.replace(/^"|"$/g,'').replace(/""/g,'"')); field=""; }
+    else if (c==='\n' && !inQ){ row.push(field.replace(/^"|"$/g,'').replace(/""/g,'"')); rows.push(row); row=[]; field=""; }
+    else field+=c;
+  }
+  if (field.length || row.length){ row.push(field.replace(/^"|"$/g,'').replace(/""/g,'"')); rows.push(row); }
+  if (!rows.length) return [];
+  const headers = rows[0].map(h=>h.trim());
+  return rows.slice(1).filter(r=>r.length>1).map(r=>{ const o={}; headers.forEach((h,i)=>o[h]=r[i]!==undefined?r[i]:""); return o; });
+}
+const normBool = v => String(v||"").trim().toLowerCase()==='true' || String(v||"").trim().toLowerCase()==='yes';
+const normNum  = v => { const n = Number(String(v||"").replace(/[^\d.-]/g,"")); return isNaN(n)?0:n; };
+const fixImdb  = url => (url||"").replace(/https?:\/\/pro\.imdb\.com/i,'https://www.imdb.com').replace(/\?ref_=pro.*$/,'');
+function buildCsvUrlFromGid(pubhtml, gid){ return pubhtml.replace(/\/pubhtml.*/, '/pub') + `?gid=${gid}&single=true&output=csv`; }
 
-      proProjects: [
-        { title:"Predator: Badlands (TBA)", posters:["https://upload.wikimedia.org/wikipedia/en/9/90/Predator_Badlands_Poster.jpg"], url:"https://www.imdb.com/title/tt31227572/" },
-        { title:"Fantastic Four — First Steps (Pre-Prod)", posters:["https://upload.wikimedia.org/wikipedia/commons/2/2f/Fantastic_Four_text_logo.svg"], url:"#" },
-        { title:"Avatar 3 — Fire and Ash", posters:["https://upload.wikimedia.org/wikipedia/en/8/81/Avatar_3_logo.jpg","https://upload.wikimedia.org/wikipedia/en/2/2c/Avatar_The_Way_of_Water_poster.jpg"], url:"https://www.imdb.com/title/tt1757678/" },
-        { title:"Star Wars: Skeleton Crew (2023)", posters:["https://upload.wikimedia.org/wikipedia/en/5/5f/Skeleton_Crew_logo.jpg"], url:"https://www.imdb.com/title/tt13918776/" },
-        { title:"Shazam! Fury of the Gods (2023)", posters:["https://upload.wikimedia.org/wikipedia/en/1/1a/Shazam!_Fury_of_the_Gods_poster.jpg"], url:"https://www.imdb.com/title/tt10151854/" },
-        { title:"Guardians of the Galaxy Vol. 3 (2023)", posters:["https://upload.wikimedia.org/wikipedia/en/5/50/Guardians_of_the_Galaxy_Vol._3_poster.jpg"], url:"https://www.imdb.com/title/tt6791350/" },
-        { title:"Twisters (2024)", posters:["https://upload.wikimedia.org/wikipedia/en/8/8f/Twisters_film_poster.jpg"], url:"https://www.imdb.com/title/tt12584954/" },
-        { title:"Avatar: The Way of Water (2022)", posters:["https://upload.wikimedia.org/wikipedia/en/2/2c/Avatar_The_Way_of_Water_poster.jpg"], url:"https://www.imdb.com/title/tt1630029/" },
-        { title:"Avengers: Endgame (2019)", posters:["https://upload.wikimedia.org/wikipedia/en/0/0d/Avengers_Endgame_poster.jpg"], url:"https://www.imdb.com/title/tt4154796/" },
-        { title:"Ant‑Man and the Wasp (2018)", posters:["https://upload.wikimedia.org/wikipedia/en/2/2c/Ant-Man_and_the_Wasp_poster.jpg"], url:"https://www.imdb.com/title/tt5095030/" },
-        { title:"The Mandalorian (TV)", posters:["https://upload.wikimedia.org/wikipedia/en/c/c5/The_Mandalorian_season_2_poster.jpg","https://upload.wikimedia.org/wikipedia/en/c/c4/The_Mandalorian_season_3_poster.jpg"], url:"https://www.imdb.com/title/tt8111088/" }
-      ],
+/* Local cache for speed: render from last state immediately, then refresh */
+const cache = {
+  get(key){ try{ return JSON.parse(localStorage.getItem(key)||'null'); }catch{return null} },
+  set(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch{} }
+};
 
-      personalProjects: [
-        { title:"Deadpool vs Alien vs Terminator", videoId:"7YIVcQLS9Cw" },
-        { title:"Alien vs Terminator", videoId:"HtgCTlpi47s" },
-        { title:"Pumpkin Smashers (Chicago Horror FF — Best Animation)", videoId:"q_MFAiCeWUk" },
-        { title:"Siren Vs Syren — Siren Tales", videoId:"W5PPhhmMw_g" },
-        { title:"Rusalky — Ukrainian Sirens vs Russian Soldiers", videoId:"Jvd-ZTLviOc" },
-        { title:"Krampus Night — Animated Christmas Horror Short", videoId:"psCIvWKpHnU" },
-        { title:"Siren Tales — Trailer", videoId:"1OazLvklmdE" },
-        { title:"Spirits of Lake Minnetonka — Trailer", videoId:"Z-UX4szq2LI" },
-        { title:"Jurassic Park in Real Life with AR! | Reverse Virtual Production with Cyclops", videoId:"yxAMZs1wERQ" }
-      ]
-    };
-
-    /* =========================
-       RUNTIME
-       ========================= */
-    const $ = (s,el=document)=>el.querySelector(s);
-    const $$ = (s,el=document)=>[...el.querySelectorAll(s)];
-
-    // Tabs
-    $$(".tab-btn").forEach(btn=>btn.addEventListener('click', ()=>{
-      $$(".tab-btn").forEach(b=>{ b.classList.toggle('active', b===btn); b.setAttribute('aria-selected', b===btn)});
-      const name=btn.dataset.tab; $$('section').forEach(s=>s.classList.toggle('active', s.id===name));
-      window.scrollTo({top:$('.wrap').offsetTop, behavior:'smooth'});
-    }));
-
-    // IMDb normalizer: pro → www
-    const normalizeImdb = (url)=>{ try{ const u=new URL(url, location.href); if(u.hostname.startsWith('pro.')) u.hostname=u.hostname.replace(/^pro\./,'www.'); if(!/^www\./.test(u.hostname)) u.hostname='www.'+u.hostname.replace(/^m\./,''); u.search=''; u.hash=''; return u.toString(); }catch{ return url; } };
-
-    // Link buttons
-    const setLinks = (cfg)=>{
-      $("#btnIMDb").href = normalizeImdb(cfg.imdbUrl||CONFIG.imdbUrl);
-      $("#btnYouTube").href = cfg.youtubeUrl||CONFIG.youtubeUrl;
-      $("#btnLinks").href = cfg.allLinksUrl||CONFIG.allLinksUrl;
-      if (cfg.newsUrl||CONFIG.newsUrl) $("#btnNews").href = cfg.newsUrl||CONFIG.newsUrl; else $("#btnNews").classList.add('hide');
-      if (cfg.resumeFile||CONFIG.resumeFile) $("#btnResume").href = cfg.resumeFile||CONFIG.resumeFile;
-    };
-
-    // Reel: supports Vimeo iframe/URL, YouTube URL/ID
-    const setReel = (src)=>{
-      const mount=$('.reel'); const frame=$('#reelFrame');
-      if(!src || src==='REPLACE_WITH_YOUTUBE_ID_OR_VIMEO'){
-        frame.srcdoc = "<style>body{margin:0;display:grid;place-items:center;background:#000;color:#9fb5b8;font:16px system-ui}</style><div>Add your <b>reel</b> (YouTube ID/URL or Vimeo URL/iframe) in CONFIG or Sheet.</div>"; return;
-      }
-      if(/^\s*<iframe[\s\S]*src=/i.test(src)){
-        const m=src.match(/<iframe[^>]*src=[\"']([^\"']+)[\"']/i); if(m&&m[1]){ frame.remove(); const ifr=document.createElement('iframe'); ifr.src=m[1]; ifr.setAttribute('allow','autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share'); ifr.setAttribute('frameborder','0'); ifr.allowFullscreen=true; mount.appendChild(ifr); return; }
-      }
-      if(/vimeo\.com\//i.test(src)){ const id=(src.match(/vimeo\.com\/(?:video\/)?(\d+)/i)||[])[1]; if(id){ frame.src=`https://player.vimeo.com/video/${id}?badge=0&autopause=0`; return; } }
-      if(/youtu\.?be|youtube\.com\/watch\?v=/i.test(src)){ const id=(src.match(/[?&]v=([\w-]{6,})/)||src.match(/youtu\.be\/([\w-]{6,})/)||[])[1]; if(id){ frame.src=`https://www.youtube.com/embed/${id}?rel=0&modestbranding=1`; return; } }
-      if(/^[\w-]{6,}$/.test(src)){ frame.src=`https://www.youtube.com/embed/${src}?rel=0&modestbranding=1`; return; }
-      frame.srcdoc = "<style>body{margin:0;display:grid;place-items:center;background:#000;color:#9fb5b8;font:16px system-ui}</style><div>Unsupported reel format. Use YouTube (ID/URL) or Vimeo (URL/iframe).</div>";
-    };
-
-    // Banner build (pro posters are tall/skinny)
-    const trackA=$('#trackA'), trackB=$('#trackB');
-    const placeholderTile=()=> 'data:image/svg+xml;utf8,'+encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 450'><rect width='100%' height='100%' fill='#000'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' fill='#74cdaa' font-family='monospace' font-size='22'>Poster unavailable</text></svg>");
-    function buildBanner(cfg){
-      const pro=(cfg.proProjects||[]).flatMap(p=>{ const posters=Array.isArray(p.posters)?p.posters.filter(Boolean):[]; return posters.map(src=>({title:p.title,img:src,url:p.url,poster:true})); });
-      const personal=(cfg.personalProjects||[]).map(v=>({title:v.title,img:`https://img.youtube.com/vi/${v.videoId}/hqdefault.jpg`,url:`https://www.youtube.com/watch?v=${v.videoId}`,poster:false}));
-      const tiles=[]; const maxLen=Math.max(pro.length,personal.length);
-      for(let i=0;i<maxLen;i++){ if(i<pro.length) tiles.push(pro[i]); if(i<personal.length) tiles.push(personal[i]); }
-      const mk=t=>{ const a=document.createElement('a'); a.className='tile'+(t.poster?' poster':''); a.href=t.url?normalizeImdb(t.url):'#'; a.target='_blank'; a.rel='noopener'; a.setAttribute('data-title', t.title||''); const img=new Image(); img.loading='lazy'; img.alt=''; img.src=t.img||placeholderTile(); img.onerror=()=>{ img.src=placeholderTile(); }; a.appendChild(img); return a; };
-      trackA.innerHTML=''; trackB.innerHTML='';
-      if(!tiles.length){ const t=mk({title:'Add projects/videos', img:placeholderTile(), url:'#', poster:true}); trackA.appendChild(t.cloneNode(true)); trackB.appendChild(t.cloneNode(true)); return; }
-      tiles.forEach(t=>trackA.appendChild(mk(t))); tiles.forEach(t=>trackB.appendChild(mk(t))); // duplicate for seamless -50%
+async function discoverGids(pubhtml){
+  const map = {}; try{
+    const html = await fetch(pubhtml, {mode:"cors"}).then(r=>r.text());
+    const uniqueGids = [...new Set([...html.matchAll(/gid=(\d+)/g)].map(m=>m[1]))];
+    for (const gid of uniqueGids){
+      const txt = await fetch(buildCsvUrlFromGid(pubhtml, gid)).then(r=>r.text()).catch(()=>null);
+      if (!txt) continue; const rows = csvToObjects(txt); const hdr = Object.keys(rows[0]||{}).join('|').toLowerCase();
+      if (hdr.includes('primary image') && hdr.includes('on set?')) map['Ariel_Feblowitz_Works']=gid;
+      else if (hdr.includes('ride image') && hdr.includes('ride name')) map['Rides']=gid;
+      else if (hdr.includes('type') && hdr.includes('video_id')) map['Personal Youtube']=gid;
+      else if (hdr.includes('key') && hdr.includes('value')) map['Main site info']=gid;
     }
+  }catch(e){}
+  return { ...map, ...TAB_MAP };
+}
 
-    // Grids
-    function mkPosterImg(list,title){ const img=document.createElement('img'); img.loading='lazy'; img.alt=''; const posters=Array.isArray(list)?list.filter(Boolean):[]; const candidates=posters.slice(); candidates.push('data:image/svg+xml;utf8,'+encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 450'><rect width='100%' height='100%' fill='#000'/><text x='50%' y='50%' fill='#9fffcf' font-family='Inter, Segoe UI, Roboto, Arial, sans-serif' font-size='32' text-anchor='middle' dominant-baseline='middle'>${(title||'Untitled').replace(/&/g,'&amp;').replace(/</g,'&lt;')}</text></svg>`)); let i=0; const setNext=()=>{ if(i<candidates.length){ img.src=candidates[i++]; } }; img.addEventListener('error', setNext); setNext(); return img; }
-    function renderGrid(el, arr){ el.innerHTML=''; if(!arr||!arr.length){ el.innerHTML = `<div class="muted">No items yet. Edit <b>CONFIG</b> to add projects.</div>`; return; } arr.forEach(p=>{ const c=document.createElement('a'); c.className='proj card'; c.href=p.url?normalizeImdb(p.url):'#'; c.target='_blank'; c.rel='noopener'; const wrap=document.createElement('div'); wrap.className='thumb'; const poster=mkPosterImg(p.posters||[], p.title); wrap.appendChild(poster); const meta=document.createElement('div'); meta.className='meta'; meta.innerHTML=`<div class="title">${p.title||''}</div>`; c.appendChild(wrap); c.appendChild(meta); el.appendChild(c); }); }
-    function renderPersonal(el, arr){ const items=(arr||[]).map(v=>({ title:v.title, url:`https://www.youtube.com/watch?v=${v.videoId}`, posters:[`https://img.youtube.com/vi/${v.videoId}/hqdefault.jpg`] })); renderGrid(el, items); }
+function titlePlaceholderSVG(title){
+  const safe = (title||'Untitled').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 800'>
+    <rect width='100%' height='100%' fill='#000'/>
+    <text x='50%' y='50%' fill='#9fffcf' font-family='Inter, Segoe UI, Roboto, Arial, sans-serif' font-size='36' text-anchor='middle' dominant-baseline='middle'>${safe}</text>
+  </svg>`;
+  return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+}
 
-    // Latest from YouTube uploads (optional)
-    if (CONFIG.showLatestFromYouTube && CONFIG.youtubeChannelId){ const uploadsId='UU'+CONFIG.youtubeChannelId.slice(2); const box=$('#latestBox'); const iframe=$('#latestFrame'); iframe.src=`https://www.youtube.com/embed/videoseries?list=${uploadsId}&rel=0`; box.style.display='block'; }
+/**********************
+  BANNER (endless, draggable, buttons, pause on hover)
+***********************/
+const rail = $('#bannerRail');
+const scrollEl = $('#bannerScroll');
+let autoRAF=null, paused=false, drag=false, lastX=0, vx=0, lastT=0; // velocity for inertia
 
-    // ===== Google Sheets loader (CSV or GVIZ JSON) with graceful fallback =====
-    async function loadSheet(url){
-      if(!url) return null; try{
-        const u=new URL(url);
-        if(/out:json|gviz\//.test(u.href)){ // GVIZ JSON
-          const res=await fetch(u); const txt=await res.text(); const json=JSON.parse(txt.replace(/^.*setResponse\(/,'').replace(/\);?$/,''));
-          const rows=json.table.rows.map(r=>r.c.map(c=>c?c.v:'')); const map={}; rows.forEach(r=>{ if(r[0]) map[r[0]]=r[1]; });
-          return {map};
-        }else{ // CSV
-          const res=await fetch(u); const csv=await res.text();
-          const lines=csv.split(/\r?\n/).filter(Boolean).map(l=>l.split(',')); const map={}; lines.slice(1).forEach(r=>{ if(r[0]) map[r[0]]=r[1]; });
-          return {map};
-        }
-      }catch(e){ console.warn('Sheet load failed', e); return null; }
+function makeTile(t){
+  const a=document.createElement('a'); a.className='tile ' + (t.type==='pro'?'poster':'wide'); a.href=t.url||'#'; a.target='_blank'; a.rel='noopener'; a.setAttribute('data-title', t.title||'');
+  const img=new Image(); img.loading='lazy'; img.alt=''; img.src=t.img || titlePlaceholderSVG(t.title);
+  a.appendChild(img); return a;
+}
+
+function fillBanner(tiles){
+  scrollEl.innerHTML='';
+  const seq=[...tiles];
+  // duplicate for seamless loop
+  [...seq, ...seq].forEach(t=> scrollEl.appendChild(makeTile(t)));
+  // start animation
+  startAuto();
+}
+
+function step(ts){
+  if (paused) { autoRAF=requestAnimationFrame(step); return; }
+  if (!lastT) lastT=ts; const dt=(ts-lastT)/1000; lastT=ts;
+  rail.scrollLeft += (vx || parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--speed'))) * dt;
+  const half = scrollEl.scrollWidth/2;
+  if (rail.scrollLeft >= half) rail.scrollLeft -= half; // loop
+  autoRAF=requestAnimationFrame(step);
+}
+function startAuto(){ cancelAnimationFrame(autoRAF); lastT=0; autoRAF=requestAnimationFrame(step); }
+function pauseAuto(p=true){ paused=p; }
+
+rail.addEventListener('pointerdown', (e)=>{ drag=true; pauseAuto(true); rail.setPointerCapture(e.pointerId); lastX=e.clientX; vx=0; });
+rail.addEventListener('pointermove', (e)=>{ if(!drag) return; const dx = lastX - e.clientX; rail.scrollLeft += dx; lastX=e.clientX; vx = dx*5; });
+rail.addEventListener('pointerup', ()=>{ drag=false; // inertia
+  const start = performance.now(); const dur=450; const initV=vx; function inertia(now){ const t=Math.min(1, (now-start)/dur); const ease=1-Math.pow(1-t,3); rail.scrollLeft += initV*(1-ease)*0.02; if(t<1) requestAnimationFrame(inertia); else pauseAuto(false); }
+  requestAnimationFrame(inertia);
+});
+rail.addEventListener('pointerleave', ()=>{ if(drag){drag=false; pauseAuto(false);} });
+rail.addEventListener('mouseenter', ()=>pauseAuto(true));
+rail.addEventListener('mouseleave', ()=>pauseAuto(false));
+rail.addEventListener('wheel', (e)=>{ if (Math.abs(e.deltaX) < Math.abs(e.deltaY)) return; e.preventDefault(); rail.scrollLeft += e.deltaX; }, {passive:false});
+
+$('#bnPrev').addEventListener('click', ()=>{ rail.scrollLeft -= 260; });
+$('#bnNext').addEventListener('click', ()=>{ rail.scrollLeft += 260; });
+
+/**********************
+  TABS + YEAR
+***********************/
+$$('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    $$('.tab-btn').forEach(b=>{ b.classList.toggle('active', b===btn); b.setAttribute('aria-selected', b===btn) });
+    const name = btn.dataset.tab; $$('section').forEach(s=>s.classList.toggle('active', s.id===name));
+    window.scrollTo({ top: $('.wrap').offsetTop, behavior: 'smooth' });
+  });
+});
+$('#year').textContent = new Date().getFullYear();
+
+/**********************
+  LOAD + RENDER
+***********************/
+(async function init(){
+  // Discover GIDs
+  const gids = await discoverGids(PUBHTML);
+
+  async function pullTab(name){
+    const gid = gids[name]; if(!gid) return [];
+    const key = `csv:${gid}`;
+    // 1) try cache for instant render
+    const cached = cache.get(key); if (cached && cached.txt){
+      try { return csvToObjects(cached.txt); } catch{}
     }
+    // 2) fetch fresh
+    const txt = await fetch(buildCsvUrlFromGid(PUBHTML, gid)).then(r=>r.text());
+    cache.set(key, {ts:Date.now(), txt});
+    return csvToObjects(txt);
+  }
 
-    function applySheet(map){ if(!map) return;
-      setReel(map.reel_embed||map.reel||CONFIG.reel);
-      setLinks({ imdbUrl: map.imdb||CONFIG.imdbUrl, youtubeUrl: map.youtube||CONFIG.youtubeUrl, allLinksUrl: map.links||CONFIG.allLinksUrl, newsUrl: map.news||CONFIG.newsUrl, resumeFile: map.resume||CONFIG.resumeFile });
-      try{ if(map.pro_projects){ CONFIG.proProjects = JSON.parse(map.pro_projects); } }catch{}
-      try{ if(map.personal_projects){ CONFIG.personalProjects = JSON.parse(map.personal_projects); } }catch{}
+  /* Main info */
+  const mainInfoRows = await pullTab('Main site info');
+  const mainInfo = {}; (mainInfoRows||[]).forEach(r=> mainInfo[(r.key||'').trim()]=(r.value||'').trim());
+
+  // Apply main info
+  $('#siteTitle').textContent = mainInfo.site_title || 'Ariel (Ari) Feblowitz';
+  $('#siteSubtitle').textContent = mainInfo.site_subtitle || 'Techvis & Virtual Production Supervisor';
+  $('#about1').textContent = mainInfo.about_paragraph_1 || '';
+  $('#about2').textContent = mainInfo.about_paragraph_2 || '';
+  $('#btnIMDb').href   = fixImdb(mainInfo.imdb_url || '#');
+  $('#btnYouTube').href= mainInfo.youtube_url || '#';
+  $('#btnLinks').href  = mainInfo.all_links_url || '#';
+  if (mainInfo.news_url) $('#btnNews').href = mainInfo.news_url; else $('#btnNews').style.display='none';
+  if (mainInfo.resume_url) $('#btnResume').href = mainInfo.resume_url;
+
+  // Reel: accept YouTube ID/URL, Vimeo URL/ID, or full iframe embed
+  const reelInput = (mainInfo.reel_youtube_id||'').trim();
+  const reelFrame = $('#reelFrame');
+  const reelBox = $('#reelBox');
+  function setIframe(src){ reelFrame.src = src; }
+  if (/^\s*<iframe/i.test(reelInput)){
+    // Treat as full embed code: inject safely inside box
+    reelBox.innerHTML = reelInput;
+  } else if (/vimeo\.com\/(?:video\/)?(\d+)/i.test(reelInput)){
+    const id = reelInput.match(/vimeo\.com\/(?:video\/)?(\d+)/i)[1];
+    setIframe(`https://player.vimeo.com/video/${id}?badge=0&autopause=0&title=0&byline=0`);
+  } else if (/^\d{7,}$/.test(reelInput)){
+    setIframe(`https://player.vimeo.com/video/${reelInput}?badge=0&autopause=0&title=0&byline=0`);
+  } else if (/youtu(?:\.be|be\.com)\/.+/.test(reelInput)){
+    // URL; pull the ID
+    const m = reelInput.match(/[?&]v=([\w-]{6,})/) || reelInput.match(/youtu\.be\/([\w-]{6,})/);
+    const id = m? m[1] : '';
+    if (id) setIframe(`https://www.youtube.com/embed/${id}?rel=0&modestbranding=1`);
+  } else if (/^[\w-]{6,}$/.test(reelInput)){
+    setIframe(`https://www.youtube.com/embed/${reelInput}?rel=0&modestbranding=1`);
+  } else {
+    reelFrame.srcdoc = `<style>body{margin:0;display:grid;place-items:center;background:#000;color:#9fb5b8;font:16px system-ui}.box{opacity:.8;text-align:center}.box b{color:#fff}</style><div class='box'>Add your <b>reel</b> (YouTube or Vimeo) in the \"Main site info\" tab.</div>`;
+  }
+
+  // Skills
+  const skills = (mainInfo.skills||'').split('|').map(s=>s.trim()).filter(Boolean);
+  const half = Math.ceil(skills.length/2);
+  function pill(t){ const s=document.createElement('span'); s.className='pill'; s.textContent=t; return s; }
+  skills.slice(0,half).forEach(s=>$('#skillsRow1').appendChild(pill(s)));
+  skills.slice(half).forEach(s=>$('#skillsRow2').appendChild(pill(s)));
+
+  /* Personal */
+  const personalTab = await pullTab('Personal Youtube');
+  const meta = {}; const videos=[];
+  (personalTab||[]).forEach(r=>{
+    const type=(r.type||'').toLowerCase();
+    if (type==='meta'){ meta[(r.key||'').trim()] = (r.value||'').trim(); }
+    else if (type==='video'){
+      const videoId=(r.video_id||'').trim();
+      const url=(r.youtube_url||'').trim() || (videoId?`https://www.youtube.com/watch?v=${videoId}`:'');
+      const thumb=(r.thumb_url||'').trim() || (videoId? ytThumb(videoId) : '');
+      videos.push({
+        prio:normNum(r.prio), includeInBanner: normBool(r.include_in_banner) || normNum(r.prio)>=5,
+        featured: normBool(r.featured), videoId, title:(r.title||'').trim(), role:(r.role||'').trim(),
+        url, thumb
+      });
     }
+  });
 
-    // ===== Init order: base → sheet overrides → render =====
-    setLinks(CONFIG);
-    setReel(CONFIG.reel);
-    buildBanner(CONFIG);
-    renderGrid(document.getElementById('proGrid'), CONFIG.proProjects);
-    renderPersonal(document.getElementById('personalGrid'), CONFIG.personalProjects);
-    document.getElementById('year').textContent = new Date().getFullYear();
+  const featuredId = (meta.featured_video_id || (videos.find(v=>v.featured)?.videoId) || '').trim();
+  const showLatest = String(mainInfo.show_latest_from_youtube||meta.latest_mode||'').toLowerCase().includes('true') || (meta.latest_mode||'')==='auto';
+  if (showLatest){
+    const channelId = meta.latest_playlist_or_channel_id || mainInfo.youtube_channel_id || '';
+    if (channelId.startsWith('UC')){
+      const uploadsId = 'UU'+channelId.slice(2);
+      $('#latestFrame').src = `https://www.youtube.com/embed/videoseries?list=${uploadsId}&rel=0`;
+      $('#latestBox').style.display = 'block';
+    }
+  }
 
-    (async ()=>{ if(CONFIG.sheetUrl){ const sheet = await loadSheet(CONFIG.sheetUrl); if(sheet&&sheet.map){ applySheet(sheet.map); buildBanner(CONFIG); renderGrid(document.getElementById('proGrid'), CONFIG.proProjects); renderPersonal(document.getElementById('personalGrid'), CONFIG.personalProjects); } } })();
-  </script>
+  /* Professional */
+  const proRows = await pullTab('Ariel_Feblowitz_Works');
+  const proItems = (proRows||[]).map(r=>({
+    title:(r['Name']||'').trim(), url:fixImdb((r['URL']||'').trim()), role:(r['My Role']||'').trim(),
+    prod:(r['Production Co.']||'').trim(), onSet:normBool(r['On Set?']), prio:normNum(r['Prio?']),
+    posters:[(r['Primary image']||'').trim()].filter(Boolean)
+  })).filter(x=>x.title && x.prio>0);
+  proItems.sort((a,b)=> (a.onSet!==b.onSet)? (a.onSet? -1:1) : (b.prio-a.prio) || a.title.localeCompare(b.title));
+
+  /* Rides */
+  const ridesRows = await pullTab('Rides');
+  const rideItems = (ridesRows||[]).map(r=>({
+    title:(r['Ride Name']||'').trim(), url:(r['Ride Link']||'').trim(), role:(r['My Role']||'').trim(),
+    company:(r['Ride Company']||'').trim(), desc:(r['Description']||'').trim(), prio:normNum(r['Prio']),
+    posters:[(r['Ride Image']||'').trim()].filter(Boolean)
+  })).filter(x=>x.title && x.prio>0).sort((a,b)=> b.prio-a.prio || a.title.localeCompare(b.title));
+
+  /***** Render Professional (tall posters, 4 per row) *****/
+  const proGrid = $('#proGrid'); proGrid.innerHTML='';
+  if (!proItems.length) proGrid.innerHTML = `<div class="muted">No items yet — add rows in the “Ariel_Feblowitz_Works” tab.</div>`;
+  proItems.forEach(p=>{
+    const c=document.createElement('a'); c.className='proj card'; c.href=p.url||'#'; c.target='_blank'; c.rel='noopener';
+    const wrap=document.createElement('div'); wrap.className='thumb poster';
+    const img=new Image(); img.loading='lazy'; img.alt=''; img.src = p.posters[0] || titlePlaceholderSVG(p.title);
+    wrap.appendChild(img);
+    const meta=document.createElement('div'); meta.className='meta';
+    const info=[p.role, p.prod].filter(Boolean).join(' • ');
+    meta.innerHTML = `<div class="title">${p.title}</div><div class="role">${info}</div>`;
+    c.appendChild(wrap); c.appendChild(meta); proGrid.appendChild(c);
+  });
+
+  /***** Render Rides (collapsible descriptions) *****/
+  const ridesGrid = $('#ridesGrid'); ridesGrid.innerHTML='';
+  if (!rideItems.length) ridesGrid.innerHTML = `<div class="muted">No items yet — add rows in the “Rides” tab.</div>`;
+  rideItems.forEach(p=>{
+    const c=document.createElement('a'); c.className='proj card'; c.href=p.url||'#'; c.target='_blank'; c.rel='noopener';
+    const wrap=document.createElement('div'); wrap.className='thumb';
+    const img=new Image(); img.loading='lazy'; img.alt=''; img.src = p.posters[0] || titlePlaceholderSVG(p.title);
+    wrap.appendChild(img);
+    const meta=document.createElement('div'); meta.className='meta';
+    const info=[p.role, p.company].filter(Boolean).join(' • ');
+    let body='';
+    if (p.desc){
+      body = `<details class="summaryless" style="margin-top:.45em; font-size:.95em">
+                <summary class="btn" style="display:inline-flex; margin:0; padding:.35em .6em;">Details</summary>
+                <div class="muted" style="margin-top:.6em">${p.desc}</div>
+              </details>`;
+    }
+    meta.innerHTML = `<div class="title">${p.title}</div><div class="role">${info}</div>${body}`;
+    c.appendChild(wrap); c.appendChild(meta); ridesGrid.appendChild(c);
+  });
+
+  /***** Render Personal (videos) *****/
+  const personalGrid = $('#personalGrid'); personalGrid.innerHTML='';
+  if (!videos.length) personalGrid.innerHTML = `<div class="muted">No videos yet — add rows in the “Personal Youtube” tab.</div>`;
+  const fIdx = videos.findIndex(v=>v.videoId===featuredId); if (fIdx>0){ const [f]=videos.splice(fIdx,1); videos.unshift(f); }
+  videos.forEach(v=>{
+    const c=document.createElement('a'); c.className='proj card'; c.href=v.url||'#'; c.target='_blank'; c.rel='noopener';
+    const wrap=document.createElement('div'); wrap.className='thumb';
+    const img=new Image(); img.loading='lazy'; img.alt=''; img.src = v.thumb || (v.videoId? ytThumb(v.videoId) : titlePlaceholderSVG(v.title));
+    wrap.appendChild(img);
+    const meta=document.createElement('div'); meta.className='meta';
+    meta.innerHTML = `<div class="title">${v.title||''}</div><div class="role">${v.role||''}</div>`;
+    c.appendChild(wrap); c.appendChild(meta); personalGrid.appendChild(c);
+  });
+
+  /***** Build Banner (type-tagged; posters skinny) *****/
+  const tiles=[];
+  proItems.filter(p=>p.prio>=5).forEach(p=> tiles.push({type:'pro', title:p.title, img:p.posters[0]||'', url:p.url||'#'}));
+  rideItems.filter(r=>r.prio===10).forEach(r=> tiles.push({type:'ride', title:r.title, img:r.posters[0]||'', url:r.url||'#'}));
+  videos.filter(v=> (v.prio||0)>=5 || v.includeInBanner ).forEach(v=> tiles.push({type:'personal', title:v.title, img:v.thumb||'', url:v.url||'#'}));
+
+  // interleave a bit
+  const proB = tiles.filter(t=>t.type==='pro');
+  const rideB= tiles.filter(t=>t.type==='ride');
+  const perB = tiles.filter(t=>t.type==='personal');
+  const interleaved=[]; const L=Math.max(proB.length, rideB.length, perB.length);
+  for(let i=0;i<L;i++){ if(proB[i]) interleaved.push(proB[i]); if(rideB[i]) interleaved.push(rideB[i]); if(perB[i]) interleaved.push(perB[i]); }
+  fillBanner(interleaved);
+
+  /* Febz feature */
+  const febzId = (meta.febz_video_id||'').trim();
+  if (febzId){
+    $('#febzBox').style.display='block';
+    $('#febzHeading').textContent = meta.febz_heading || "Also archiving my father's documentary work:";
+    $('#febzBody').textContent    = meta.febz_body || '';
+    $('#febzLink').href = `https://www.youtube.com/watch?v=${febzId}`;
+    const img=$('#febzThumb'); img.src = ytMax(febzId); img.addEventListener('error', ()=> img.src=ytThumb(febzId), {once:true});
+  }
+})();
+</script>
 </body>
 </html>
