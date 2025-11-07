@@ -31,9 +31,9 @@
   }
   /* CRT scanlines + subtle flicker */
   body::after{content:""; position:fixed; inset:0; pointer-events:none;
-    background-image:repeating-linear-gradient(to bottom, rgba(66,255,209,.07), rgba(66,255,209,.07) 1px, transparent 2px, transparent 3px);
-    mix-blend-mode:soft-light; opacity:.42; z-index:0; animation:scan 18s linear infinite}
-  @keyframes scan{0%{transform:translateY(0)} 100%{transform:translateY(-20px)}}
+    background-image:repeating-linear-gradient(to bottom, rgba(66,255,209,.12), rgba(66,255,209,.12) 2px, transparent 3px, transparent 6px);
+    mix-blend-mode:soft-light; opacity:.6; z-index:0; animation:scan 18s linear infinite, glowPulse 8s ease-in-out infinite}
+  @keyframes scan{0%{transform:translateY(0)} 100%{transform:translateY(-24px)}} 100%{transform:translateY(-20px)}}
   .flicker{animation:flicker 4.5s infinite steps(100)}
   @keyframes flicker{0%, 100%{filter:drop-shadow(0 0 6px rgba(0,255,156,.35))} 50%{filter:drop-shadow(0 0 10px rgba(0,255,156,.6))}}
 
@@ -104,7 +104,16 @@
 
   details.summaryless > summary{list-style:none}
   details.summaryless > summary::-webkit-details-marker{display:none}
-</style>
+  /* soft radial monitor glow */
+  body::before{content:""; position:fixed; inset:0; pointer-events:none; background:radial-gradient(70% 55% at 50% 45%, rgba(0,255,156,.08), transparent 60%); filter:blur(2px); z-index:0; opacity:.8; animation:glowPulse 8s ease-in-out infinite}
+  @keyframes glowPulse{0%,100%{opacity:.55}50%{opacity:.85}}
+  /* subtle text glow */
+  h1,h2,h3,.title,.pill,.tab-btn,.btn,.role, footer{ text-shadow:0 0 6px rgba(0,255,156,.18), 0 0 12px rgba(0,255,156,.1) }
+  /* brand dot breathing */
+  .brand .dot{ animation:blink 7s infinite steps(120), breathe 5s ease-in-out infinite }
+  @keyframes blink{0%,97%,100%{opacity:1} 98%{opacity:.3} 99%{opacity:.75}}
+  @keyframes breathe{0%,100%{box-shadow:0 0 14px rgba(0,255,156,.8)}50%{box-shadow:0 0 22px rgba(0,255,156,1)}}
+$1
 </head>
 <body>
   <!-- Banner -->
@@ -119,10 +128,8 @@
   <div class="wrap">
     <!-- NAV -->
     <div class="nav">
-      <div class="brand">
-        <div class="dot flicker" aria-hidden="true"></div>
-        <h1 id="siteTitle">Ariel (Ari) Feblowitz</h1>
-        <span id="siteSubtitle" class="pill">Techvis & Virtual Production Supervisor</span>
+      $1
+        <span id="sysStatus" class="pill">Initializing: Weyland Yutani–Cyberdyne link…</span>
       </div>
       <div class="tabs" role="tablist" aria-label="Sections">
         <button class="tab-btn active" data-tab="home" role="tab" aria-selected="true">Home</button>
@@ -150,8 +157,8 @@
         </div>
         <div class="card pad">
           <h2 style="margin:0 0 .6em">About</h2>
-          <p id="about1">Dialing the matrix…</p>
-          <p id="about2" class="muted">Fetching details…</p>
+          $1Bridging virtual and physical storytelling across techvis, previs/postvis, and virtual production. I translate complex sequences into precise, repeatable camera plans — trusted by directors, DPs, and VFX supervisors.$2
+          $1Credits include Avatar: The Way of Water, Avengers: Endgame, Ant-Man and the Wasp, Guardians of the Galaxy Vol. 3, and more.$2
           <div id="skillsRow1" class="badges"></div>
           <div id="skillsRow2" class="badges"></div>
         </div>
@@ -208,7 +215,7 @@
       </div>
     </section>
 
-    <footer class="muted">© <span id="year"></span> Ariel (Ari) Feblowitz • Live‑linked to Skynet • Theme: Tech‑Noir</footer>
+    $1© <span id="year"></span> Ariel (Ari) Feblowitz • WY–Cyberdyne Systems in compliance with Weyland Yutani Mother Ai - Hosted from Skynet • Theme: Tech‑Noir$2
   </div>
 
 <script>
@@ -334,12 +341,17 @@ $$('.tab-btn').forEach(btn=>{
     window.scrollTo({ top: $('.wrap').offsetTop, behavior: 'smooth' });
   });
 });
-$('#year').textContent = new Date().getFullYear();
+$1
+
+// status helper
+const sysStatus = document.getElementById('sysStatus');
+function setStatus(msg){ if(sysStatus) sysStatus.textContent = msg; }
 
 /**********************
   LOAD + RENDER
 ***********************/
-(async function init(){
+$1
+  setStatus('Routing request to MOTHER…');
   // Discover GIDs
   const gids = await discoverGids(PUBHTML);
 
@@ -369,7 +381,8 @@ $('#year').textContent = new Date().getFullYear();
   $('#btnYouTube').href= mainInfo.youtube_url || '#';
   $('#btnLinks').href  = mainInfo.all_links_url || '#';
   if (mainInfo.news_url) $('#btnNews').href = mainInfo.news_url; else $('#btnNews').style.display='none';
-  if (mainInfo.resume_url) $('#btnResume').href = mainInfo.resume_url;
+  $1
+  setStatus('Data stream acquired.');
 
   // Reel: accept YouTube ID/URL, Vimeo URL/ID, or full iframe embed
   const reelInput = (mainInfo.reel_youtube_id||'').trim();
@@ -520,7 +533,8 @@ $('#year').textContent = new Date().getFullYear();
     $('#febzLink').href = `https://www.youtube.com/watch?v=${febzId}`;
     const img=$('#febzThumb'); img.src = ytMax(febzId); img.addEventListener('error', ()=> img.src=ytThumb(febzId), {once:true});
   }
-})();
+setStatus('Link established');
+$1
 </script>
 </body>
 </html>
