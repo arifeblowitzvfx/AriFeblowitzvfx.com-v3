@@ -77,6 +77,10 @@
     body.ready .brand .dot{ background:radial-gradient(circle at 30% 30%, var(--accent), #0f4630 70%); box-shadow:0 0 22px var(--accent); animation:blinkSlow 3.6s infinite; }
     @keyframes blinkFast{ 0%,10%,20%{opacity:.2} 11%,21%{opacity:1} 50%{opacity:.4} 55%{opacity:1} 100%{opacity:.35} }
     @keyframes blinkSlow{ 0%,100%{opacity:.55} 50%{opacity:1} }
+    /* dot-only interaction flicker */
+    .brand .dot{ position:relative; }
+    .brand .dot.flick{ animation: dotFlick .95s linear 1; }
+    @keyframes dotFlick{ 0%{opacity:1} 5%{opacity:.2} 10%{opacity:1} 15%{opacity:.15} 20%{opacity:1} 30%{opacity:.3} 40%{opacity:1} 55%{opacity:.25} 70%{opacity:1} 85%{opacity:.2} 100%{opacity:.55} }
     .brand h1{margin:0; font-weight:800; font-size:clamp(20px,2.6vw,34px); letter-spacing:.12em; text-transform:uppercase; color:#d9fff1}
     .pill{border:1px dashed rgba(66,255,209,.5); border-radius:999px; padding:.4em .8em; font-size:clamp(11px,1vw,12px); color:var(--muted); backdrop-filter:blur(2px)}
 
@@ -95,8 +99,7 @@
     .pad{padding:clamp(14px,1.6vw,20px)}
 
     /* Reel frame: keep player inside border at all sizes */
-    .reel{ position:relative; aspect-ratio:16/9; border-radius:14px; overflow:hidden; background:#000; border:1px solid rgba(0,255,156,.34); outline:1px solid rgba(0,255,156,.2); box-shadow:0 0 20px rgba(0,255,156,.12) inset, 0 0 18px rgba(0,0,0,.6);
-    }
+    .reel{ position:relative; aspect-ratio:16/9; width:100%; border-radius:14px; overflow:hidden; background:#000; border:1px solid rgba(0,255,156,.34); outline:1px solid rgba(0,255,156,.2); box-shadow:0 0 20px rgba(0,255,156,.12) inset, 0 0 18px rgba(0,0,0,.6); contain:layout paint; isolation:isolate; }
     .reel > iframe, .reel > .embed-wrap{ position:absolute; inset:0; width:100%; height:100%; border:0; display:block; }
     .reel iframe{ max-width:100%; max-height:100%; }
     @media (min-height:900px){ .reel{min-height:560px} }
@@ -154,7 +157,8 @@
           <div class="dot" aria-hidden="true"></div>
           <h1 id="siteTitle" class="crt-glow">Loading data for SUBJECT: ARI FEBLOWITZ</h1>
           <a id="siteSubtitle" class="pill crt-glow" href="https://www.imdb.me/ArielFeblowitz" target="_blank" rel="noopener">Techvis & Virtual Production Supervisor</a>
-          <a id="sysStatus" class="pill crt-glow" href="https://linktr.ee/admin/links" target="_blank" rel="noopener">Routing request to MOTHER…</a>
+          $1
+          <div id="topContact" class="badges" style="margin-left:6px"></div>
         </div>
       </div>
 
@@ -268,6 +272,25 @@
   /********************** SHEET SETTINGS ***********************/
   const PUBHTML = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQxBxTbb-Ax7rpnnn5zWDUW6fGq1nUGIEPJb5qfaxifqKyZexNLK28gwpQLS5T5vpeuSvZicAEg69U1/pubhtml";
   const TAB_MAP = {};
+
+  /********************** DEFAULT CONTACT (preload -> sheet override) ***********************/
+  const DEFAULT_PHONE = "(818)434-8013";
+  const DEFAULT_EMAIL = "arifeblowitzvfx@gmail.com";
+  function setTopContact(phone, email){
+    const top = document.getElementById('topContact');
+    if (!top) return;
+    top.innerHTML = '';
+    if (phone){ const a=document.createElement('a'); a.className='btn'; a.href='tel:' + phone.replace(/[^0-9+]/g,''); a.textContent=phone; top.appendChild(a); }
+    if (email){ const a=document.createElement('a'); a.className='btn'; a.href='mailto:' + email; a.textContent=email; top.appendChild(a); }
+  }
+  function setContactSection(phone, email){
+    const wrap = document.getElementById('contactInfo'); if (!wrap) return; wrap.innerHTML='';
+    if (phone){ const a=document.createElement('a'); a.className='btn'; a.href='tel:' + phone.replace(/[^0-9+]/g,''); a.textContent=phone; wrap.appendChild(a); }
+    if (email){ const a=document.createElement('a'); a.className='btn'; a.href='mailto:' + email; a.textContent=email; wrap.appendChild(a); }
+  }
+  // Preload defaults immediately
+  setTopContact(DEFAULT_PHONE, DEFAULT_EMAIL);
+  setContactSection(DEFAULT_PHONE, DEFAULT_EMAIL);
 
   /********************** UTILITIES ***********************/
   const $ = (sel, el=document) => el.querySelector(sel);
@@ -395,6 +418,11 @@
     setStatus('Link established', linksHref);
     const aboutStatus = $('#aboutStatus'); if (aboutStatus) aboutStatus.style.display = 'none';
     document.body.classList.add('ready'); $('#reelHeader').textContent = 'Demo Reel'; $('#aboutHeader').textContent = 'About'; loaded.main = true;
+    // Override contact with sheet values when present
+    const phone = (mainInfo.phone||DEFAULT_PHONE).trim();
+    const email = (mainInfo.email||DEFAULT_EMAIL).trim();
+    setTopContact(phone, email);
+    setContactSection(phone, email);
 
     // Skills pills
     const skills = (mainInfo.skills||'').split('|').map(s=>s.trim()).filter(Boolean);
@@ -558,15 +586,13 @@
   })();
 
   /********************** FLICKER BURSTS (random + hover/click) ***********************/
-  (function flickerFX(){
-    const trigger = ()=>{ document.documentElement.classList.add('burst'); setTimeout(()=>document.documentElement.classList.remove('burst'), 900); };
-    // Random bursts every 15–45s
-    function schedule(){ setTimeout(()=>{ trigger(); schedule(); }, 15000 + Math.random()*30000); }
-    schedule();
-    // On hover over anything clickable or on click
-    const isInteractive = el => el.closest('a, button, .tab-btn, .tile, .btn');
-    document.addEventListener('mouseover', e=>{ if (isInteractive(e.target)) trigger(); }, {passive:true});
-    document.addEventListener('click', e=>{ if (isInteractive(e.target)) trigger(); }, {passive:true});
+  (function dotOnlyFlicker(){
+    const dot = document.querySelector('.brand .dot');
+    if (!dot) return;
+    const trigger = ()=>{ dot.classList.add('flick'); setTimeout(()=>dot.classList.remove('flick'), 950); };
+    const isInteractive = el => el && el.closest && el.closest('a, button, .tab-btn, .tile, .btn');
+    document.addEventListener('mouseover', e => { if (isInteractive(e.target)) trigger(); }, {passive:true});
+    document.addEventListener('click',    e => { if (isInteractive(e.target)) trigger(); }, {passive:true});
   })();
   </script>
 </body>
