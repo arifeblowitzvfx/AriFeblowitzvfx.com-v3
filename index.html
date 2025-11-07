@@ -339,28 +339,42 @@
 
     function ytThumb(id){ return `https://img.youtube.com/vi/${id}/hqdefault.jpg`; }
 
+function ytThumb(id){ return `https://img.youtube.com/vi/${id}/hqdefault.jpg`; }
+
 function buildBanner(){
-  // Build banner tiles from PRO posters + PERSONAL video thumbnails
+  // Collect posters from Professional
   const pro = (CONFIG.proProjects||[]).flatMap(p => {
     const posters = Array.isArray(p.posters)? p.posters.filter(Boolean) : [];
-    return posters.map(src => ({ title:p.title, img:src, url:p.url||'#' }));
+    return posters.map(src => ({ title:p.title, img:src, url:p.url||'#', kind:'pro' }));
   });
+  // Collect thumbs from Personal (YouTube)
   const personal = (CONFIG.personalProjects||[]).map(v => ({
     title: v.title,
     img: ytThumb(v.videoId),
-    url: `https://www.youtube.com/watch?v=${v.videoId}`
+    url: `https://www.youtube.com/watch?v=${v.videoId}`,
+    kind:'yt'
   }));
 
-  const tiles = [...pro, ...personal];
+  // Interleave pro + personal for variety
+  const tiles = [];
+  const maxLen = Math.max(pro.length, personal.length);
+  for(let i=0;i<maxLen;i++){
+    if (i < pro.length) tiles.push(pro[i]);
+    if (i < personal.length) tiles.push(personal[i]);
+  }
+
   const mk = t => {
-    const a = document.createElement('a'); a.className='tile'; a.href=t.url||'#'; a.target='_blank'; a.rel='noopener'; a.setAttribute('data-title', t.title||'');
-    a.appendChild(mkPosterImg([t.img]));
+    const a = document.createElement('a');
+    a.className='tile ' + (t.kind==='yt'?'yt':'');
+    a.href=t.url||'#'; a.target='_blank'; a.rel='noopener'; a.setAttribute('data-title', t.title||'');
+    // For banner: if the single candidate fails, remove tile entirely so there are no blanks
+    a.appendChild(mkPosterImg([t.img], { onExhaust: ()=> a.remove() }));
     return a;
   };
+
   trackA.innerHTML = ''; trackB.innerHTML = '';
   if (!tiles.length){
-    // fallback placeholder tile so rail height remains
-    const a = document.createElement('a'); a.className='tile'; a.href='#'; a.setAttribute('data-title','Add posters/videos in CONFIG');
+    const a = document.createElement('a'); a.className='tile'; a.href='#'; a.setAttribute('data-title','Add projects/videos in CONFIG');
     a.appendChild(mkPosterImg([placeholderTile()]));
     trackA.appendChild(a.cloneNode(true));
     trackB.appendChild(a.cloneNode(true));
