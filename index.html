@@ -391,7 +391,8 @@ $1
   function setIframe(src){ reelFrame.src = src; }
   if (/^\s*<iframe/i.test(reelInput)){
     // Treat as full embed code: inject safely inside box
-    reelBox.innerHTML = reelInput;
+    const clean = reelInput.replace(/<script[\s\S]*?<\/script>/gi, '');
+    reelBox.innerHTML = clean;
   } else if (/vimeo\.com\/(?:video\/)?(\d+)/i.test(reelInput)){
     const id = reelInput.match(/vimeo\.com\/(?:video\/)?(\d+)/i)[1];
     setIframe(`https://player.vimeo.com/video/${id}?badge=0&autopause=0&title=0&byline=0`);
@@ -534,7 +535,7 @@ $1
     const img=$('#febzThumb'); img.src = ytMax(febzId); img.addEventListener('error', ()=> img.src=ytThumb(febzId), {once:true});
   }
 setStatus('Link established');
-$1
+})();
 </script>
 </body>
 </html>
