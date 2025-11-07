@@ -676,40 +676,51 @@
   }
 
   /* ===== dot-only flicker ===== */
-  (function dotOnlyFlicker(){
-    const dot = document.querySelector('.brand .dot');
-    if (!dot) return;
-    const trigger = ()=>{ dot.classList.add('flick'); setTimeout(()=>dot.classList.remove('flick'), 950); };
-    const isInteractive = el => el && el.closest && el.closest('a, button, .tab-btn, .tile, .btn');
-    document.addEventListener('mouseover', e => { if (isInteractive(e.target)) trigger(); }, {passive:true});
-    document.addEventListener('click',    e => { if (isInteractive(e.target)) trigger(); }, {passive:true});
-  })();
+  /* dotOnlyFlicker removed and unified into sysDotEffects */
+/* ===== hover flicker (green) + click alert (yellow) ===== */
+  /* ===== Status Dot (sysDot) — unified hover/click animations that work pre- & post-load ===== */
+(function sysDotEffects(){
+  const dot = document.querySelector('.brand .dot');
+  if (!dot) return;
 
-  /* ===== hover flicker (green) + click alert (yellow) ===== */
-  (function enhanceDotAndContact(){
-    const dot = document.querySelector('.brand .dot');
-    const add = (cls, ms)=>{ if(!dot) return; dot.classList.add(cls); setTimeout(()=>dot.classList.remove(cls), ms); };
-    const isInteractive = el => el && el.closest && el.closest('a, button, .tab-btn, .tile, .btn');
-    document.addEventListener('mouseover', e=>{ if (isInteractive(e.target)) add('flick', 950); }, {passive:true});
-    document.addEventListener('focusin',   e=>{ if (isInteractive(e.target)) add('flick', 950); });
-    document.addEventListener('click',     e=>{ if (isInteractive(e.target)) add('alert', 1000); }, {passive:true});
+  // Helper to force-run a CSS keyframe regardless of other animations
+  function playAnim(name, ms){
+    dot.style.animation = 'none'; // reset any current animation (blinkFast/blinkSlow/etc.)
+    void dot.offsetWidth;         // reflow to flush
+    dot.style.animation = `${name} ${ms}ms linear 1`;
+  }
 
-    // CONTACT: mirror All My Links + Download Résumé into Contact tab once available
-    function tryInject(){
-      const wrap = document.getElementById('contactInfo');
-      const links = document.getElementById('btnLinks');
-      const resume = document.getElementById('btnResume');
-      if (!wrap || !links) return false;
-      if (!wrap.querySelector('[data-extra="links"]')){
-        const a = document.createElement('a'); a.className='btn'; a.href=links.href; a.target='_blank'; a.rel='noopener'; a.textContent='All My Links'; a.setAttribute('data-extra','links'); wrap.appendChild(a);
-      }
-      if (resume && resume.href && !wrap.querySelector('[data-extra="resume"]')){
-        const a = document.createElement('a'); a.className='btn'; a.href=resume.href; a.download=''; a.textContent='Download Résumé'; a.setAttribute('data-extra','resume'); wrap.appendChild(a);
-      }
-      return true;
+  const isInteractive = el => el && el.closest && el.closest('a, button, .tab-btn, .tile, .btn');
+
+  // Hover / focus: green flicker (works before & after body.ready)
+  function onHover(){ playAnim('dotFlick', 950); }
+  document.addEventListener('mouseover', e=>{ if (isInteractive(e.target)) onHover(); }, {passive:true});
+  document.addEventListener('focusin',   e=>{ if (isInteractive(e.target)) onHover(); });
+
+  // Click: brief yellow alert, then resume baseline
+  function onClick(){
+    dot.classList.add('alert');
+    playAnim('alertFlick', 960);
+    setTimeout(()=>{ dot.classList.remove('alert'); }, 980);
+  }
+  document.addEventListener('click', e=>{ if (isInteractive(e.target)) onClick(); }, {passive:true});
+
+  // CONTACT: mirror All My Links + Download Résumé into Contact tab once available (kept from previous logic)
+  function tryInject(){
+    const wrap = document.getElementById('contactInfo');
+    const links = document.getElementById('btnLinks');
+    const resume = document.getElementById('btnResume');
+    if (!wrap || !links) return false;
+    if (!wrap.querySelector('[data-extra="links"]')){
+      const a = document.createElement('a'); a.className='btn'; a.href=links.href; a.target='_blank'; a.rel='noopener'; a.textContent='All My Links'; a.setAttribute('data-extra','links'); wrap.appendChild(a);
     }
-    let tries = 0; const timer = setInterval(()=>{ if (tryInject() || ++tries>20) clearInterval(timer); }, 250);
-  })();
+    if (resume && resume.href && !wrap.querySelector('[data-extra="resume"]')){
+      const a = document.createElement('a'); a.className='btn'; a.href=resume.href; a.download=''; a.textContent='Download Résumé'; a.setAttribute('data-extra','resume'); wrap.appendChild(a);
+    }
+    return true;
+  }
+  let tries = 0; const timer = setInterval(()=>{ if (tryInject() || ++tries>20) clearInterval(timer); }, 250);
+})();
   </script>
 </body>
 </html>
