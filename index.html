@@ -679,38 +679,25 @@
   /* dotOnlyFlicker removed and unified into sysDotEffects */
 /* ===== hover flicker (green) + click alert (yellow) ===== */
   /* ===== Status Dot (sysDot) — unified hover/click animations that work pre- & post-load ===== */
-(function sysDotEffects(){
+/* ===== dot-only flicker: background stays calm ===== */
+  (function dotOnlyFlicker(){
+    const dot = document.querySelector('.brand .dot');
+    if (!dot) return;
+    const trigger = ()=>{ dot.classList.add('flick'); setTimeout(()=>dot.classList.remove('flick'), 950); };
+    const isInteractive = el => el && el.closest && el.closest('a, button, .tab-btn, .tile, .btn');
+    document.addEventListener('mouseover', e => { if (isInteractive(e.target)) trigger(); }, {passive:true});
+    document.addEventListener('click',    e => { if (isInteractive(e.target)) trigger(); }, {passive:true});
+  })();
+  (function enhanceDotAndContact(){
+  // DOT: subtle green flick on hover/focus, 1s yellow alert on click
   const dot = document.querySelector('.brand .dot');
-  if (!dot) return;
-
-  // Helper to force-run a CSS keyframe regardless of other animations
-  function playAnim(name, ms){
-    dot.style.animation = 'none'; // reset any current animation (blinkFast/blinkSlow/etc.)
-    void dot.offsetWidth;         // reflow to flush
-    dot.style.animation = `${name} ${ms}ms linear 1`;
-  }
-
+  const add = (cls, ms)=>{ if(!dot) return; dot.classList.add(cls); setTimeout(()=>dot.classList.remove(cls), ms); };
   const isInteractive = el => el && el.closest && el.closest('a, button, .tab-btn, .tile, .btn');
+  document.addEventListener('mouseover', e=>{ if (isInteractive(e.target)) add('flick', 950); }, {passive:true});
+  document.addEventListener('focusin',   e=>{ if (isInteractive(e.target)) add('flick', 950); });
+  document.addEventListener('click',     e=>{ if (isInteractive(e.target)) add('alert', 1000); }, {passive:true});
 
-  // Hover / focus: green flicker (works before & after body.ready)
-  function onHover(){ playAnim('dotFlick', 950); }
-  document.addEventListener('mouseover', e=>{ if (isInteractive(e.target)) onHover(); }, {passive:true});
-  document.addEventListener('focusin',   e=>{ if (isInteractive(e.target)) onHover(); });
-
-  // Click: brief yellow alert, then resume baseline
-  function onClick(){
-    // Suppress hover flickers during click window
-    let suppressUntil = Date.now() + 1000;
-    const hoverHandler = e=>{}; // (kept placeholder if needed later)
-
-    dot.classList.add('alert');
-    playAnim('alertFlick', 1000);
-    setTimeout(()=>{ dot.classList.remove('alert'); }, 1000);
-  }, 980);
-  }
-  document.addEventListener('click', e=>{ if (isInteractive(e.target)) onClick(); }, {passive:true});
-
-  // CONTACT: mirror All My Links + Download Résumé into Contact tab once available (kept from previous logic)
+  // CONTACT: mirror All My Links + Download Résumé into Contact tab once available
   function tryInject(){
     const wrap = document.getElementById('contactInfo');
     const links = document.getElementById('btnLinks');
