@@ -162,7 +162,10 @@
     .testimonial{border:1px solid rgba(66,255,209,.26); border-radius:14px; padding:12px 14px; background:linear-gradient(180deg, rgba(66,255,209,.06), rgba(66,255,209,.01))}
     .testimonial .quote{display:block; font-weight:700; color:#eafff6}
     .testimonial .from{display:block; color:var(--muted); font-size:.95em; margin-top:4px}
-  </style>
+    /* Smaller top-of-page contact buttons */
+  #topContact .btn{ font-size:0.7em; padding:.3em .55em; border-radius:10px }
+  #topContact{ gap:6px }
+</style>
 </head>
 <body>
   <div id="appRoot"><!-- everything inside this wrapper to prevent duplicates -->
@@ -686,16 +689,16 @@
     const trigger = ()=>{ dot.classList.add('flick'); setTimeout(()=>dot.classList.remove('flick'), 950); };
     const isInteractive = el => el && el.closest && el.closest('a, button, .tab-btn, .tile, .btn');
     document.addEventListener('mouseover', e => { if (isInteractive(e.target)) trigger(); }, {passive:true});
-    document.addEventListener('click',    e => { if (isInteractive(e.target)) trigger(); }, {passive:true});
+    document.addEventListener('focusin',   e => { if (isInteractive(e.target)) trigger(); });
   })();
   (function enhanceDotAndContact(){
-  // DOT: subtle green flick on hover/focus, 1s yellow alert on click
+  // DOT: green flick on hover/focus both pre/post-load; yellow alert on click (~1s)
   const dot = document.querySelector('.brand .dot');
   const add = (cls, ms)=>{ if(!dot) return; dot.classList.add(cls); setTimeout(()=>dot.classList.remove(cls), ms); };
   const isInteractive = el => el && el.closest && el.closest('a, button, .tab-btn, .tile, .btn');
   document.addEventListener('mouseover', e=>{ if (isInteractive(e.target)) add('flick', 950); }, {passive:true});
   document.addEventListener('focusin',   e=>{ if (isInteractive(e.target)) add('flick', 950); });
-  document.addEventListener('click',     e=>{ if (isInteractive(e.target)) add('alert', 1000); }, {passive:true});
+  document.addEventListener('click',     e=>{ if (isInteractive(e.target)) { add('alert', 1000); add('flick', 950); } }, {passive:true});
 
   // CONTACT: mirror All My Links + Download Résumé into Contact tab once available
   function tryInject(){
