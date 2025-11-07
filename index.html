@@ -11,13 +11,13 @@
   <meta name="theme-color" content="#0c0f12" />
   <style>
     :root{
-      --bg:#0b0f11;           /* site background */
-      --panel:#020405;        /* black control-panel windows */
-      --card:#05090b;         /* cards */
-      --txt:#9fffcf;          /* CRT green body text */
-      --muted:#74cdaa;        /* secondary green */
-      --accent:#00ff9c;       /* neon */
-      --accent-2:#42ffd1;     /* soft neon */
+      --bg:#0b0f11;
+      --panel:#020405;
+      --card:#05090b;
+      --txt:#9fffcf;
+      --muted:#74cdaa;
+      --accent:#00ff9c;
+      --accent-2:#42ffd1;
       --grid:clamp(14px, 1.8vw, 24px);
       --radius:18px;
       --shadow:0 14px 40px rgba(0,0,0,.45);
@@ -41,16 +41,16 @@
     a{color:var(--accent); text-decoration:none}
     a:hover{filter:brightness(1.18)}
 
-    /* Full-bleed, looping banner */
+    /* Full-bleed, looping banner (no overlap) */
     .banner{position:relative; width:100vw; left:50%; right:50%; margin-left:-50vw; margin-right:-50vw; padding:clamp(8px,1.2vw,14px) 0; z-index:1}
     .banner .rail{height:clamp(110px, 16vw, 220px); position:relative; overflow:hidden; border-radius:clamp(10px,1.4vw,18px); background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0)); border:1px solid rgba(0,255,156,.15); box-shadow:var(--shadow)}
-    .marquee{position:absolute; inset:0; display:flex; align-items:center; gap:clamp(10px,1.2vw,16px); animation:scrollX linear infinite; will-change:transform}
+    .marquee{position:absolute; inset:0; display:flex; align-items:center; gap:0; animation:scrollX linear infinite; will-change:transform; flex-wrap:nowrap}
     @keyframes scrollX{ from{ transform:translateX(0) } to{ transform:translateX(-50%) } }
     .marquee[data-speed="med"]{ animation-duration: 42s }
-    .marquee .track{display:flex; gap:clamp(10px,1.2vw,16px)}
-    .tile{flex:0 0 auto; height:calc(100% - clamp(8px,1vw,12px)); aspect-ratio:16/9; position:relative; border-radius:clamp(8px,1vw,14px); overflow:hidden; background:#0b1414; border:1px solid rgba(66,255,209,.18)}
-    .tile img{height:100%; width:100%; object-fit:cover; display:block; filter:saturate(.95) contrast(1.06)}
-    .tile[data-missing="1"]{display:none} /* hide skipped tiles until they recover */
+    .marquee .track{display:inline-flex; align-items:center; flex-wrap:nowrap}
+    .tile{flex:0 0 auto; height:calc(100% - clamp(8px,1vw,12px)); aspect-ratio:16/9; position:relative; border-radius:clamp(8px,1vw,14px); overflow:hidden; background:#0b1414; border:1px solid rgba(66,255,209,.18); margin-right:clamp(10px,1.2vw,16px)}
+    .tile img{height:100%; width:100%; object-fit:cover; display:block}
+    .tile[data-missing="1"]{display:none}
     .tile::after{content:attr(data-title); position:absolute; left:0; right:0; bottom:0; font-size:clamp(10px,.9vw,12px); padding:.45em .6em; color:#caffec; background:linear-gradient(180deg, transparent, rgba(0,0,0,.75)); text-shadow:0 1px 2px rgba(0,0,0,.55)}
 
     .wrap{max-width:min(1200px, 92vw); margin:0 auto; padding:clamp(16px,2vw,28px); position:relative; z-index:1}
@@ -179,6 +179,14 @@
           <small class="muted">(Hand-picked videos • Shorts excluded)</small>
         </div>
         <div id="personalGrid" class="grid"></div>
+        <!-- Latest from YouTube (auto-updating uploads playlist) -->
+        <div class="card pad" id="latestBox" style="margin-top:var(--grid); display:none">
+          <h3 style="margin-top:0">Latest from YouTube</h3>
+          <div class="reel" style="aspect-ratio:16/9">
+            <iframe id="latestFrame" src="" title="YouTube uploads" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+          </div>
+          <small class="muted">This auto-pulls your uploads feed from YouTube. Shorts may still appear inside the feed.</small>
+        </div>
         <div class="muted" style="margin-top:1rem;font-size:.9em">Also archiving my father's documentary work: <a href="https://www.youtube.com/@FebzFoundFootage" target="_blank" rel="noopener">FebzFoundFootage</a>.</div>
       </div>
     </section>
@@ -198,7 +206,8 @@
       newsUrl: "https://www.youtube.com/watch?v=gM5H6vsGIcs",
       resumeFile: "https://raw.githubusercontent.com/arifeblowitzvfx/AriFeblowitzvfx.com-v3/main/Ari_Feblowitz_Resume_2025.pdf",
 
-      knownFor: [],
+      showLatestFromYouTube: true,        // set false to hide the auto-updating uploads embed
+      youtubeChannelId: "UC926CKBvQdno5vqAav7DKlg", // used only if showLatestFromYouTube is true
 
       // Professional — newest/high-profile first (expand freely)
       proProjects: [
@@ -258,7 +267,7 @@
     };
 
     /* =========================
-       RUNTIME — robust image handling + periodic refresh
+       RUNTIME — overlap-proof banner + retries + latest uploads
        ========================= */
     const $ = (sel, el=document) => el.querySelector(sel);
     const $$ = (sel, el=document) => [...el.querySelectorAll(sel)];
@@ -287,6 +296,15 @@
     if (CONFIG.newsUrl) $("#btnNews").href = CONFIG.newsUrl; else $("#btnNews").classList.add('hide');
     if (CONFIG.resumeFile) $("#btnResume").href = CONFIG.resumeFile;
 
+    // Latest from YouTube (auto-updating uploads playlist)
+    if (CONFIG.showLatestFromYouTube && CONFIG.youtubeChannelId){
+      const uploadsId = 'UU' + CONFIG.youtubeChannelId.slice(2);
+      const latestBox = document.getElementById('latestBox');
+      const latestFrame = document.getElementById('latestFrame');
+      latestFrame.src = `https://www.youtube.com/embed/videoseries?list=${uploadsId}&rel=0`;
+      latestBox.style.display = 'block';
+    }
+
     // ===== Helpers
     function placeholderTile(){
       return 'data:image/svg+xml;utf8,' + encodeURIComponent(
@@ -303,10 +321,10 @@
     }
 
     // Banner image loader with timeout + retry + periodic refresh
-    const BANNER_REFRESH_MS = 30000;         // how often to re-attempt missing images
-    const BANNER_LOAD_TIMEOUT_MS = 2500;     // how long to wait before treating as failed
-    const BANNER_MAX_RETRIES = 5;            // cap retries per tile
-    const bannerRegistry = new Set();        // track tiles for refresh
+    const BANNER_REFRESH_MS = 30000;
+    const BANNER_LOAD_TIMEOUT_MS = 2500;
+    const BANNER_MAX_RETRIES = 5;
+    const bannerRegistry = new Set();
 
     function loadWithTimeout(src){
       return new Promise((resolve)=>{
@@ -315,14 +333,14 @@
         const timer = setTimeout(()=>{ if (!done){ done = true; resolve(false); } }, BANNER_LOAD_TIMEOUT_MS);
         img.onload = ()=>{ if (!done){ done = true; clearTimeout(timer); resolve(true); } };
         img.onerror = ()=>{ if (!done){ done = true; clearTimeout(timer); resolve(false); } };
-        img.src = src + (src.includes('?') ? `&cb=${Date.now()}` : `?cb=${Date.now()}`); // cache-bust
+        img.src = src + (src.includes('?') ? `&cb=${Date.now()}` : `?cb=${Date.now()}`);
       });
     }
 
     async function attemptBannerImage(tileEl){
       const desired = tileEl.getAttribute('data-src');
       let retries = +(tileEl.getAttribute('data-retries')||0);
-      if (!desired || retries >= BANNER_MAX_RETRIES) return; // give up silently
+      if (!desired || retries >= BANNER_MAX_RETRIES) return;
       const ok = await loadWithTimeout(desired);
       if (ok){
         const img = tileEl.querySelector('img');
@@ -345,25 +363,9 @@
       }, BANNER_REFRESH_MS);
     }
 
-    function mkPosterImg(posterList, opts={}){
-      const img = document.createElement('img');
-      img.loading='lazy'; img.alt='';
-      const posters = (Array.isArray(posterList)? posterList : []).filter(Boolean);
-      const candidates = posters.slice();
-      if (opts.placeholderTitle){
-        candidates.push(titlePlaceholderSVG(opts.placeholderTitle));
-      } else {
-        candidates.push(placeholderTile());
-      }
-      let i = 0;
-      const setNext = ()=>{ if (i < candidates.length){ img.src = candidates[i++]; } else if (opts.onExhaust){ opts.onExhaust(); } };
-      img.addEventListener('error', setNext);
-      setNext();
-      return img;
-    }
     const ytThumb = (id) => `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
 
-    // ===== Banner — built from pro posters + personal thumbs; tiles that fail get retried later
+    // ===== Banner — built from pro posters + personal thumbs; overlap-proof
     const trackA = document.getElementById('trackA');
     const trackB = document.getElementById('trackB');
     function buildBanner(){
@@ -383,12 +385,11 @@
       const mk = t => {
         const a = document.createElement('a'); a.className='tile'; a.href=t.url||'#'; a.target='_blank'; a.rel='noopener'; a.setAttribute('data-title', t.title||'');
         // Start with placeholder visible; set desired src in data attribute and try to promote when available
-        const img = mkPosterImg([placeholderTile()]);
+        const img = new Image(); img.loading='lazy'; img.alt=''; img.src = placeholderTile();
         a.appendChild(img);
         a.setAttribute('data-src', t.img);
         a.setAttribute('data-retries', '0');
         bannerRegistry.add(a);
-        // initial attempt after a short delay to allow CSS/layout to stabilize
         setTimeout(()=>attemptBannerImage(a), 250);
         return a;
       };
@@ -396,7 +397,7 @@
       trackA.innerHTML = ''; trackB.innerHTML = '';
       if (!tiles.length){
         const a = document.createElement('a'); a.className='tile'; a.href='#'; a.setAttribute('data-title','Add projects/videos in CONFIG');
-        a.appendChild(mkPosterImg([placeholderTile()]));
+        const img = new Image(); img.src = placeholderTile(); a.appendChild(img);
         trackA.appendChild(a.cloneNode(true)); trackB.appendChild(a.cloneNode(true));
         return;
       }
@@ -405,12 +406,29 @@
     }
 
     // ===== Grids
+    function mkPosterImg(posterList, opts={}){
+      const img = document.createElement('img');
+      img.loading='lazy'; img.alt='';
+      const posters = (Array.isArray(posterList)? posterList : []).filter(Boolean);
+      const candidates = posters.slice();
+      if (opts.placeholderTitle){
+        candidates.push(titlePlaceholderSVG(opts.placeholderTitle));
+      } else {
+        candidates.push(placeholderTile());
+      }
+      let i = 0;
+      const setNext = ()=>{ if (i < candidates.length){ img.src = candidates[i++]; } };
+      img.addEventListener('error', setNext);
+      setNext();
+      return img;
+    }
+
     function renderGrid(el, arr){
       el.innerHTML = '';
       if (!arr || !arr.length){ el.innerHTML = `<div class="muted">No items yet. Edit <b>CONFIG</b> in this file to add projects.</div>`; return; }
       arr.forEach(p=>{
         const c = document.createElement('a'); c.className='proj card'; c.href=p.url||'#'; c.target='_blank'; c.rel='noopener';
-        const poster = mkPosterImg(p.posters||[], { placeholderTitle: p.title }); // last resort = title-on-black
+        const poster = mkPosterImg(p.posters||[], { placeholderTitle: p.title });
         const wrap = document.createElement('div'); wrap.className='thumb'; wrap.appendChild(poster);
         const meta = document.createElement('div'); meta.className='meta';
         meta.innerHTML = `<div class="title">${p.title||''}</div><div class="role">${p.role||''}</div>`;
