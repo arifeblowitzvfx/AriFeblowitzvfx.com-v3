@@ -699,9 +699,14 @@
 
   // Click: brief yellow alert, then resume baseline
   function onClick(){
+    // Suppress hover flickers during click window
+    let suppressUntil = Date.now() + 1000;
+    const hoverHandler = e=>{}; // (kept placeholder if needed later)
+
     dot.classList.add('alert');
-    playAnim('alertFlick', 960);
-    setTimeout(()=>{ dot.classList.remove('alert'); }, 980);
+    playAnim('alertFlick', 1000);
+    setTimeout(()=>{ dot.classList.remove('alert'); }, 1000);
+  }, 980);
   }
   document.addEventListener('click', e=>{ if (isInteractive(e.target)) onClick(); }, {passive:true});
 
