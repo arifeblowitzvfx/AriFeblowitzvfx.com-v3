@@ -16,7 +16,7 @@
     --radius:18px; --shadow:0 14px 40px rgba(0,0,0,.45);
     --tileH: clamp(120px, 14vw, 220px);
     --tileGap: clamp(10px,1.2vw,16px);
-    --speed: 55;
+    --speed: 55; /* px/sec */
   }
   *{box-sizing:border-box}
   html,body{height:100%}
@@ -29,28 +29,52 @@
     font:clamp(15px, 1.1vw, 18px)/1.65 Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
     overflow-y:overlay; letter-spacing:.15px; min-height:100svh;
   }
-  /* Base scanlines */
-  body::after{content:""; position:fixed; inset:0; pointer-events:none;
-    background-image:repeating-linear-gradient(to bottom, rgba(66,255,209,.12), rgba(66,255,209,.12) 2px, transparent 3px, transparent 6px);
-    mix-blend-mode:soft-light; opacity:.65; z-index:0; animation:scan 18s linear infinite, glowPulse 8s ease-in-out infinite}
-  @keyframes scan{0%{transform:translateY(0)} 100%{transform:translateY(-24px)}}
-  @keyframes glowPulse{0%,100%{opacity:.55}50%{opacity:.9}}
-  .flicker{animation:flicker 4.5s infinite steps(100)}
-  @keyframes flicker{0%,100%{filter:drop-shadow(0 0 8px rgba(0,255,156,.5))}50%{filter:drop-shadow(0 0 14px rgba(0,255,156,.85))}}
-  /* Soft radial monitor bloom */
-  body::before{content:""; position:fixed; inset:0; pointer-events:none;
-    background:radial-gradient(70% 55% at 50% 45%, rgba(0,255,156,.09), transparent 60%);
-    filter:blur(2px); z-index:0; opacity:.85; animation:glowPulse 8s ease-in-out infinite}
+
+  /* CRT scanlines + monitor bloom (amped) */
+  body::after{
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
+    background-image:
+      repeating-linear-gradient(
+        to bottom,
+        rgba(0,255,156,.18),
+        rgba(0,255,156,.18) 2px,
+        rgba(0,0,0,0) 3px,
+        rgba(0,0,0,0) 7px
+      );
+    mix-blend-mode:soft-light; opacity:.78;
+    animation:scan 16s linear infinite, glowPulse 7s ease-in-out infinite;
+  }
+  body::before{
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
+    background:
+      radial-gradient(70% 55% at 50% 45%, rgba(0,255,156,.10), transparent 60%),
+      radial-gradient(40% 30% at 60% 35%, rgba(0,255,156,.06), transparent 65%);
+    filter:blur(2px); opacity:.9; animation:glowPulse 7s ease-in-out infinite;
+  }
+  @keyframes scan{0%{transform:translateY(0)}100%{transform:translateY(-26px)}}
+  @keyframes glowPulse{0%,100%{opacity:.7}50%{opacity:1}}
+
+  /* Subtle CRT text glow/flicker */
+  .crt-glow{ text-shadow:
+      0 0 6px rgba(0,255,156,.22),
+      0 0 12px rgba(0,255,156,.16),
+      0 0 24px rgba(0,255,156,.10);
+  }
+  .flicker{ animation:flicker 4.8s infinite steps(120) }
+  @keyframes flicker{
+    0%,100%{filter:drop-shadow(0 0 8px rgba(0,255,156,.55))}
+    50%{filter:drop-shadow(0 0 14px rgba(0,255,156,.95))}
+  }
 
   a{color:var(--accent); text-decoration:none} a:hover{filter:brightness(1.18)}
 
   /* Banner */
   .banner{position:relative; width:100vw; left:50%; right:50%; margin-left:-50vw; margin-right:-50vw; padding:clamp(8px,1.2vw,14px) 0; z-index:1}
   .rail{height:calc(var(--tileH) + 10px); position:relative; overflow:hidden; border-radius:clamp(10px,1.4vw,18px);
-    background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0)); border:1px solid rgba(0,255,156,.18); box-shadow:var(--shadow)}
+    background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0)); border:1px solid rgba(0,255,156,.22); box-shadow:var(--shadow)}
   .rail .scroll{height:100%; display:flex; align-items:center; gap:var(--tileGap); padding:8px; will-change:transform}
   .tile{flex:0 0 auto; height:var(--tileH); position:relative; border-radius:clamp(8px,1vw,14px);
-    overflow:hidden; background:#0b1414; border:1px solid rgba(66,255,209,.18)}
+    overflow:hidden; background:#0b1414; border:1px solid rgba(66,255,209,.25)}
   .tile img{height:100%; width:100%; object-fit:cover; object-position:center; display:block}
   .tile::after{content:attr(data-title); position:absolute; left:0; right:0; bottom:0; font-size:clamp(10px,.9vw,12px);
     padding:.45em .6em; color:#caffec; background:linear-gradient(180deg, transparent, rgba(0,0,0,.78)); text-shadow:0 1px 2px rgba(0,0,0,.55)}
@@ -59,41 +83,55 @@
 
   .banner .ctrl{position:absolute; top:50%; translate:0 -50%; z-index:2; display:grid; place-items:center}
   .banner .prev{left:10px} .banner .next{right:10px}
-  .ctrl button{cursor:pointer; border:1px solid rgba(66,255,209,.25); background:rgba(4,10,10,.6); color:var(--txt); border-radius:12px; padding:.5em .7em; backdrop-filter:blur(4px)}
+  .ctrl button{cursor:pointer; border:1px solid rgba(66,255,209,.35); background:rgba(4,10,10,.6); color:var(--txt); border-radius:12px; padding:.5em .7em; backdrop-filter:blur(4px)}
   .ctrl button:hover{border-color:var(--accent)}
 
-  .wrap{max-width:min(1400px, 92vw); margin:0 auto; padding:clamp(16px,2vw,28px); position:relative; z-index:1}
+  .wrap{max-width:min(1500px, 94vw); margin:0 auto; padding:clamp(16px,2vw,28px); position:relative; z-index:1}
+
   .nav{display:flex; gap:clamp(8px,1vw,12px); align-items:center; justify-content:space-between; flex-wrap:wrap; margin:clamp(6px,.8vw,10px) 0}
-  .brand{display:flex; gap:clamp(10px,1.2vw,14px); align-items:center}
+  .brand{display:flex; gap:clamp(10px,1.2vw,14px); align-items:center; flex-wrap:wrap}
   .brand .dot{width:clamp(12px,1.2vw,16px); height:clamp(12px,1.2vw,16px); border-radius:50%;
     background:radial-gradient(circle at 30% 30%, var(--accent), #0f4630 70%); box-shadow:0 0 22px var(--accent); transition:filter .3s ease, background .3s ease}
-  /* Yellow while loading */
-  body.loading .brand .dot{
-    background:radial-gradient(circle at 30% 30%, #ffd24a, #6b5a1a 70%); box-shadow:0 0 18px #ffd24a;
-  }
+  body.loading .brand .dot{ background:radial-gradient(circle at 30% 30%, #ffd24a, #6b5a1a 70%); box-shadow:0 0 18px #ffd24a; }
   .brand h1{margin:0; font-weight:800; font-size:clamp(20px,2.6vw,34px); letter-spacing:.12em; text-transform:uppercase; color:#d9fff1}
-  .pill{border:1px dashed rgba(66,255,209,.35); border-radius:999px; padding:.4em .8em; font-size:clamp(11px,1vw,12px); color:var(--muted)}
-  .tabs{display:flex; gap:clamp(6px,.8vw,10px); flex-wrap:wrap}
-  .tab-btn{padding:.6em .9em; border-radius:12px; background:var(--panel); color:var(--txt); border:1px solid rgba(66,255,209,.18); cursor:pointer; font-weight:600}
+  .pill{border:1px dashed rgba(66,255,209,.45); border-radius:999px; padding:.4em .8em; font-size:clamp(11px,1vw,12px); color:var(--muted); backdrop-filter:blur(2px)}
+
+  /* Tabs — moved above About (right column) */
+  .tabs{display:flex; gap:clamp(6px,.8vw,10px); flex-wrap:wrap; justify-content:flex-end; margin:0 0 clamp(10px,1.2vw,14px)}
+  .tab-btn{padding:.6em .9em; border-radius:12px; background:var(--panel); color:var(--txt); border:1px solid rgba(66,255,209,.25); cursor:pointer; font-weight:600}
   .tab-btn.active{outline:1px solid var(--accent); box-shadow:0 0 0 2px rgba(0,255,156,.12) inset}
 
-  /* Bigger layout: reel dominates */
-  .hero{margin:clamp(12px,1.6vw,20px) 0; display:grid; grid-template-columns: minmax(0, 1.8fr) minmax(0, .8fr); gap:var(--grid)}
-  @media (max-width:1200px){ .hero{grid-template-columns:1.4fr .8fr} }
-  @media (max-width:920px){ .hero{grid-template-columns:1fr} }
-  .card{background:var(--panel); border:1px solid rgba(66,255,209,.2); border-radius:var(--radius); box-shadow:var(--shadow)}
-  .pad{padding:clamp(14px,1.6vw,20px)}
-  .reel{position:relative; aspect-ratio:16/9; border-radius:14px; overflow:hidden; background:#000; border:1px solid rgba(66,255,209,.22)}
-  /* Make the video visually larger on tall screens too */
-  @media (min-height:900px){
-    .reel{min-height:520px}
+  /* Reel dominates. Extra right gutter so About is nudged right. */
+  .hero{
+    margin:clamp(12px,1.6vw,20px) 0;
+    display:grid;
+    grid-template-columns: minmax(0, 2.1fr) minmax(0, .9fr);
+    column-gap: calc(var(--grid) + 18px);
+    align-items:start;
   }
-  .reel iframe{position:absolute; inset:0; width:100%; height:100%}
+  @media (max-width:1200px){ .hero{grid-template-columns:1.5fr .9fr} }
+  @media (max-width:920px){
+    .hero{grid-template-columns:1fr}
+    .tabs{justify-content:flex-start}
+  }
+
+  .card{background:var(--panel); border:1px solid rgba(66,255,209,.26); border-radius:var(--radius); box-shadow:var(--shadow)}
+  .pad{padding:clamp(14px,1.6vw,20px)}
+
+  .reel{
+    position:relative; aspect-ratio:16/9; border-radius:14px; overflow:hidden;
+    background:#000; border:1px solid rgba(0,255,156,.28);
+    outline:1px solid rgba(0,255,156,.18);
+    box-shadow:0 0 20px rgba(0,255,156,.08) inset, 0 0 18px rgba(0,0,0,.6);
+  }
+  .reel iframe{position:absolute; inset:0; width:100%; height:100%; display:block; max-width:100%}
+  @media (min-height:900px){ .reel{min-height:540px} }
+
   .badges{display:flex; flex-wrap:wrap; gap:clamp(8px,1vw,12px); margin-top:clamp(8px,1vw,12px)}
-  .btn{--b:rgba(66,255,209,.18); display:inline-flex; align-items:center; gap:.5em; border:1px solid var(--b);
-    background:linear-gradient(180deg, rgba(66,255,209,.09), rgba(66,255,209,0)); padding:.65em 1em; border-radius:12px; color:var(--txt); cursor:pointer; font-weight:700}
-  .btn:hover{border-color:var(--accent); box-shadow:0 0 0 1px rgba(0,255,156,.15) inset}
-  .btn.primary{background:linear-gradient(180deg, rgba(0,255,156,.28), rgba(0,255,156,.12)); color:#eafff6; text-shadow:0 1px 0 rgba(0,0,0,.6); font-weight:800}
+  .btn{--b:rgba(66,255,209,.28); display:inline-flex; align-items:center; gap:.5em; border:1px solid var(--b);
+    background:linear-gradient(180deg, rgba(66,255,209,.12), rgba(66,255,209,0)); padding:.65em 1em; border-radius:12px; color:var(--txt); cursor:pointer; font-weight:700}
+  .btn:hover{border-color:var(--accent); box-shadow:0 0 0 1px rgba(0,255,156,.2) inset}
+  .btn.primary{background:linear-gradient(180deg, rgba(0,255,156,.3), rgba(0,255,156,.14)); color:#eafff6; text-shadow:0 1px 0 rgba(0,0,0,.6); font-weight:800}
 
   section{display:none}
   section.active{display:block}
@@ -120,13 +158,12 @@
   details.summaryless > summary{list-style:none}
   details.summaryless > summary::-webkit-details-marker{display:none}
 
-  /* Subtle green text glow on key UI */
-  h1,h2,h3,.title,.pill,.tab-btn,.btn,.role, footer{ text-shadow:0 0 6px rgba(0,255,156,.18), 0 0 12px rgba(0,255,156,.1) }
-
-  /* Brand dot blink/breathe */
-  .brand .dot{ animation:blink 7s infinite steps(120), breathe 5s ease-in-out infinite }
-  @keyframes blink{0%,97%,100%{opacity:1}98%{opacity:.3}99%{opacity:.75}}
-  @keyframes breathe{0%,100%{box-shadow:0 0 18px rgba(0,255,156,.9)}50%{box-shadow:0 0 26px rgba(0,255,156,1)}}
+  /* Amped CRT glow on key UI */
+  h1,h2,h3,.title,.pill,.tab-btn,.btn,.role, footer{ text-shadow:
+      0 0 6px rgba(0,255,156,.24),
+      0 0 12px rgba(0,255,156,.16),
+      0 0 20px rgba(0,255,156,.10);
+  }
 </style>
 </head>
 <body class="loading">
@@ -144,23 +181,19 @@
     <div class="nav">
       <div class="brand">
         <div class="dot flicker" aria-hidden="true"></div>
-        <h1 id="siteTitle">Loading data for SUBJECT: ARI FEBLOWITZ</h1>
-        <span id="siteSubtitle" class="pill">Techvis & Virtual Production Supervisor</span>
-        <a id="sysStatus" class="pill" href="#" title="Open all links">Initializing: Weyland Yutani–Cyberdyne link…</a>
+        <h1 id="siteTitle" class="crt-glow">Loading data for SUBJECT: ARI FEBLOWITZ</h1>
+        <span id="siteSubtitle" class="pill crt-glow">Techvis & Virtual Production Supervisor</span>
+        <a id="sysStatus" class="pill crt-glow" href="#" title="Open all links">Routing request to MOTHER…</a>
       </div>
-      <div class="tabs" role="tablist" aria-label="Sections">
-        <button class="tab-btn active" data-tab="home" role="tab" aria-selected="true">Home</button>
-        <button class="tab-btn" data-tab="professional" role="tab" aria-selected="false">Professional</button>
-        <button class="tab-btn" data-tab="rides" role="tab" aria-selected="false">Rides</button>
-        <button class="tab-btn" data-tab="personal" role="tab" aria-selected="false">Personal</button>
-      </div>
+      <!-- Tabs moved out of the top nav -->
     </div>
 
     <!-- HOME -->
     <section id="home" class="active" role="tabpanel">
       <div class="hero">
+        <!-- Left: Reel -->
         <div class="card pad">
-          <h2 id="reelHeader" style="margin:0 0 .6em">Initializing video uplink…</h2>
+          <h2 id="reelHeader" class="crt-glow" style="margin:0 0 .6em">Initializing video uplink…</h2>
           <div class="reel" id="reelBox">
             <iframe id="reelFrame" src="" title="Ari Feblowitz — Demo Reel" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
           </div>
@@ -172,13 +205,24 @@
             <a id="btnNews" class="btn" href="https://www.youtube.com/watch?v=gM5H6vsGIcs" target="_blank" rel="noopener">Ari in the News</a>
           </div>
         </div>
-        <div class="card pad">
-          <h2 id="aboutHeader" style="margin:0 0 .6em">Subject dossier…</h2>
-          <p class="muted" id="aboutStatus" style="margin:.2em 0 .8em">Routing request to MOTHER…</p>
-          <p id="about1">Bridging virtual and physical storytelling across techvis, previs/postvis, and virtual production. I translate complex sequences into precise, repeatable camera plans — trusted by directors, DPs, and VFX supervisors.</p>
-          <p id="about2" class="muted">Credits include Avatar: The Way of Water, Avengers: Endgame, Ant-Man and the Wasp, Guardians of the Galaxy Vol. 3, and more.</p>
-          <div id="skillsRow1" class="badges"></div>
-          <div id="skillsRow2" class="badges"></div>
+
+        <!-- Right: Tabs above About -->
+        <div>
+          <div class="tabs" role="tablist" aria-label="Sections">
+            <button class="tab-btn active" data-tab="home" role="tab" aria-selected="true">Home</button>
+            <button class="tab-btn" data-tab="professional" role="tab" aria-selected="false">Professional Work</button>
+            <button class="tab-btn" data-tab="rides" role="tab" aria-selected="false">Rides</button>
+            <button class="tab-btn" data-tab="personal" role="tab" aria-selected="false">Personal Work</button>
+          </div>
+
+          <div class="card pad">
+            <h2 id="aboutHeader" class="crt-glow" style="margin:0 0 .6em">Subject dossier…</h2>
+            <p class="muted crt-glow" id="aboutStatus" style="margin:.2em 0 .8em">Initializing: Weyland Yutani–Cyberdyne link…</p>
+            <p id="about1">Bridging virtual and physical storytelling across techvis, previs/postvis, and virtual production. I translate complex sequences into precise, repeatable camera plans — trusted by directors, DPs, and VFX supervisors.</p>
+            <p id="about2" class="muted">Credits include Avatar: The Way of Water, Avengers: Endgame, Ant-Man and the Wasp, Guardians of the Galaxy Vol. 3, and more.</p>
+            <div id="skillsRow1" class="badges"></div>
+            <div id="skillsRow2" class="badges"></div>
+          </div>
         </div>
       </div>
     </section>
@@ -187,7 +231,7 @@
     <section id="professional" role="tabpanel">
       <div class="card pad">
         <div class="nav" style="gap:8px; justify-content:space-between; align-items:flex-end">
-          <h2 style="margin:0">Professional Projects</h2>
+          <h2 class="crt-glow" style="margin:0">Professional Projects</h2>
           <small class="muted">Selected credits</small>
         </div>
         <div id="proGrid" class="grid"></div>
@@ -198,7 +242,7 @@
     <section id="rides" role="tabpanel">
       <div class="card pad">
         <div class="nav" style="gap:8px; justify-content:space-between; align-items:flex-end">
-          <h2 style="margin:0">Rides</h2>
+          <h2 class="crt-glow" style="margin:0">Rides</h2>
           <small class="muted">Themed entertainment</small>
         </div>
         <div id="ridesGrid" class="grid"></div>
@@ -209,14 +253,14 @@
     <section id="personal" role="tabpanel">
       <div class="card pad">
         <div class="nav" style="gap:8px; justify-content:space-between; align-items:flex-end">
-          <h2 style="margin:0">Personal Projects</h2>
+          <h2 class="crt-glow" style="margin:0">Personal Work</h2>
           <small class="muted">Original shorts & experiments</small>
         </div>
         <div id="personalGrid" class="grid"></div>
 
         <!-- Febz block -->
         <div class="card pad" id="febzBox" style="margin-top:var(--grid); display:none">
-          <h3 style="margin-top:0"><span id="febzHeading"></span> <a href="https://www.youtube.com/@FebzFoundFootage" target="_blank" rel="noopener">@FebzFoundFootage</a></h3>
+          <h3 class="crt-glow" style="margin-top:0"><span id="febzHeading"></span> <a href="https://www.youtube.com/@FebzFoundFootage" target="_blank" rel="noopener">@FebzFoundFootage</a></h3>
           <a id="febzLink" href="#" target="_blank" rel="noopener" class="thumb" style="display:block; aspect-ratio:16/9;">
             <img id="febzThumb" alt="FebzFoundFootage — Featured" style="width:100%; height:100%; object-fit:cover; display:block; border-radius:14px; border:1px solid rgba(66,255,209,.22)" />
           </a>
@@ -225,7 +269,7 @@
 
         <!-- Latest from YouTube (optional) -->
         <div class="card pad" id="latestBox" style="margin-top:var(--grid); display:none">
-          <h3 style="margin-top:0">Latest from YouTube</h3>
+          <h3 class="crt-glow" style="margin-top:0">Latest from YouTube</h3>
           <div class="reel" style="aspect-ratio:16/9">
             <iframe id="latestFrame" src="" title="YouTube uploads" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
           </div>
@@ -269,7 +313,7 @@ const normNum  = v => { const n = Number(String(v||"").replace(/[^\d.-]/g,"")); 
 const fixImdb  = url => (url||"").replace(/https?:\/\/pro\.imdb\.com/i,'https://www.imdb.com').replace(/\?ref_=pro.*$/,'');
 function buildCsvUrlFromGid(pubhtml, gid){ return pubhtml.replace(/\/pubhtml.*/, '/pub') + `?gid=${gid}&single=true&output=csv`; }
 
-/* Local cache for speed */
+/* Local cache */
 const cache = {
   get(key){ try{ return JSON.parse(localStorage.getItem(key)||'null'); }catch{return null} },
   set(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch{} }
@@ -301,16 +345,20 @@ function titlePlaceholderSVG(title){
 }
 
 /**********************
-  BANNER (existing)
+  BANNER
 ***********************/
 const rail = $('#bannerRail');
 const scrollEl = $('#bannerScroll');
-let autoRAF=null, paused=false, drag=false, lastX=0, vx=0, lastT=0;
+let autoRAF=null, paused=false, dragging=false, lastX=0, vx=0, lastT=0, dragDist=0;
 
 function makeTile(t){
-  const a=document.createElement('a'); a.className='tile ' + (t.type==='pro'?'poster':'wide'); a.href=t.url||'#'; a.target='_blank'; a.rel='noopener'; a.setAttribute('data-title', t.title||'');
+  const a=document.createElement('a');
+  a.className='tile ' + (t.type==='pro'?'poster':'wide');
+  a.href=t.url||'#'; a.target='_blank'; a.rel='noopener';
+  a.setAttribute('data-title', t.title||'');
   const img=new Image(); img.loading='lazy'; img.alt=''; img.src=t.img || titlePlaceholderSVG(t.title);
-  a.appendChild(img); return a;
+  a.appendChild(img);
+  return a;
 }
 function fillBanner(tiles){
   scrollEl.innerHTML='';
@@ -328,10 +376,31 @@ function step(ts){
 }
 function startAuto(){ cancelAnimationFrame(autoRAF); lastT=0; autoRAF=requestAnimationFrame(step); }
 function pauseAuto(p=true){ paused=p; }
-rail.addEventListener('pointerdown', (e)=>{ drag=true; pauseAuto(true); rail.setPointerCapture(e.pointerId); lastX=e.clientX; vx=0; });
-rail.addEventListener('pointermove', (e)=>{ if(!drag) return; const dx = lastX - e.clientX; rail.scrollLeft += dx; lastX=e.clientX; vx = dx*5; });
-rail.addEventListener('pointerup', ()=>{ drag=false; const start = performance.now(); const dur=450; const initV=vx; function inertia(now){ const t=Math.min(1, (now-start)/dur); const ease=1-Math.pow(1-t,3); rail.scrollLeft += initV*(1-ease)*0.02; if(t<1) requestAnimationFrame(inertia); else pauseAuto(false); } requestAnimationFrame(inertia); });
-rail.addEventListener('pointerleave', ()=>{ if(drag){drag=false; pauseAuto(false);} });
+
+/* Drag & inertia with ~6px click threshold */
+rail.addEventListener('pointerdown', (e)=>{
+  dragging=true; pauseAuto(true); rail.setPointerCapture(e.pointerId); lastX=e.clientX; vx=0; dragDist=0;
+});
+rail.addEventListener('pointermove', (e)=>{
+  if(!dragging) return;
+  const dx = lastX - e.clientX;
+  rail.scrollLeft += dx; lastX=e.clientX; vx = dx*5; dragDist += Math.abs(dx);
+});
+rail.addEventListener('pointerup', (e)=>{
+  const wasDragging=dragging; dragging=false;
+  if (dragDist < 6){
+    const target = e.target.closest('.tile');
+    if (target && target.href){
+      window.open(target.href, '_blank', 'noopener');
+      pauseAuto(false);
+      return;
+    }
+  }
+  const start = performance.now(); const dur=450; const initV=vx;
+  function inertia(now){ const t=Math.min(1, (now-start)/dur); const ease=1-Math.pow(1-t,3); rail.scrollLeft += initV*(1-ease)*0.02; if(t<1) requestAnimationFrame(inertia); else pauseAuto(false); }
+  if (wasDragging) requestAnimationFrame(inertia);
+});
+rail.addEventListener('pointerleave', ()=>{ if(dragging){dragging=false; pauseAuto(false);} });
 rail.addEventListener('mouseenter', ()=>pauseAuto(true));
 rail.addEventListener('mouseleave', ()=>pauseAuto(false));
 rail.addEventListener('wheel', (e)=>{ if (Math.abs(e.deltaX) < Math.abs(e.deltaY)) return; e.preventDefault(); rail.scrollLeft += e.deltaX; }, {passive:false});
@@ -354,16 +423,14 @@ const sysStatus = document.getElementById('sysStatus');
 function setStatus(msg, makeLink=false, linkHref=null){
   if (!sysStatus) return;
   sysStatus.textContent = msg;
-  if (makeLink){
-    sysStatus.href = linkHref || sysStatus.href || '#';
-  }
+  if (makeLink) sysStatus.href = linkHref || sysStatus.href || '#';
 }
 
 /**********************
   LOAD + RENDER
 ***********************/
 (async function init(){
-  // PRELOAD: show loading gags
+  // Gags while loading
   setStatus('Routing request to MOTHER…');
   const reelHeader = $('#reelHeader');
   const aboutHeader = $('#aboutHeader');
@@ -387,7 +454,7 @@ function setStatus(msg, makeLink=false, linkHref=null){
   const mainInfoRows = await pullTab('Main site info');
   const mainInfo = {}; (mainInfoRows||[]).forEach(r=> mainInfo[(r.key||'').trim()]=(r.value||'').trim());
 
-  // Apply main info (fallbacks already set in HTML)
+  // Apply main info
   const titleFromSheet = mainInfo.site_title || 'Ariel (Ari) Feblowitz';
   $('#siteTitle').textContent = titleFromSheet;
   $('#siteSubtitle').textContent = mainInfo.site_subtitle || 'Techvis & Virtual Production Supervisor';
@@ -402,13 +469,12 @@ function setStatus(msg, makeLink=false, linkHref=null){
   if (mainInfo.news_url) $('#btnNews').href = mainInfo.news_url;
   if (mainInfo.resume_url) $('#btnResume').href = mainInfo.resume_url;
 
-  // Status progresses + click goes to All My Links
-  aboutStatus.textContent = 'Data stream acquired.';
+  // Status: finalize (and hide About status line)
   setStatus('Link established', true, linksHref);
+  if (aboutStatus) aboutStatus.style.display = 'none';
 
-  // Turn the light green + restore proper name + headers
+  // Turn the light green + restore proper headings
   document.body.classList.remove('loading');
-  $('#siteTitle').textContent = titleFromSheet;
   if (reelHeader) reelHeader.textContent = 'Demo Reel';
   if (aboutHeader) aboutHeader.textContent = 'About';
 
