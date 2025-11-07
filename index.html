@@ -21,6 +21,9 @@
       --grid:clamp(14px, 1.8vw, 24px);
       --radius:18px;
       --shadow:0 14px 40px rgba(0,0,0,.45);
+      /* NEW: banner sizing */
+      --tile: clamp(140px, 16vw, 220px); /* square tile size */
+      --tile-gap: clamp(10px,1.2vw,16px);
     }
 
     *{box-sizing:border-box}
@@ -41,17 +44,42 @@
     a{color:var(--accent); text-decoration:none}
     a:hover{filter:brightness(1.18)}
 
-    /* Full-bleed, looping banner (no overlap) */
+    /* Full-bleed, looping banner (fixed-size, overlap-proof) */
     .banner{position:relative; width:100vw; left:50%; right:50%; margin-left:-50vw; margin-right:-50vw; padding:clamp(8px,1.2vw,14px) 0; z-index:1}
-    .banner .rail{height:clamp(110px, 16vw, 220px); position:relative; overflow:hidden; border-radius:clamp(10px,1.4vw,18px); background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0)); border:1px solid rgba(0,255,156,.15); box-shadow:var(--shadow)}
-    .marquee{position:absolute; inset:0; display:flex; align-items:center; gap:0; animation:scrollX linear infinite; will-change:transform; flex-wrap:nowrap}
-    @keyframes scrollX{ from{ transform:translateX(0) } to{ transform:translateX(-50%) } }
-    .marquee[data-speed="med"]{ animation-duration: 42s }
-    .marquee .track{display:inline-flex; align-items:center; flex-wrap:nowrap}
-    .tile{flex:0 0 auto; height:calc(100% - clamp(8px,1vw,12px)); aspect-ratio:16/9; position:relative; border-radius:clamp(8px,1vw,14px); overflow:hidden; background:#0b1414; border:1px solid rgba(66,255,209,.18); margin-right:clamp(10px,1.2vw,16px)}
-    .tile img{height:100%; width:100%; object-fit:cover; display:block}
+    .banner .rail{
+      height:var(--tile);
+      position:relative; overflow:hidden; border-radius:clamp(10px,1.4vw,18px);
+      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0));
+      border:1px solid rgba(0,255,156,.15); box-shadow:var(--shadow)
+    }
+    .marquee{
+      position:absolute; inset:0;
+      display:flex; align-items:center; gap:0;
+      will-change:transform; flex-wrap:nowrap;
+      width:max-content; /* width equals content width */
+      animation-name:scrollX; animation-timing-function:linear; animation-iteration-count:infinite;
+    }
+    /* animate one full content-width (-100%) for a seamless loop */
+    @keyframes scrollX{ from{ transform:translateX(0) } to{ transform:translateX(-100%) } }
+
+    .marquee .track{
+      display:inline-flex; align-items:center; flex-wrap:nowrap;
+    }
+
+    .tile{
+      flex:0 0 auto;
+      width:var(--tile); height:var(--tile); /* square slots */
+      position:relative; border-radius:clamp(8px,1vw,14px);
+      overflow:hidden; background:#0b1414; border:1px solid rgba(66,255,209,.18);
+      margin-right:var(--tile-gap);
+    }
+    .tile img{height:100%; width:100%; object-fit:cover; object-position:center; display:block}
     .tile[data-missing="1"]{display:none}
-    .tile::after{content:attr(data-title); position:absolute; left:0; right:0; bottom:0; font-size:clamp(10px,.9vw,12px); padding:.45em .6em; color:#caffec; background:linear-gradient(180deg, transparent, rgba(0,0,0,.75)); text-shadow:0 1px 2px rgba(0,0,0,.55)}
+    .tile::after{
+      content:attr(data-title); position:absolute; left:0; right:0; bottom:0;
+      font-size:clamp(10px,.9vw,12px); padding:.45em .6em; color:#caffec;
+      background:linear-gradient(180deg, transparent, rgba(0,0,0,.75)); text-shadow:0 1px 2px rgba(0,0,0,.55)
+    }
 
     .wrap{max-width:min(1200px, 92vw); margin:0 auto; padding:clamp(16px,2vw,28px); position:relative; z-index:1}
 
@@ -95,10 +123,10 @@
   </style>
 </head>
 <body>
-  <!-- FULL-BLEED BANNER (CSS marquee loop) -->
+  <!-- FULL-BLEED BANNER -->
   <div class="banner">
     <div class="rail card">
-      <div class="marquee" id="bannerTrack" data-speed="med" aria-label="Professional & Personal">
+      <div class="marquee" id="bannerTrack" aria-label="Professional & Personal">
         <div class="track" id="trackA"></div>
         <div class="track" id="trackB"></div>
       </div>
@@ -148,7 +176,7 @@
           </div>
           <div class="badges">
             <span class="pill">Virtual Production</span>
-            <span class="pill">On‑Set Techvis</span>
+            <span class="pill">On-Set Techvis</span>
             <span class="pill">Cyclops VP</span>
             <span class="pill">Technodolly</span>
             <span class="pill">Spydercam</span>
@@ -179,6 +207,15 @@
           <small class="muted">(Hand-picked videos • Shorts excluded)</small>
         </div>
         <div id="personalGrid" class="grid"></div>
+
+        <!-- NEW: FebzFoundFootage Feature (above Latest from YouTube) -->
+        <div class="card pad" id="febzBox" style="margin-top:var(--grid);">
+          <h3 style="margin-top:0">Also archiving my father's documentary work: <a href="https://www.youtube.com/@FebzFoundFootage" target="_blank" rel="noopener">FebzFoundFootage</a></h3>
+          <a id="febzLink" href="#" target="_blank" rel="noopener" class="thumb" style="display:block; aspect-ratio:16/9;">
+            <img id="febzThumb" alt="FebzFoundFootage — Featured" style="width:100%; height:100%; object-fit:cover; display:block; border-radius:14px; border:1px solid rgba(66,255,209,.22)" />
+          </a>
+        </div>
+
         <!-- Latest from YouTube (auto-updating uploads playlist) -->
         <div class="card pad" id="latestBox" style="margin-top:var(--grid); display:none">
           <h3 style="margin-top:0">Latest from YouTube</h3>
@@ -187,7 +224,6 @@
           </div>
           <small class="muted">This auto-pulls your uploads feed from YouTube. Shorts may still appear inside the feed.</small>
         </div>
-        <div class="muted" style="margin-top:1rem;font-size:.9em">Also archiving my father's documentary work: <a href="https://www.youtube.com/@FebzFoundFootage" target="_blank" rel="noopener">FebzFoundFootage</a>.</div>
       </div>
     </section>
 
@@ -206,10 +242,13 @@
       newsUrl: "https://www.youtube.com/watch?v=gM5H6vsGIcs",
       resumeFile: "https://raw.githubusercontent.com/arifeblowitzvfx/AriFeblowitzvfx.com-v3/main/Ari_Feblowitz_Resume_2025.pdf",
 
-      showLatestFromYouTube: true,        // set false to hide the auto-updating uploads embed
-      youtubeChannelId: "UC926CKBvQdno5vqAav7DKlg", // used only if showLatestFromYouTube is true
+      showLatestFromYouTube: true,
+      youtubeChannelId: "UC926CKBvQdno5vqAav7DKlg",
 
-      // Professional — newest/high-profile first (expand freely)
+      /* NEW: FebzFoundFootage feature video */
+      febzFeaturedVideoId: "AAebMfrFtWs",
+
+      // Professional — newest/high-profile first
       proProjects: [
         { title:"Predator: Badlands (TBA)", role:"Visualization", posters:[
           "https://upload.wikimedia.org/wikipedia/en/9/90/Predator_Badlands_Poster.jpg",
@@ -267,7 +306,7 @@
     };
 
     /* =========================
-       RUNTIME — overlap-proof banner + retries + latest uploads
+       RUNTIME
        ========================= */
     const $ = (sel, el=document) => el.querySelector(sel);
     const $$ = (sel, el=document) => [...el.querySelectorAll(sel)];
@@ -305,15 +344,27 @@
       latestBox.style.display = 'block';
     }
 
+    // FebzFoundFootage feature
+    (function setupFebz(){
+      const id = CONFIG.febzFeaturedVideoId;
+      const link = $("#febzLink");
+      const img  = $("#febzThumb");
+      if (!id){ link.style.display = 'none'; return; }
+      link.href = `https://www.youtube.com/watch?v=${id}`;
+      // prefer maxresdefault if present; fall back to hqdefault automatically
+      img.src = `https://img.youtube.com/vi/${id}/maxresdefault.jpg`;
+      img.addEventListener('error', ()=>{ img.src = `https://img.youtube.com/vi/${id}/hqdefault.jpg`; }, { once:true });
+    })();
+
     // ===== Helpers
     function placeholderTile(){
       return 'data:image/svg+xml;utf8,' + encodeURIComponent(
-        "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 450'><rect width='100%' height='100%' fill='#000'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' fill='#74cdaa' font-family='monospace' font-size='22'>Poster unavailable</text></svg>"
+        "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 800'><rect width='100%' height='100%' fill='#000'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' fill='#74cdaa' font-family='monospace' font-size='22'>Poster unavailable</text></svg>"
       );
     }
     function titlePlaceholderSVG(title){
       const safe = (title||'Untitled').replace(/&/g,'&amp;').replace(/</g,'&lt;');
-      const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 450'>
+      const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 800'>
         <rect width='100%' height='100%' fill='#000'/>
         <text x='50%' y='50%' fill='#9fffcf' font-family='Inter, Segoe UI, Roboto, Arial, sans-serif' font-size='36' text-anchor='middle' dominant-baseline='middle'>${safe}</text>
       </svg>`;
@@ -365,9 +416,11 @@
 
     const ytThumb = (id) => `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
 
-    // ===== Banner — built from pro posters + personal thumbs; overlap-proof
+    // ===== Banner — built from pro posters + personal thumbs (interleaved)
+    const marquee = document.getElementById('bannerTrack');
     const trackA = document.getElementById('trackA');
     const trackB = document.getElementById('trackB');
+
     function buildBanner(){
       const pro = (CONFIG.proProjects||[]).flatMap(p => {
         const posters = Array.isArray(p.posters)? p.posters.filter(Boolean) : [];
@@ -384,7 +437,6 @@
 
       const mk = t => {
         const a = document.createElement('a'); a.className='tile'; a.href=t.url||'#'; a.target='_blank'; a.rel='noopener'; a.setAttribute('data-title', t.title||'');
-        // Start with placeholder visible; set desired src in data attribute and try to promote when available
         const img = new Image(); img.loading='lazy'; img.alt=''; img.src = placeholderTile();
         a.appendChild(img);
         a.setAttribute('data-src', t.img);
@@ -396,13 +448,21 @@
 
       trackA.innerHTML = ''; trackB.innerHTML = '';
       if (!tiles.length){
-        const a = document.createElement('a'); a.className='tile'; a.href='#'; a.setAttribute('data-title','Add projects/videos in CONFIG');
-        const img = new Image(); img.src = placeholderTile(); a.appendChild(img);
-        trackA.appendChild(a.cloneNode(true)); trackB.appendChild(a.cloneNode(true));
-        return;
+        const ph = mk({ title:'Add projects/videos in CONFIG', img: placeholderTile(), url:'#' });
+        trackA.appendChild(ph.cloneNode(true)); trackB.appendChild(ph.cloneNode(true));
+      } else {
+        tiles.forEach(t=> trackA.appendChild(mk(t)));
+        // duplicate for seamless loop
+        tiles.forEach(t=> trackB.appendChild(mk(t)));
       }
-      tiles.forEach(t=> trackA.appendChild(mk(t)));
-      tiles.forEach(t=> trackB.appendChild(mk(t))); // duplicate for seamless -50% scroll
+
+      // Set duration by content width to avoid “compression”
+      requestAnimationFrame(()=>{
+        const fullWidth = trackA.scrollWidth + trackB.scrollWidth;
+        const pxPerSec = 60; // adjust to taste
+        const dur = Math.max(20, Math.round(fullWidth / pxPerSec));
+        marquee.style.animationDuration = dur + 's';
+      });
     }
 
     // ===== Grids
