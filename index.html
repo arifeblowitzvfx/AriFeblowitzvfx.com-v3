@@ -11,8 +11,7 @@
   <meta name="theme-color" content="#0c0f12" />
   <style>
     /* =========================
-       THEME — TECH NOIR v2 (sleeker, fluid, green-on-black)
-       Single-file, optional GitHub folder auto-pull
+       THEME — TECH NOIR v3 (sleeker, fluid, green-on-black)
        ========================= */
     :root{
       --bg:#0b0f11;           /* site background */
@@ -45,10 +44,15 @@
     a{color:var(--accent); text-decoration:none}
     a:hover{filter:brightness(1.18)}
 
-    /* Full-bleed known-for banner */
+    /* Full-bleed known-for banner — pure CSS marquee */
     .banner{position:relative; width:100vw; left:50%; right:50%; margin-left:-50vw; margin-right:-50vw; padding:clamp(8px,1.2vw,14px) 0; z-index:1}
     .banner .rail{height:clamp(110px, 16vw, 220px); position:relative; overflow:hidden; border-radius:clamp(10px,1.4vw,18px); background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0)); border:1px solid rgba(0,255,156,.15); box-shadow:var(--shadow)}
-    .marquee{display:flex; gap:clamp(10px,1.2vw,16px); position:absolute; inset:0; align-items:center; will-change:transform}
+    .marquee{position:absolute; inset:0; display:flex; align-items:center; gap:clamp(10px,1.2vw,16px); animation:scrollX linear infinite; will-change:transform}
+    @keyframes scrollX{ from{ transform:translateX(0) } to{ transform:translateX(-50%) } }
+    .marquee[data-speed="slow"]{ animation-duration: 60s }
+    .marquee[data-speed="med"]{  animation-duration: 40s }
+    .marquee[data-speed="fast"]{ animation-duration: 28s }
+    .marquee .track{display:flex; gap:clamp(10px,1.2vw,16px)}
     .tile{flex:0 0 auto; height:calc(100% - clamp(8px,1vw,12px)); aspect-ratio:16/9; position:relative; border-radius:clamp(8px,1vw,14px); overflow:hidden; background:#0b1414; border:1px solid rgba(66,255,209,.18)}
     .tile img{height:100%; width:100%; object-fit:cover; display:block; filter:saturate(.95) contrast(1.06)}
     .tile::after{content:attr(data-title); position:absolute; left:0; right:0; bottom:0; font-size:clamp(10px,.9vw,12px); padding:.45em .6em; color:#caffec; background:linear-gradient(180deg, transparent, rgba(0,0,0,.75)); text-shadow:0 1px 2px rgba(0,0,0,.55)}
@@ -76,9 +80,9 @@
     .reel iframe{position:absolute; inset:0; width:100%; height:100%}
 
     .badges{display:flex; flex-wrap:wrap; gap:clamp(8px,1vw,12px); margin-top:clamp(8px,1vw,12px)}
-    .btn{--b:rgba(66,255,209,.18); display:inline-flex; align-items:center; gap:.5em; border:1px solid var(--b); background:linear-gradient(180deg, rgba(66,255,209,.09), rgba(66,255,209,0)); padding:.65em 1em; border-radius:12px; color:var(--txt); cursor:pointer; font-weight:600}
+    .btn{--b:rgba(66,255,209,.18); display:inline-flex; align-items:center; gap:.5em; border:1px solid var(--b); background:linear-gradient(180deg, rgba(66,255,209,.09), rgba(66,255,209,0)); padding:.65em 1em; border-radius:12px; color:var(--txt); cursor:pointer; font-weight:700}
     .btn:hover{border-color:var(--accent); box-shadow:0 0 0 1px rgba(0,255,156,.15) inset}
-    .btn.primary{background:linear-gradient(180deg, rgba(0,255,156,.22), rgba(0,255,156,.08)); color:#04271d}
+    .btn.primary{background:linear-gradient(180deg, rgba(0,255,156,.22), rgba(0,255,156,.08)); color:#eafff6} /* brighter label */
 
     section{display:none}
     section.active{display:block}
@@ -96,20 +100,15 @@
   </style>
 </head>
 <body>
-  <!--
-  ================================
-  SETUP NOTES
-  ================================
-  1) Keep as a single-file `index.html` in your repo.
-  2) Prefer local images (committed to your repo). Optionally, set GITHUB_CONFIG below to auto-pull images from a folder using the GitHub API (no keys required, but unauthenticated rate limits apply).
-  3) Drop your resume as `resume.pdf` OR put it in a folder (e.g., `docs/`) and set `resumeFolder` to auto-pick the first .pdf.
-  4) Edit CONFIG for links and manual project lists. Folder auto-pull is for the top banner images; project grids remain manual for best control.
-  -->
+  <!-- SINGLE-FILE. Put in repo root as index.html. -->
 
-  <!-- FULL-BLEED BANNER (auto-scroll loop) -->
+  <!-- FULL-BLEED BANNER (CSS marquee loop) -->
   <div class="banner">
     <div class="rail card">
-      <div class="marquee" id="bannerTrack" aria-label="Known for"></div>
+      <div class="marquee" id="bannerTrack" data-speed="med" aria-label="Known for">
+        <div class="track" id="trackA"></div>
+        <div class="track" id="trackB"></div>
+      </div>
     </div>
   </div>
 
@@ -180,7 +179,7 @@
       </div>
     </section>
 
-    <footer class="muted">© <span id="year"></span> Ariel (Ari) Feblowitz • Single‑file GitHub Page • Theme: Tech‑Noir v2</footer>
+    <footer class="muted">© <span id="year"></span> Ariel (Ari) Feblowitz • Single‑file GitHub Page • Theme: Tech‑Noir v3</footer>
   </div>
 
   <script>
@@ -188,41 +187,53 @@
        CONFIG — EDIT THIS ONLY
        ========================= */
     const CONFIG = {
-      youtubeId: "REPLACE_WITH_YOUTUBE_ID", // e.g., "dQw4w9WgXcQ"
+      youtubeId: "REPLACE_WITH_YOUTUBE_ID",
       imdbUrl: "https://www.imdb.com/name/nm4409645/",
       youtubeUrl: "https://www.youtube.com/@DirectorPsycho",
       allLinksUrl: "https://linktr.ee/directorPsycho",
-      newsUrl: "", // optional
-      resumeFile: "resume.pdf", // direct path OR "" to auto-pick from resumeFolder
-      // Manual fallback tiles for banner if no GitHub folder is configured
+      newsUrl: "",
+      resumeFile: "resume.pdf",
+
+      // Top banner tiles (replace with local paths or keep these stable poster URLs)
       knownFor: [
-        // { title:"Avatar: The Way of Water", img:"images/avatar2.jpg", url:"https://www.imdb.com/title/tt1630029/" },
+        { title:"Avatar: The Way of Water", img:"https://upload.wikimedia.org/wikipedia/en/2/2c/Avatar_The_Way_of_Water_poster.jpg", url:"https://www.imdb.com/title/tt1630029/" },
+        { title:"Avengers: Endgame", img:"https://upload.wikimedia.org/wikipedia/en/0/0d/Avengers_Endgame_poster.jpg", url:"https://www.imdb.com/title/tt4154796/" },
+        { title:"Ant‑Man and the Wasp", img:"https://upload.wikimedia.org/wikipedia/en/2/2c/Ant-Man_and_the_Wasp_poster.jpg", url:"https://www.imdb.com/title/tt5095030/" },
+        { title:"Guardians of the Galaxy Vol. 3", img:"https://upload.wikimedia.org/wikipedia/en/5/50/Guardians_of_the_Galaxy_Vol._3_poster.jpg", url:"https://www.imdb.com/title/tt6791350/" },
+        { title:"Venom", img:"https://upload.wikimedia.org/wikipedia/en/0/05/Venom_poster.jpg", url:"https://www.imdb.com/title/tt1270797/" },
+        { title:"Twisters", img:"https://upload.wikimedia.org/wikipedia/en/8/8f/Twisters_film_poster.jpg", url:"https://www.imdb.com/title/tt12584954/" }
       ],
-      // Project grids (manual for precision)
+
+      // Professional (curated; newest/highest-profile first; on‑set callouts)
       proProjects: [
-        // { title:"Guardians of the Galaxy Vol. 3", role:"Techvis / VP Supervisor", img:"images/gotg3.jpg", url:"https://www.imdb.com/title/tt6791350/" },
+        { title:"Avatar: The Way of Water (2022)", role:"Virtual Production / Techvis / Motion Control — On‑Set", img:"https://upload.wikimedia.org/wikipedia/en/2/2c/Avatar_The_Way_of_Water_poster.jpg", url:"https://www.imdb.com/title/tt1630029/" },
+        { title:"Guardians of the Galaxy Vol. 3 (2023)", role:"Techvis / VP Supervisor", img:"https://upload.wikimedia.org/wikipedia/en/5/50/Guardians_of_the_Galaxy_Vol._3_poster.jpg", url:"https://www.imdb.com/title/tt6791350/" },
+        { title:"Twisters (2024)", role:"Techvis", img:"https://upload.wikimedia.org/wikipedia/en/8/8f/Twisters_film_poster.jpg", url:"https://www.imdb.com/title/tt12584954/" },
+        { title:"Avengers: Endgame (2019)", role:"Techvis / Previs — On‑Set", img:"https://upload.wikimedia.org/wikipedia/en/0/0d/Avengers_Endgame_poster.jpg", url:"https://www.imdb.com/title/tt4154796/" },
+        { title:"Ant‑Man and the Wasp (2018)", role:"Techvis — On‑Set; scale & motion planning", img:"https://upload.wikimedia.org/wikipedia/en/2/2c/Ant-Man_and_the_Wasp_poster.jpg", url:"https://www.imdb.com/title/tt5095030/" },
+        { title:"Venom (2018)", role:"Techvis", img:"https://upload.wikimedia.org/wikipedia/en/0/05/Venom_poster.jpg", url:"https://www.imdb.com/title/tt1270797/" },
+        { title:"Kraven the Hunter (2024)", role:"Techvis", img:"https://upload.wikimedia.org/wikipedia/en/1/13/Kraven_the_Hunter_poster.jpg", url:"https://www.imdb.com/title/tt8790086/" },
+        { title:"Madame Web (2024)", role:"Techvis", img:"https://upload.wikimedia.org/wikipedia/en/4/4e/Madame_Web_poster.jpg", url:"https://www.imdb.com/title/tt11057302/" },
+        { title:"The Mandalorian (TV)", role:"Virtual Production / Techvis — On‑Set", img:"https://upload.wikimedia.org/wikipedia/en/c/c5/The_Mandalorian_season_2_poster.jpg", url:"https://www.imdb.com/title/tt8111088/" }
       ],
+
+      // Personal — thumbnails auto from YouTube IDs (img.youtube.com)
       personalProjects: [
-        // { title:"Deadpool vs Alien vs Terminator", role:"Animated Short", img:"images/dvavt.jpg", url:"https://www.youtube.com/watch?v=..." },
+        { title:"Pumpkin Smashers", role:"Animated Short (Unreal). Award‑Winning — Chicago Horror Film Fest: Best Animation.", img:"https://img.youtube.com/vi/q_MFAiCeWUk/hqdefault.jpg", url:"https://www.youtube.com/watch?v=q_MFAiCeWUk" }
+        // Add more: { title:"Alien vs Terminator", role:"Animated Short (Unreal). Viral.", img:"https://img.youtube.com/vi/VIDEO_ID/hqdefault.jpg", url:"https://www.youtube.com/watch?v=VIDEO_ID" }
       ],
+
+      // Auto-embed uploads playlist under Personal (no API key)
+      youtubeChannelId: "UC926CKBvQdno5vqAav7DKlg"
     };
 
-    /* Optional GitHub folder auto-pull. Set these to enable:
-       Example:
-       const GITHUB_CONFIG = {
-         owner: 'AriFeb',
-         repo: 'ari-portfolio',
-         branch: 'main',
-         bannerFolder: 'knownfor',   // folder of poster JPG/PNG in repo
-         resumeFolder: 'docs'        // folder containing a resume .pdf (first found is used)
-       };
-    */
+    /* Optional GitHub folder auto-pull (set to your repo to source banner images or resume from folders) */
     const GITHUB_CONFIG = {
       owner: '',
       repo: '',
       branch: 'main',
-      bannerFolder: '',
-      resumeFolder: ''
+      bannerFolder: '',   // e.g., 'knownfor'
+      resumeFolder: ''    // e.g., 'docs'
     };
 
     /* =========================
@@ -254,7 +265,7 @@
     $("#btnLinks").href = CONFIG.allLinksUrl;
     if (CONFIG.newsUrl) $("#btnNews").href = CONFIG.newsUrl; else $("#btnNews").classList.add('hide');
 
-    // Resume: direct file or first PDF from resumeFolder
+    // Resume: direct file or first PDF from resumeFolder via GitHub API
     async function setResumeLink(){
       const btn = $("#btnResume");
       if (CONFIG.resumeFile){ btn.href = CONFIG.resumeFile; return; }
@@ -267,8 +278,9 @@
       }catch{ btn.classList.add('hide'); }
     }
 
-    // Banner: build from CONFIG.knownFor or GitHub folder
-    const bannerTrack = $("#bannerTrack");
+    // Banner: build two tracks; CSS keyframes handle looping scroll
+    const trackA = document.getElementById('trackA');
+    const trackB = document.getElementById('trackB');
     async function buildBanner(){
       let tiles = [];
       if (GITHUB_CONFIG.owner && GITHUB_CONFIG.repo && GITHUB_CONFIG.bannerFolder){
@@ -281,27 +293,15 @@
           }));
         }catch(e){ /* fallback to CONFIG */ }
       }
-      if (!tiles.length) tiles = CONFIG.knownFor.length ? CONFIG.knownFor : [ { title:"Add posters to knownFor in CONFIG", img: placeholderTile(), url:'#' } ];
-      const doubled = [...tiles, ...tiles];
-      bannerTrack.innerHTML = '';
-      doubled.forEach(t=>{
-        const a = document.createElement('a'); a.className='tile'; a.href=t.url||'#'; a.target='_blank'; a.rel='noopener'; a.setAttribute('data-title', t.title||'');
-        const img = document.createElement('img'); img.loading='lazy'; img.alt=t.title||''; img.src=t.img; a.appendChild(img); bannerTrack.appendChild(a);
-      });
-      startMarquee();
-    }
+      if (!tiles.length) tiles = CONFIG.knownFor.length ? CONFIG.knownFor : [ { title:"Add posters via CONFIG or folder", img: placeholderTile(), url:'#' } ];
 
-    // Infinite marquee
-    let startTs = null; const SPEED = 40; // px/sec (fluid)
-    function startMarquee(){ startTs = null; requestAnimationFrame(step); }
-    function step(ts){
-      if (!startTs) startTs = ts; const dt = (ts - startTs)/1000; startTs = ts;
-      const x = (parseFloat(getComputedStyle(bannerTrack).getPropertyValue('--x')) || 0) - SPEED*dt;
-      bannerTrack.style.setProperty('--x', x);
-      const total = bannerTrack.scrollWidth/2 + parseFloat(getComputedStyle(bannerTrack).gap||'0');
-      if (Math.abs(x) >= total) bannerTrack.style.setProperty('--x', 0);
-      bannerTrack.style.transform = `translateX(var(--x, 0px))`;
-      requestAnimationFrame(step);
+      const mk = t => {
+        const a = document.createElement('a'); a.className='tile'; a.href=t.url||'#'; a.target='_blank'; a.rel='noopener'; a.setAttribute('data-title', t.title||'');
+        const img = document.createElement('img'); img.loading='lazy'; img.alt=t.title||''; img.src=t.img; a.appendChild(img); return a;
+      };
+      trackA.innerHTML = ''; trackB.innerHTML = '';
+      tiles.forEach(t=> trackA.appendChild(mk(t)));
+      tiles.forEach(t=> trackB.appendChild(mk(t))); // duplicate set for seamless -50% scroll
     }
 
     // Project grids
@@ -335,9 +335,24 @@
     renderGrid($("#personalGrid"), CONFIG.personalProjects);
     (async () => { await buildBanner(); await setResumeLink(); })();
     $("#year").textContent = new Date().getFullYear();
+
+    // Optional: auto-embed channel uploads playlist under Personal (no API key)
+    if (CONFIG.youtubeChannelId){
+      const uploadsId = 'UU' + CONFIG.youtubeChannelId.slice(2); // UCxxxx -> UUxxxx
+      const section = document.getElementById('personal');
+      const box = document.createElement('div');
+      box.className = 'card pad';
+      box.innerHTML = `
+        <h3 style="margin-top:0">Latest from YouTube</h3>
+        <div class="reel" style="aspect-ratio:16/9">
+          <iframe src="https://www.youtube.com/embed/videoseries?list=${uploadsId}&rel=0" title="YouTube uploads" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        </div>`;
+      section.appendChild(box);
+    }
   </script>
 </body>
-</html><!DOCTYPE html>
+</html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -350,8 +365,7 @@
   <meta name="theme-color" content="#0c0f12" />
   <style>
     /* =========================
-       THEME — TECH NOIR v2 (sleeker, fluid, green-on-black)
-       Single-file, optional GitHub folder auto-pull
+       THEME — TECH NOIR v3 (sleeker, fluid, green-on-black)
        ========================= */
     :root{
       --bg:#0b0f11;           /* site background */
@@ -384,10 +398,15 @@
     a{color:var(--accent); text-decoration:none}
     a:hover{filter:brightness(1.18)}
 
-    /* Full-bleed known-for banner */
+    /* Full-bleed known-for banner — pure CSS marquee */
     .banner{position:relative; width:100vw; left:50%; right:50%; margin-left:-50vw; margin-right:-50vw; padding:clamp(8px,1.2vw,14px) 0; z-index:1}
     .banner .rail{height:clamp(110px, 16vw, 220px); position:relative; overflow:hidden; border-radius:clamp(10px,1.4vw,18px); background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0)); border:1px solid rgba(0,255,156,.15); box-shadow:var(--shadow)}
-    .marquee{display:flex; gap:clamp(10px,1.2vw,16px); position:absolute; inset:0; align-items:center; will-change:transform}
+    .marquee{position:absolute; inset:0; display:flex; align-items:center; gap:clamp(10px,1.2vw,16px); animation:scrollX linear infinite; will-change:transform}
+    @keyframes scrollX{ from{ transform:translateX(0) } to{ transform:translateX(-50%) } }
+    .marquee[data-speed="slow"]{ animation-duration: 60s }
+    .marquee[data-speed="med"]{  animation-duration: 40s }
+    .marquee[data-speed="fast"]{ animation-duration: 28s }
+    .marquee .track{display:flex; gap:clamp(10px,1.2vw,16px)}
     .tile{flex:0 0 auto; height:calc(100% - clamp(8px,1vw,12px)); aspect-ratio:16/9; position:relative; border-radius:clamp(8px,1vw,14px); overflow:hidden; background:#0b1414; border:1px solid rgba(66,255,209,.18)}
     .tile img{height:100%; width:100%; object-fit:cover; display:block; filter:saturate(.95) contrast(1.06)}
     .tile::after{content:attr(data-title); position:absolute; left:0; right:0; bottom:0; font-size:clamp(10px,.9vw,12px); padding:.45em .6em; color:#caffec; background:linear-gradient(180deg, transparent, rgba(0,0,0,.75)); text-shadow:0 1px 2px rgba(0,0,0,.55)}
@@ -415,9 +434,9 @@
     .reel iframe{position:absolute; inset:0; width:100%; height:100%}
 
     .badges{display:flex; flex-wrap:wrap; gap:clamp(8px,1vw,12px); margin-top:clamp(8px,1vw,12px)}
-    .btn{--b:rgba(66,255,209,.18); display:inline-flex; align-items:center; gap:.5em; border:1px solid var(--b); background:linear-gradient(180deg, rgba(66,255,209,.09), rgba(66,255,209,0)); padding:.65em 1em; border-radius:12px; color:var(--txt); cursor:pointer; font-weight:600}
+    .btn{--b:rgba(66,255,209,.18); display:inline-flex; align-items:center; gap:.5em; border:1px solid var(--b); background:linear-gradient(180deg, rgba(66,255,209,.09), rgba(66,255,209,0)); padding:.65em 1em; border-radius:12px; color:var(--txt); cursor:pointer; font-weight:700}
     .btn:hover{border-color:var(--accent); box-shadow:0 0 0 1px rgba(0,255,156,.15) inset}
-    .btn.primary{background:linear-gradient(180deg, rgba(0,255,156,.22), rgba(0,255,156,.08)); color:#04271d}
+    .btn.primary{background:linear-gradient(180deg, rgba(0,255,156,.22), rgba(0,255,156,.08)); color:#eafff6} /* brighter label */
 
     section{display:none}
     section.active{display:block}
@@ -435,20 +454,15 @@
   </style>
 </head>
 <body>
-  <!--
-  ================================
-  SETUP NOTES
-  ================================
-  1) Keep as a single-file `index.html` in your repo.
-  2) Prefer local images (committed to your repo). Optionally, set GITHUB_CONFIG below to auto-pull images from a folder using the GitHub API (no keys required, but unauthenticated rate limits apply).
-  3) Drop your resume as `resume.pdf` OR put it in a folder (e.g., `docs/`) and set `resumeFolder` to auto-pick the first .pdf.
-  4) Edit CONFIG for links and manual project lists. Folder auto-pull is for the top banner images; project grids remain manual for best control.
-  -->
+  <!-- SINGLE-FILE. Put in repo root as index.html. -->
 
-  <!-- FULL-BLEED BANNER (auto-scroll loop) -->
+  <!-- FULL-BLEED BANNER (CSS marquee loop) -->
   <div class="banner">
     <div class="rail card">
-      <div class="marquee" id="bannerTrack" aria-label="Known for"></div>
+      <div class="marquee" id="bannerTrack" data-speed="med" aria-label="Known for">
+        <div class="track" id="trackA"></div>
+        <div class="track" id="trackB"></div>
+      </div>
     </div>
   </div>
 
@@ -519,7 +533,7 @@
       </div>
     </section>
 
-    <footer class="muted">© <span id="year"></span> Ariel (Ari) Feblowitz • Single‑file GitHub Page • Theme: Tech‑Noir v2</footer>
+    <footer class="muted">© <span id="year"></span> Ariel (Ari) Feblowitz • Single‑file GitHub Page • Theme: Tech‑Noir v3</footer>
   </div>
 
   <script>
@@ -527,41 +541,53 @@
        CONFIG — EDIT THIS ONLY
        ========================= */
     const CONFIG = {
-      youtubeId: "REPLACE_WITH_YOUTUBE_ID", // e.g., "dQw4w9WgXcQ"
+      youtubeId: "REPLACE_WITH_YOUTUBE_ID",
       imdbUrl: "https://www.imdb.com/name/nm4409645/",
       youtubeUrl: "https://www.youtube.com/@DirectorPsycho",
       allLinksUrl: "https://linktr.ee/directorPsycho",
-      newsUrl: "", // optional
-      resumeFile: "resume.pdf", // direct path OR "" to auto-pick from resumeFolder
-      // Manual fallback tiles for banner if no GitHub folder is configured
+      newsUrl: "",
+      resumeFile: "resume.pdf",
+
+      // Top banner tiles (replace with local paths or keep these stable poster URLs)
       knownFor: [
-        // { title:"Avatar: The Way of Water", img:"images/avatar2.jpg", url:"https://www.imdb.com/title/tt1630029/" },
+        { title:"Avatar: The Way of Water", img:"https://upload.wikimedia.org/wikipedia/en/2/2c/Avatar_The_Way_of_Water_poster.jpg", url:"https://www.imdb.com/title/tt1630029/" },
+        { title:"Avengers: Endgame", img:"https://upload.wikimedia.org/wikipedia/en/0/0d/Avengers_Endgame_poster.jpg", url:"https://www.imdb.com/title/tt4154796/" },
+        { title:"Ant‑Man and the Wasp", img:"https://upload.wikimedia.org/wikipedia/en/2/2c/Ant-Man_and_the_Wasp_poster.jpg", url:"https://www.imdb.com/title/tt5095030/" },
+        { title:"Guardians of the Galaxy Vol. 3", img:"https://upload.wikimedia.org/wikipedia/en/5/50/Guardians_of_the_Galaxy_Vol._3_poster.jpg", url:"https://www.imdb.com/title/tt6791350/" },
+        { title:"Venom", img:"https://upload.wikimedia.org/wikipedia/en/0/05/Venom_poster.jpg", url:"https://www.imdb.com/title/tt1270797/" },
+        { title:"Twisters", img:"https://upload.wikimedia.org/wikipedia/en/8/8f/Twisters_film_poster.jpg", url:"https://www.imdb.com/title/tt12584954/" }
       ],
-      // Project grids (manual for precision)
+
+      // Professional (curated; newest/highest-profile first; on‑set callouts)
       proProjects: [
-        // { title:"Guardians of the Galaxy Vol. 3", role:"Techvis / VP Supervisor", img:"images/gotg3.jpg", url:"https://www.imdb.com/title/tt6791350/" },
+        { title:"Avatar: The Way of Water (2022)", role:"Virtual Production / Techvis / Motion Control — On‑Set", img:"https://upload.wikimedia.org/wikipedia/en/2/2c/Avatar_The_Way_of_Water_poster.jpg", url:"https://www.imdb.com/title/tt1630029/" },
+        { title:"Guardians of the Galaxy Vol. 3 (2023)", role:"Techvis / VP Supervisor", img:"https://upload.wikimedia.org/wikipedia/en/5/50/Guardians_of_the_Galaxy_Vol._3_poster.jpg", url:"https://www.imdb.com/title/tt6791350/" },
+        { title:"Twisters (2024)", role:"Techvis", img:"https://upload.wikimedia.org/wikipedia/en/8/8f/Twisters_film_poster.jpg", url:"https://www.imdb.com/title/tt12584954/" },
+        { title:"Avengers: Endgame (2019)", role:"Techvis / Previs — On‑Set", img:"https://upload.wikimedia.org/wikipedia/en/0/0d/Avengers_Endgame_poster.jpg", url:"https://www.imdb.com/title/tt4154796/" },
+        { title:"Ant‑Man and the Wasp (2018)", role:"Techvis — On‑Set; scale & motion planning", img:"https://upload.wikimedia.org/wikipedia/en/2/2c/Ant-Man_and_the_Wasp_poster.jpg", url:"https://www.imdb.com/title/tt5095030/" },
+        { title:"Venom (2018)", role:"Techvis", img:"https://upload.wikimedia.org/wikipedia/en/0/05/Venom_poster.jpg", url:"https://www.imdb.com/title/tt1270797/" },
+        { title:"Kraven the Hunter (2024)", role:"Techvis", img:"https://upload.wikimedia.org/wikipedia/en/1/13/Kraven_the_Hunter_poster.jpg", url:"https://www.imdb.com/title/tt8790086/" },
+        { title:"Madame Web (2024)", role:"Techvis", img:"https://upload.wikimedia.org/wikipedia/en/4/4e/Madame_Web_poster.jpg", url:"https://www.imdb.com/title/tt11057302/" },
+        { title:"The Mandalorian (TV)", role:"Virtual Production / Techvis — On‑Set", img:"https://upload.wikimedia.org/wikipedia/en/c/c5/The_Mandalorian_season_2_poster.jpg", url:"https://www.imdb.com/title/tt8111088/" }
       ],
+
+      // Personal — thumbnails auto from YouTube IDs (img.youtube.com)
       personalProjects: [
-        // { title:"Deadpool vs Alien vs Terminator", role:"Animated Short", img:"images/dvavt.jpg", url:"https://www.youtube.com/watch?v=..." },
+        { title:"Pumpkin Smashers", role:"Animated Short (Unreal). Award‑Winning — Chicago Horror Film Fest: Best Animation.", img:"https://img.youtube.com/vi/q_MFAiCeWUk/hqdefault.jpg", url:"https://www.youtube.com/watch?v=q_MFAiCeWUk" }
+        // Add more: { title:"Alien vs Terminator", role:"Animated Short (Unreal). Viral.", img:"https://img.youtube.com/vi/VIDEO_ID/hqdefault.jpg", url:"https://www.youtube.com/watch?v=VIDEO_ID" }
       ],
+
+      // Auto-embed uploads playlist under Personal (no API key)
+      youtubeChannelId: "UC926CKBvQdno5vqAav7DKlg"
     };
 
-    /* Optional GitHub folder auto-pull. Set these to enable:
-       Example:
-       const GITHUB_CONFIG = {
-         owner: 'AriFeb',
-         repo: 'ari-portfolio',
-         branch: 'main',
-         bannerFolder: 'knownfor',   // folder of poster JPG/PNG in repo
-         resumeFolder: 'docs'        // folder containing a resume .pdf (first found is used)
-       };
-    */
+    /* Optional GitHub folder auto-pull (set to your repo to source banner images or resume from folders) */
     const GITHUB_CONFIG = {
       owner: '',
       repo: '',
       branch: 'main',
-      bannerFolder: '',
-      resumeFolder: ''
+      bannerFolder: '',   // e.g., 'knownfor'
+      resumeFolder: ''    // e.g., 'docs'
     };
 
     /* =========================
@@ -593,7 +619,7 @@
     $("#btnLinks").href = CONFIG.allLinksUrl;
     if (CONFIG.newsUrl) $("#btnNews").href = CONFIG.newsUrl; else $("#btnNews").classList.add('hide');
 
-    // Resume: direct file or first PDF from resumeFolder
+    // Resume: direct file or first PDF from resumeFolder via GitHub API
     async function setResumeLink(){
       const btn = $("#btnResume");
       if (CONFIG.resumeFile){ btn.href = CONFIG.resumeFile; return; }
@@ -606,8 +632,9 @@
       }catch{ btn.classList.add('hide'); }
     }
 
-    // Banner: build from CONFIG.knownFor or GitHub folder
-    const bannerTrack = $("#bannerTrack");
+    // Banner: build two tracks; CSS keyframes handle looping scroll
+    const trackA = document.getElementById('trackA');
+    const trackB = document.getElementById('trackB');
     async function buildBanner(){
       let tiles = [];
       if (GITHUB_CONFIG.owner && GITHUB_CONFIG.repo && GITHUB_CONFIG.bannerFolder){
@@ -620,27 +647,15 @@
           }));
         }catch(e){ /* fallback to CONFIG */ }
       }
-      if (!tiles.length) tiles = CONFIG.knownFor.length ? CONFIG.knownFor : [ { title:"Add posters to knownFor in CONFIG", img: placeholderTile(), url:'#' } ];
-      const doubled = [...tiles, ...tiles];
-      bannerTrack.innerHTML = '';
-      doubled.forEach(t=>{
-        const a = document.createElement('a'); a.className='tile'; a.href=t.url||'#'; a.target='_blank'; a.rel='noopener'; a.setAttribute('data-title', t.title||'');
-        const img = document.createElement('img'); img.loading='lazy'; img.alt=t.title||''; img.src=t.img; a.appendChild(img); bannerTrack.appendChild(a);
-      });
-      startMarquee();
-    }
+      if (!tiles.length) tiles = CONFIG.knownFor.length ? CONFIG.knownFor : [ { title:"Add posters via CONFIG or folder", img: placeholderTile(), url:'#' } ];
 
-    // Infinite marquee
-    let startTs = null; const SPEED = 40; // px/sec (fluid)
-    function startMarquee(){ startTs = null; requestAnimationFrame(step); }
-    function step(ts){
-      if (!startTs) startTs = ts; const dt = (ts - startTs)/1000; startTs = ts;
-      const x = (parseFloat(getComputedStyle(bannerTrack).getPropertyValue('--x')) || 0) - SPEED*dt;
-      bannerTrack.style.setProperty('--x', x);
-      const total = bannerTrack.scrollWidth/2 + parseFloat(getComputedStyle(bannerTrack).gap||'0');
-      if (Math.abs(x) >= total) bannerTrack.style.setProperty('--x', 0);
-      bannerTrack.style.transform = `translateX(var(--x, 0px))`;
-      requestAnimationFrame(step);
+      const mk = t => {
+        const a = document.createElement('a'); a.className='tile'; a.href=t.url||'#'; a.target='_blank'; a.rel='noopener'; a.setAttribute('data-title', t.title||'');
+        const img = document.createElement('img'); img.loading='lazy'; img.alt=t.title||''; img.src=t.img; a.appendChild(img); return a;
+      };
+      trackA.innerHTML = ''; trackB.innerHTML = '';
+      tiles.forEach(t=> trackA.appendChild(mk(t)));
+      tiles.forEach(t=> trackB.appendChild(mk(t))); // duplicate set for seamless -50% scroll
     }
 
     // Project grids
@@ -674,6 +689,20 @@
     renderGrid($("#personalGrid"), CONFIG.personalProjects);
     (async () => { await buildBanner(); await setResumeLink(); })();
     $("#year").textContent = new Date().getFullYear();
+
+    // Optional: auto-embed channel uploads playlist under Personal (no API key)
+    if (CONFIG.youtubeChannelId){
+      const uploadsId = 'UU' + CONFIG.youtubeChannelId.slice(2); // UCxxxx -> UUxxxx
+      const section = document.getElementById('personal');
+      const box = document.createElement('div');
+      box.className = 'card pad';
+      box.innerHTML = `
+        <h3 style="margin-top:0">Latest from YouTube</h3>
+        <div class="reel" style="aspect-ratio:16/9">
+          <iframe src="https://www.youtube.com/embed/videoseries?list=${uploadsId}&rel=0" title="YouTube uploads" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        </div>`;
+      section.appendChild(box);
+    }
   </script>
 </body>
 </html>
