@@ -91,7 +91,7 @@
     .btn{--b:rgba(66,255,209,.34); display:inline-flex; align-items:center; gap:.5em; border:1px solid var(--b); background:linear-gradient(180deg, rgba(66,255,209,.16), rgba(66,255,209,0)); padding:.65em 1em; border-radius:12px; color:var(--txt); cursor:pointer; font-weight:700}
     .btn:hover{border-color:var(--accent); box-shadow:0 0 0 1px rgba(0,255,156,.22) inset}
     .btn.primary{background:linear-gradient(180deg, rgba(0,255,156,.34), rgba(0,255,156,.18)); color:#eafff6; text-shadow:0 1px 0 rgba(0,0,0,.6); font-weight:800}
-    .btn-sm{ font-size:.6em; padding:.35em .6em; border-radius:10px; }
+    .btn-sm{ font-size:.25em; padding:.2em .35em; border-radius:10px; }
 
     /* Sticky tabs */
     .tabs-bar{ position:sticky; top:var(--stickyTop); z-index:5; display:flex; justify-content:flex-end; flex-wrap:wrap; gap:clamp(6px,.8vw,10px); margin:0 0 clamp(12px,1.4vw,16px); }
@@ -156,7 +156,10 @@
     .testimonial{border:1px solid rgba(66,255,209,.26); border-radius:14px; padding:12px 14px; background:linear-gradient(180deg, rgba(66,255,209,.06), rgba(66,255,209,.01))}
     .testimonial .quote{display:block; font-weight:700; color:#eafff6}
     .testimonial .from{display:block; color:var(--muted); font-size:.95em; margin-top:4px}
-  </style>
+    /* Make the very top contact strip tiny so name stays dominant */
+  #topContact{ font-size:.25em; }
+  .brand #topContact{ gap:6px; }
+</style>
 </head>
 <body>
   <div id="appRoot"><!-- everything inside this wrapper to prevent duplicates -->
@@ -701,7 +704,8 @@
         clickTimer = null;
       }, 1000);
     }
-    document.addEventListener('click', e=>{ if (isInteractive(e.target)) onClick(); }, {passive:true});
+    document.addEventListener('pointerdown', e=>{ if (isInteractive(e.target)) onClick(); }, {passive:true});
+    document.addEventListener('keydown', e=>{ if ((e.key==='Enter'||e.key===' ') && isInteractive(e.target)) onClick(); });
 
     // CONTACT: mirror links into Contact tab once ready
     function tryInject(){
