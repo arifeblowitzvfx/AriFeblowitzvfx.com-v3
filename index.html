@@ -10,9 +10,6 @@
   <meta property="og:type" content="website" />
   <meta name="theme-color" content="#0c0f12" />
   <style>
-    /* =========================
-       THEME — TECH NOIR v6 (sleek, fluid, green-on-black)
-       ========================= */
     :root{
       --bg:#0b0f11;           /* site background */
       --panel:#020405;        /* black control-panel windows */
@@ -39,26 +36,23 @@
       letter-spacing:.15px;
       min-height:100svh;
     }
-    /* Subtle CRT scanlines */
     body::after{content:""; position:fixed; inset:0; pointer-events:none; background-image:repeating-linear-gradient(to bottom, rgba(66,255,209,.06), rgba(66,255,209,.06) 1px, transparent 2px, transparent 3px); mix-blend-mode:soft-light; opacity:.35; z-index:0}
 
     a{color:var(--accent); text-decoration:none}
     a:hover{filter:brightness(1.18)}
 
-    /* Full-bleed known-for banner — pure CSS marquee */
+    /* Full-bleed, looping banner */
     .banner{position:relative; width:100vw; left:50%; right:50%; margin-left:-50vw; margin-right:-50vw; padding:clamp(8px,1.2vw,14px) 0; z-index:1}
     .banner .rail{height:clamp(110px, 16vw, 220px); position:relative; overflow:hidden; border-radius:clamp(10px,1.4vw,18px); background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0)); border:1px solid rgba(0,255,156,.15); box-shadow:var(--shadow)}
     .marquee{position:absolute; inset:0; display:flex; align-items:center; gap:clamp(10px,1.2vw,16px); animation:scrollX linear infinite; will-change:transform}
     @keyframes scrollX{ from{ transform:translateX(0) } to{ transform:translateX(-50%) } }
-    .marquee[data-speed="slow"]{ animation-duration: 60s }
-    .marquee[data-speed="med"]{  animation-duration: 40s }
-    .marquee[data-speed="fast"]{ animation-duration: 28s }
+    .marquee[data-speed="med"]{ animation-duration: 42s }
     .marquee .track{display:flex; gap:clamp(10px,1.2vw,16px)}
     .tile{flex:0 0 auto; height:calc(100% - clamp(8px,1vw,12px)); aspect-ratio:16/9; position:relative; border-radius:clamp(8px,1vw,14px); overflow:hidden; background:#0b1414; border:1px solid rgba(66,255,209,.18)}
     .tile img{height:100%; width:100%; object-fit:cover; display:block; filter:saturate(.95) contrast(1.06)}
+    .tile[data-missing="1"]{display:none} /* hide skipped tiles until they recover */
     .tile::after{content:attr(data-title); position:absolute; left:0; right:0; bottom:0; font-size:clamp(10px,.9vw,12px); padding:.45em .6em; color:#caffec; background:linear-gradient(180deg, transparent, rgba(0,0,0,.75)); text-shadow:0 1px 2px rgba(0,0,0,.55)}
 
-    /* Wrap & layout */
     .wrap{max-width:min(1200px, 92vw); margin:0 auto; padding:clamp(16px,2vw,28px); position:relative; z-index:1}
 
     .nav{display:flex; gap:clamp(8px,1vw,12px); align-items:center; justify-content:space-between; flex-wrap:wrap; margin:clamp(6px,.8vw,10px) 0}
@@ -104,7 +98,7 @@
   <!-- FULL-BLEED BANNER (CSS marquee loop) -->
   <div class="banner">
     <div class="rail card">
-      <div class="marquee" id="bannerTrack" data-speed="med" aria-label="Known for">
+      <div class="marquee" id="bannerTrack" data-speed="med" aria-label="Professional & Personal">
         <div class="track" id="trackA"></div>
         <div class="track" id="trackB"></div>
       </div>
@@ -171,7 +165,7 @@
       <div class="card pad">
         <div class="nav" style="gap:8px; justify-content:space-between; align-items:flex-end">
           <h2 style="margin:0">Professional Projects</h2>
-          <small class="muted">(Curated via CONFIG • Posters auto-fallback & hide if all fail)</small>
+          <small class="muted">(Curated via CONFIG • Posters auto-fallback & title-on-black if all fail)</small>
         </div>
         <div id="proGrid" class="grid"></div>
       </div>
@@ -189,7 +183,7 @@
       </div>
     </section>
 
-    <footer class="muted">© <span id="year"></span> Ariel (Ari) Feblowitz • Single-file GitHub Page • Theme: Tech-Noir v6</footer>
+    <footer class="muted">© <span id="year"></span> Ariel (Ari) Feblowitz • Single-file GitHub Page • Theme: Tech-Noir</footer>
   </div>
 
   <script>
@@ -197,36 +191,14 @@
        CONFIG — EDIT THIS ONLY
        ========================= */
     const CONFIG = {
-      youtubeId: "REPLACE_WITH_YOUTUBE_ID", // e.g. 7YIVcQLS9Cw
+      youtubeId: "REPLACE_WITH_YOUTUBE_ID",
       imdbUrl: "https://www.imdb.com/name/nm4409645/",
       youtubeUrl: "https://www.youtube.com/@DirectorPsycho",
       allLinksUrl: "https://linktr.ee/arielfeblowitz",
       newsUrl: "https://www.youtube.com/watch?v=gM5H6vsGIcs",
       resumeFile: "https://raw.githubusercontent.com/arifeblowitzvfx/AriFeblowitzvfx.com-v3/main/Ari_Feblowitz_Resume_2025.pdf",
 
-      knownFor: [
-        { title:"Avatar: The Way of Water", posters:[
-          "https://upload.wikimedia.org/wikipedia/en/2/2c/Avatar_The_Way_of_Water_poster.jpg",
-          "https://upload.wikimedia.org/wikipedia/en/a/a1/Avatar_2_teaser_poster.jpg"
-        ], url:"https://www.imdb.com/title/tt1630029/" },
-        { title:"Avengers: Endgame", posters:[
-          "https://upload.wikimedia.org/wikipedia/en/0/0d/Avengers_Endgame_poster.jpg"
-        ], url:"https://www.imdb.com/title/tt4154796/" },
-        { title:"Guardians of the Galaxy Vol. 3", posters:[
-          "https://upload.wikimedia.org/wikipedia/en/5/50/Guardians_of_the_Galaxy_Vol._3_poster.jpg",
-          "https://upload.wikimedia.org/wikipedia/en/4/4f/Guardians_of_the_Galaxy_Vol._3_teaser_poster.jpg"
-        ], url:"https://www.imdb.com/title/tt6791350/" },
-        { title:"Twisters", posters:[
-          "https://upload.wikimedia.org/wikipedia/en/8/8f/Twisters_film_poster.jpg"
-        ], url:"https://www.imdb.com/title/tt12584954/" },
-        { title:"The Mandalorian (TV)", posters:[
-          "https://upload.wikimedia.org/wikipedia/en/c/c5/The_Mandalorian_season_2_poster.jpg",
-          "https://upload.wikimedia.org/wikipedia/en/c/c4/The_Mandalorian_season_3_poster.jpg"
-        ], url:"https://www.imdb.com/title/tt8111088/" },
-        { title:"Ant-Man and the Wasp", posters:[
-          "https://upload.wikimedia.org/wikipedia/en/2/2c/Ant-Man_and_the_Wasp_poster.jpg"
-        ], url:"https://www.imdb.com/title/tt5095030/" }
-      ],
+      knownFor: [],
 
       // Professional — newest/high-profile first (expand freely)
       proProjects: [
@@ -286,7 +258,7 @@
     };
 
     /* =========================
-       RUNTIME — minimal JS
+       RUNTIME — robust image handling + periodic refresh
        ========================= */
     const $ = (sel, el=document) => el.querySelector(sel);
     const $$ = (sel, el=document) => [...el.querySelectorAll(sel)];
@@ -315,76 +287,124 @@
     if (CONFIG.newsUrl) $("#btnNews").href = CONFIG.newsUrl; else $("#btnNews").classList.add('hide');
     if (CONFIG.resumeFile) $("#btnResume").href = CONFIG.resumeFile;
 
-    // ===== Banner: build two tracks; CSS keyframes handle looping scroll
-    const trackA = document.getElementById('trackA');
-    const trackB = document.getElementById('trackB');
-
+    // ===== Helpers
     function placeholderTile(){
       return 'data:image/svg+xml;utf8,' + encodeURIComponent(
-        "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 450'><defs><linearGradient id='g' x1='0' x2='0' y1='0' y2='1'><stop offset='0' stop-color='#041a14'/><stop offset='1' stop-color='#000'/></linearGradient></defs><rect width='100%' height='100%' fill='url(#g)'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' fill='#74cdaa' font-family='monospace' font-size='22'>Poster unavailable</text></svg>"
+        "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 450'><rect width='100%' height='100%' fill='#000'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' fill='#74cdaa' font-family='monospace' font-size='22'>Poster unavailable</text></svg>"
       );
     }
+    function titlePlaceholderSVG(title){
+      const safe = (title||'Untitled').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+      const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 450'>
+        <rect width='100%' height='100%' fill='#000'/>
+        <text x='50%' y='50%' fill='#9fffcf' font-family='Inter, Segoe UI, Roboto, Arial, sans-serif' font-size='36' text-anchor='middle' dominant-baseline='middle'>${safe}</text>
+      </svg>`;
+      return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+    }
 
-    function mkPosterImg(posterList){
+    // Banner image loader with timeout + retry + periodic refresh
+    const BANNER_REFRESH_MS = 30000;         // how often to re-attempt missing images
+    const BANNER_LOAD_TIMEOUT_MS = 2500;     // how long to wait before treating as failed
+    const BANNER_MAX_RETRIES = 5;            // cap retries per tile
+    const bannerRegistry = new Set();        // track tiles for refresh
+
+    function loadWithTimeout(src){
+      return new Promise((resolve)=>{
+        const img = new Image();
+        let done = false;
+        const timer = setTimeout(()=>{ if (!done){ done = true; resolve(false); } }, BANNER_LOAD_TIMEOUT_MS);
+        img.onload = ()=>{ if (!done){ done = true; clearTimeout(timer); resolve(true); } };
+        img.onerror = ()=>{ if (!done){ done = true; clearTimeout(timer); resolve(false); } };
+        img.src = src + (src.includes('?') ? `&cb=${Date.now()}` : `?cb=${Date.now()}`); // cache-bust
+      });
+    }
+
+    async function attemptBannerImage(tileEl){
+      const desired = tileEl.getAttribute('data-src');
+      let retries = +(tileEl.getAttribute('data-retries')||0);
+      if (!desired || retries >= BANNER_MAX_RETRIES) return; // give up silently
+      const ok = await loadWithTimeout(desired);
+      if (ok){
+        const img = tileEl.querySelector('img');
+        img.src = desired;
+        tileEl.removeAttribute('data-missing');
+      } else {
+        retries += 1;
+        tileEl.setAttribute('data-retries', String(retries));
+        tileEl.setAttribute('data-missing','1');
+      }
+    }
+
+    function scheduleBannerRefresh(){
+      setInterval(()=>{
+        bannerRegistry.forEach(tile=>{
+          if (tile.isConnected && tile.getAttribute('data-missing') === '1'){
+            attemptBannerImage(tile);
+          }
+        })
+      }, BANNER_REFRESH_MS);
+    }
+
+    function mkPosterImg(posterList, opts={}){
       const img = document.createElement('img');
       img.loading='lazy'; img.alt='';
       const posters = (Array.isArray(posterList)? posterList : []).filter(Boolean);
-      const candidates = posters.concat([placeholderTile()]);
+      const candidates = posters.slice();
+      if (opts.placeholderTitle){
+        candidates.push(titlePlaceholderSVG(opts.placeholderTitle));
+      } else {
+        candidates.push(placeholderTile());
+      }
       let i = 0;
-      const setNext = ()=>{ if (i < candidates.length){ img.src = candidates[i++]; } };
+      const setNext = ()=>{ if (i < candidates.length){ img.src = candidates[i++]; } else if (opts.onExhaust){ opts.onExhaust(); } };
       img.addEventListener('error', setNext);
       setNext();
       return img;
     }
+    const ytThumb = (id) => `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
 
-    function ytThumb(id){ return `https://img.youtube.com/vi/${id}/hqdefault.jpg`; }
+    // ===== Banner — built from pro posters + personal thumbs; tiles that fail get retried later
+    const trackA = document.getElementById('trackA');
+    const trackB = document.getElementById('trackB');
+    function buildBanner(){
+      const pro = (CONFIG.proProjects||[]).flatMap(p => {
+        const posters = Array.isArray(p.posters)? p.posters.filter(Boolean) : [];
+        return posters.map(src => ({ title:p.title, img:src, url:p.url||'#' }));
+      });
+      const personal = (CONFIG.personalProjects||[]).map(v => ({
+        title: v.title,
+        img: ytThumb(v.videoId),
+        url: `https://www.youtube.com/watch?v=${v.videoId}`
+      }));
+      const tiles = [];
+      const maxLen = Math.max(pro.length, personal.length);
+      for(let i=0;i<maxLen;i++){ if (i<pro.length) tiles.push(pro[i]); if (i<personal.length) tiles.push(personal[i]); }
 
-function ytThumb(id){ return `https://img.youtube.com/vi/${id}/hqdefault.jpg`; }
+      const mk = t => {
+        const a = document.createElement('a'); a.className='tile'; a.href=t.url||'#'; a.target='_blank'; a.rel='noopener'; a.setAttribute('data-title', t.title||'');
+        // Start with placeholder visible; set desired src in data attribute and try to promote when available
+        const img = mkPosterImg([placeholderTile()]);
+        a.appendChild(img);
+        a.setAttribute('data-src', t.img);
+        a.setAttribute('data-retries', '0');
+        bannerRegistry.add(a);
+        // initial attempt after a short delay to allow CSS/layout to stabilize
+        setTimeout(()=>attemptBannerImage(a), 250);
+        return a;
+      };
 
-function buildBanner(){
-  // Collect posters from Professional
-  const pro = (CONFIG.proProjects||[]).flatMap(p => {
-    const posters = Array.isArray(p.posters)? p.posters.filter(Boolean) : [];
-    return posters.map(src => ({ title:p.title, img:src, url:p.url||'#', kind:'pro' }));
-  });
-  // Collect thumbs from Personal (YouTube)
-  const personal = (CONFIG.personalProjects||[]).map(v => ({
-    title: v.title,
-    img: ytThumb(v.videoId),
-    url: `https://www.youtube.com/watch?v=${v.videoId}`,
-    kind:'yt'
-  }));
+      trackA.innerHTML = ''; trackB.innerHTML = '';
+      if (!tiles.length){
+        const a = document.createElement('a'); a.className='tile'; a.href='#'; a.setAttribute('data-title','Add projects/videos in CONFIG');
+        a.appendChild(mkPosterImg([placeholderTile()]));
+        trackA.appendChild(a.cloneNode(true)); trackB.appendChild(a.cloneNode(true));
+        return;
+      }
+      tiles.forEach(t=> trackA.appendChild(mk(t)));
+      tiles.forEach(t=> trackB.appendChild(mk(t))); // duplicate for seamless -50% scroll
+    }
 
-  // Interleave pro + personal for variety
-  const tiles = [];
-  const maxLen = Math.max(pro.length, personal.length);
-  for(let i=0;i<maxLen;i++){
-    if (i < pro.length) tiles.push(pro[i]);
-    if (i < personal.length) tiles.push(personal[i]);
-  }
-
-  const mk = t => {
-    const a = document.createElement('a');
-    a.className='tile ' + (t.kind==='yt'?'yt':'');
-    a.href=t.url||'#'; a.target='_blank'; a.rel='noopener'; a.setAttribute('data-title', t.title||'');
-    // For banner: if the single candidate fails, remove tile entirely so there are no blanks
-    a.appendChild(mkPosterImg([t.img], { onExhaust: ()=> a.remove() }));
-    return a;
-  };
-
-  trackA.innerHTML = ''; trackB.innerHTML = '';
-  if (!tiles.length){
-    const a = document.createElement('a'); a.className='tile'; a.href='#'; a.setAttribute('data-title','Add projects/videos in CONFIG');
-    a.appendChild(mkPosterImg([placeholderTile()]));
-    trackA.appendChild(a.cloneNode(true));
-    trackB.appendChild(a.cloneNode(true));
-    return;
-  }
-  tiles.forEach(t=> trackA.appendChild(mk(t)));
-  tiles.forEach(t=> trackB.appendChild(mk(t))); // duplicate for seamless -50% scroll
-}
-
-    // Project grids (with poster fallbacks)
+    // ===== Grids
     function renderGrid(el, arr){
       el.innerHTML = '';
       if (!arr || !arr.length){ el.innerHTML = `<div class="muted">No items yet. Edit <b>CONFIG</b> in this file to add projects.</div>`; return; }
@@ -399,30 +419,14 @@ function buildBanner(){
       })
     }
 
-    arr.forEach(p=>{
-        const c = document.createElement('a'); c.className='proj card'; c.href=p.url||'#'; c.target='_blank'; c.rel='noopener';
-        const poster = mkPosterImg(p.posters||[]);
-        const wrap = document.createElement('div'); wrap.className='thumb'; wrap.appendChild(poster);
-        const meta = document.createElement('div'); meta.className='meta';
-        meta.innerHTML = `<div class="title">${p.title||''}</div><div class="role">${p.role||''}</div>`;
-        c.appendChild(wrap); c.appendChild(meta);
-        el.appendChild(c);
-      })
-    }
-
-    // Personal videos grid from IDs (thumbnails auto; Shorts excluded by definition)
     function renderPersonal(el, arr){
-      const items = (arr||[]).map(v=>({
-        title:v.title,
-        role:v.role,
-        url:`https://www.youtube.com/watch?v=${v.videoId}`,
-        img:`https://img.youtube.com/vi/${v.videoId}/hqdefault.jpg`
-      }));
-      renderGrid(el, items.map(x=>({ title:x.title, role:x.role, url:x.url, posters:[x.img] })));
+      const items = (arr||[]).map(v=>({ title:v.title, role:v.role, url:`https://www.youtube.com/watch?v=${v.videoId}`, posters:[ytThumb(v.videoId)] }));
+      renderGrid(el, items);
     }
 
-    // Init
+    // ===== Init
     buildBanner();
+    scheduleBannerRefresh();
     renderGrid($("#proGrid"), CONFIG.proProjects);
     renderPersonal($("#personalGrid"), CONFIG.personalProjects);
     $("#year").textContent = new Date().getFullYear();
