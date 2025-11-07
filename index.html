@@ -148,15 +148,21 @@
     /* Tiny toast for copy feedback */
     .toast{ position:fixed; z-index:9999; padding:.5em .75em; border-radius:10px; background:#0b1414; color:#caffec; border:1px solid rgba(66,255,209,.4); box-shadow:var(--shadow); font-size:.9em; opacity:0; transform:translateY(-6px); transition:opacity .15s ease, transform .15s ease; }
     .toast.show{ opacity:1; transform:translateY(0); }
-  /* Click alert: flash yellow for ~1s on clicks */
-.brand .dot.alert{
-  background:radial-gradient(circle at 30% 30%, #ffd24a, #6b5a1a 70%);
-  box-shadow:0 0 22px #ffd24a, 0 0 36px rgba(255,210,74,.5);
-  animation:alertFlick .12s linear 8; /* ~0.96s total */
-}
-@keyframes alertFlick{0%,100%{opacity:.45}50%{opacity:1}}
 
-</style>
+    /* Click alert: flash yellow for ~1s on clicks */
+    .brand .dot.alert{
+      background:radial-gradient(circle at 30% 30%, #ffd24a, #6b5a1a 70%);
+      box-shadow:0 0 22px #ffd24a, 0 0 36px rgba(255,210,74,.5);
+      animation:alertFlick .12s linear 8; /* ~0.96s total */
+    }
+    @keyframes alertFlick{0%,100%{opacity:.45}50%{opacity:1}}
+
+    /* Testimonials */
+    #testimonialsBox .tlist{display:flex; flex-direction:column; gap:14px; margin-top:8px}
+    .testimonial{border:1px solid rgba(66,255,209,.26); border-radius:14px; padding:12px 14px; background:linear-gradient(180deg, rgba(66,255,209,.06), rgba(66,255,209,.01))}
+    .testimonial .quote{display:block; font-weight:700; color:#eafff6}
+    .testimonial .from{display:block; color:var(--muted); font-size:.95em; margin-top:4px}
+  </style>
 </head>
 <body>
   <div id="appRoot"><!-- everything inside this wrapper to prevent duplicates -->
@@ -215,6 +221,12 @@
             <div id="skillsRow1" class="badges"></div>
             <div id="skillsRow2" class="badges"></div>
           </div>
+        </div>
+
+        <!-- Testimonials under About (full width) -->
+        <div class="card pad" id="testimonialsBox" style="display:none">
+          <h3 class="crt-glow" style="margin:.2em 0 .6em">Testimonials</h3>
+          <div class="tlist" id="testimonialsList"></div>
         </div>
       </section>
 
@@ -296,6 +308,7 @@
   /********************** DEFAULT CONTACT (preload -> sheet override) ***********************/
   const DEFAULT_PHONE = "(818)434-8013";
   const DEFAULT_EMAIL = "arifeblowitzvfx@gmail.com";
+  const DEFAULT_RESUME = "https://docs.google.com/document/d/1NnKyzE8TtjMOe8WdTEBE7zNscM_RIHBMGF1CMjOn29s/export?format=pdf";
   function setTopContact(phone, email){
     const top = document.getElementById('topContact');
     if (!top) return;
@@ -311,6 +324,8 @@
   // Preload defaults immediately
   setTopContact(DEFAULT_PHONE, DEFAULT_EMAIL);
   setContactSection(DEFAULT_PHONE, DEFAULT_EMAIL);
+  // Ensure resume button has default link immediately
+  (function ensureResumeDefault(){ const r = document.getElementById('btnResume'); if (r) r.href = DEFAULT_RESUME; })();
 
   /********************** UTILITIES ***********************/
   const $ = (sel, el=document) => el.querySelector(sel);
@@ -322,11 +337,11 @@
     const rows = []; let field="", row=[], inQ=false;
     for (let c of String(csvText||"").replace(/\r/g,'')){
       if (c==='"'){ inQ = !inQ; field+=c; }
-      else if (c===',' && !inQ){ row.push(field.replace(/^"|"$/g,'').replace(/""/g,'"')); field=""; }
-      else if (c==='\n' && !inQ){ row.push(field.replace(/^"|"$/g,'').replace(/""/g,'"')); rows.push(row); row=[]; field=""; }
+      else if (c===',' && !inQ){ row.push(field.replace(/^("|“)|("|”)$/g,'').replace(/""/g,'"')); field=""; }
+      else if (c==='\n' && !inQ){ row.push(field.replace(/^("|“)|("|”)$/g,'').replace(/""/g,'"')); rows.push(row); row=[]; field=""; }
       else field+=c;
     }
-    if (field.length || row.length){ row.push(field.replace(/^"|"$/g,'').replace(/""/g,'"')); rows.push(row); }
+    if (field.length || row.length){ row.push(field.replace(/^("|“)|("|”)$/g,'').replace(/""/g,'"')); rows.push(row); }
     if (!rows.length) return [];
     const headers = rows[0].map(h=>h.trim());
     return rows.slice(1).filter(r=>r.length>1).map(r=>{ const o={}; headers.forEach((h,i)=>o[h]=r[i]!==undefined?r[i]:""); return o; });
@@ -352,6 +367,7 @@
         else if (hdr.includes('ride image') && hdr.includes('ride name')) map['Rides']=gid;
         else if (hdr.includes('type') && hdr.includes('video_id')) map['Personal Youtube']=gid;
         else if (hdr.includes('key') && hdr.includes('value')) map['Main site info']=gid;
+        else if (hdr.includes('from') && hdr.includes('testimonial')) map['Testimonials']=gid; // NEW
       }
     }catch(e){ console.error('[discoverGids]', e); }
     return { ...map, ...TAB_MAP };
@@ -397,7 +413,7 @@
   function setStatus(msg, linkHref){ if (!sysStatus) return; sysStatus.textContent = msg; if (linkHref) { sysStatus.href = linkHref; } }
 
   /********************** PHASED LOAD ***********************/
-  const loaded = { main:false, reel:false, sections:false, banner:false };
+  const loaded = { main:false, reel:false, sections:false, banner:false, testimonials:false };
 
   (async function init(){
     try{
@@ -426,7 +442,9 @@
 
       const linksHref = mainInfo.all_links_url || 'https://linktr.ee/admin/links';
       $('#btnIMDb').href = imdbUrl; $('#btnYouTube').href = mainInfo.youtube_url || $('#btnYouTube').href; $('#btnLinks').href = linksHref;
-      if (mainInfo.news_url) $('#btnNews').href = mainInfo.news_url; if (mainInfo.resume_url) $('#btnResume').href = mainInfo.resume_url;
+      // Resume: prefer sheet override, else enforced default
+      $('#btnResume').href = (mainInfo.resume_url && mainInfo.resume_url.trim()) || DEFAULT_RESUME;
+
       setStatus('Link established', linksHref);
       const aboutStatus = $('#aboutStatus'); if (aboutStatus) aboutStatus.style.display = 'none';
       document.body.classList.add('ready'); $('#reelHeader').textContent = 'Demo Reel'; $('#aboutHeader').textContent = 'About'; loaded.main = true;
@@ -437,6 +455,9 @@
       setTopContact(phone, email);
       setContactSection(phone, email);
       enhanceContactLinks();
+
+      /* Phase 1.5: Testimonials (can load in parallel) */
+      loadTestimonials();
 
       /* Phase 2: Reel */
       (function loadReel(){
@@ -581,6 +602,36 @@
         fillBanner(interleaved);
       }
 
+      async function loadTestimonials(){
+        if (loaded.testimonials) return; loaded.testimonials = true;
+        try{
+          const rows = await pullTab('Testimonials');
+          const items = (rows||[])
+            .map(r=>({ from:(r['From']||'').trim(), text:(r['Testimonial']||'').trim() }))
+            .filter(t=>t.from && t.text);
+          if (!items.length) return; // nothing to render
+
+          const box = document.getElementById('testimonialsBox');
+          const list = document.getElementById('testimonialsList');
+          list.innerHTML='';
+
+          const smartQuote = s=>{
+            const t = s.trim();
+            const begins = /^["“]/.test(t); const ends = /["”]$/.test(t);
+            if (begins && ends) return t; // already quoted
+            return `“${t.replace(/^"|^“|^'|^‘|^`/, '').replace(/"$|”$|'$|‘$|`$/, '')}”`;
+          };
+          const esc = s=> s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+
+          items.forEach(it=>{
+            const el = document.createElement('div'); el.className='testimonial';
+            el.innerHTML = `<span class=\"quote\">${esc(smartQuote(it.text))}</span><span class=\"from\">— ${esc(it.from)}</span>`;
+            list.appendChild(el);
+          });
+          box.style.display = 'block';
+        }catch(e){ console.error('[testimonials]', e); }
+      }
+
     }catch(err){
       console.error('[init]', err);
     }
@@ -624,7 +675,7 @@
     });
   }
 
-  /* ===== dot-only flicker: background stays calm ===== */
+  /* ===== dot-only flicker ===== */
   (function dotOnlyFlicker(){
     const dot = document.querySelector('.brand .dot');
     if (!dot) return;
@@ -633,31 +684,32 @@
     document.addEventListener('mouseover', e => { if (isInteractive(e.target)) trigger(); }, {passive:true});
     document.addEventListener('click',    e => { if (isInteractive(e.target)) trigger(); }, {passive:true});
   })();
-  (function enhanceDotAndContact(){
-  // DOT: subtle green flick on hover/focus, 1s yellow alert on click
-  const dot = document.querySelector('.brand .dot');
-  const add = (cls, ms)=>{ if(!dot) return; dot.classList.add(cls); setTimeout(()=>dot.classList.remove(cls), ms); };
-  const isInteractive = el => el && el.closest && el.closest('a, button, .tab-btn, .tile, .btn');
-  document.addEventListener('mouseover', e=>{ if (isInteractive(e.target)) add('flick', 950); }, {passive:true});
-  document.addEventListener('focusin',   e=>{ if (isInteractive(e.target)) add('flick', 950); });
-  document.addEventListener('click',     e=>{ if (isInteractive(e.target)) add('alert', 1000); }, {passive:true});
 
-  // CONTACT: mirror All My Links + Download Résumé into Contact tab once available
-  function tryInject(){
-    const wrap = document.getElementById('contactInfo');
-    const links = document.getElementById('btnLinks');
-    const resume = document.getElementById('btnResume');
-    if (!wrap || !links) return false;
-    if (!wrap.querySelector('[data-extra="links"]')){
-      const a = document.createElement('a'); a.className='btn'; a.href=links.href; a.target='_blank'; a.rel='noopener'; a.textContent='All My Links'; a.setAttribute('data-extra','links'); wrap.appendChild(a);
+  /* ===== hover flicker (green) + click alert (yellow) ===== */
+  (function enhanceDotAndContact(){
+    const dot = document.querySelector('.brand .dot');
+    const add = (cls, ms)=>{ if(!dot) return; dot.classList.add(cls); setTimeout(()=>dot.classList.remove(cls), ms); };
+    const isInteractive = el => el && el.closest && el.closest('a, button, .tab-btn, .tile, .btn');
+    document.addEventListener('mouseover', e=>{ if (isInteractive(e.target)) add('flick', 950); }, {passive:true});
+    document.addEventListener('focusin',   e=>{ if (isInteractive(e.target)) add('flick', 950); });
+    document.addEventListener('click',     e=>{ if (isInteractive(e.target)) add('alert', 1000); }, {passive:true});
+
+    // CONTACT: mirror All My Links + Download Résumé into Contact tab once available
+    function tryInject(){
+      const wrap = document.getElementById('contactInfo');
+      const links = document.getElementById('btnLinks');
+      const resume = document.getElementById('btnResume');
+      if (!wrap || !links) return false;
+      if (!wrap.querySelector('[data-extra="links"]')){
+        const a = document.createElement('a'); a.className='btn'; a.href=links.href; a.target='_blank'; a.rel='noopener'; a.textContent='All My Links'; a.setAttribute('data-extra','links'); wrap.appendChild(a);
+      }
+      if (resume && resume.href && !wrap.querySelector('[data-extra="resume"]')){
+        const a = document.createElement('a'); a.className='btn'; a.href=resume.href; a.download=''; a.textContent='Download Résumé'; a.setAttribute('data-extra','resume'); wrap.appendChild(a);
+      }
+      return true;
     }
-    if (resume && resume.href && !wrap.querySelector('[data-extra="resume"]')){
-      const a = document.createElement('a'); a.className='btn'; a.href=resume.href; a.download=''; a.textContent='Download Résumé'; a.setAttribute('data-extra','resume'); wrap.appendChild(a);
-    }
-    return true;
-  }
-  let tries = 0; const timer = setInterval(()=>{ if (tryInject() || ++tries>20) clearInterval(timer); }, 250);
-})();
-</script>
+    let tries = 0; const timer = setInterval(()=>{ if (tryInject() || ++tries>20) clearInterval(timer); }, 250);
+  })();
+  </script>
 </body>
 </html>
