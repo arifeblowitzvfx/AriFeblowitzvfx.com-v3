@@ -33,7 +33,7 @@
   body::after{content:""; position:fixed; inset:0; pointer-events:none;
     background-image:repeating-linear-gradient(to bottom, rgba(66,255,209,.12), rgba(66,255,209,.12) 2px, transparent 3px, transparent 6px);
     mix-blend-mode:soft-light; opacity:.6; z-index:0; animation:scan 18s linear infinite, glowPulse 8s ease-in-out infinite}
-  @keyframes scan{0%{transform:translateY(0)} 100%{transform:translateY(-24px)}} 100%{transform:translateY(-20px)}}
+  @keyframes scan{0%{transform:translateY(0)} 100%{transform:translateY(-24px)}}
   .flicker{animation:flicker 4.5s infinite steps(100)}
   @keyframes flicker{0%, 100%{filter:drop-shadow(0 0 6px rgba(0,255,156,.35))} 50%{filter:drop-shadow(0 0 10px rgba(0,255,156,.6))}}
 
@@ -113,7 +113,6 @@
   .brand .dot{ animation:blink 7s infinite steps(120), breathe 5s ease-in-out infinite }
   @keyframes blink{0%,97%,100%{opacity:1} 98%{opacity:.3} 99%{opacity:.75}}
   @keyframes breathe{0%,100%{box-shadow:0 0 14px rgba(0,255,156,.8)}50%{box-shadow:0 0 22px rgba(0,255,156,1)}}
-$1
 </head>
 <body>
   <!-- Banner -->
@@ -128,7 +127,10 @@ $1
   <div class="wrap">
     <!-- NAV -->
     <div class="nav">
-      $1
+      <div class="brand">
+        <div class="dot" aria-hidden="true"></div>
+        <h1 id="siteTitle">Ariel (Ari) Feblowitz</h1>
+        <span id="siteSubtitle" class="pill">Techvis & Virtual Production Supervisor</span>
         <span id="sysStatus" class="pill">Initializing: Weyland Yutani–Cyberdyne link…</span>
       </div>
       <div class="tabs" role="tablist" aria-label="Sections">
@@ -157,8 +159,8 @@ $1
         </div>
         <div class="card pad">
           <h2 style="margin:0 0 .6em">About</h2>
-          $1Bridging virtual and physical storytelling across techvis, previs/postvis, and virtual production. I translate complex sequences into precise, repeatable camera plans — trusted by directors, DPs, and VFX supervisors.$2
-          $1Credits include Avatar: The Way of Water, Avengers: Endgame, Ant-Man and the Wasp, Guardians of the Galaxy Vol. 3, and more.$2
+          <p id="about1">Bridging virtual and physical storytelling across techvis, previs/postvis, and virtual production. I translate complex sequences into precise, repeatable camera plans — trusted by directors, DPs, and VFX supervisors.</p>
+          <p id="about2" class="muted">Credits include Avatar: The Way of Water, Avengers: Endgame, Ant-Man and the Wasp, Guardians of the Galaxy Vol. 3, and more.</p>
           <div id="skillsRow1" class="badges"></div>
           <div id="skillsRow2" class="badges"></div>
         </div>
@@ -214,8 +216,8 @@ $1
         </div>
       </div>
     </section>
-
-    $1© <span id="year"></span> Ariel (Ari) Feblowitz • WY–Cyberdyne Systems in compliance with Weyland Yutani Mother Ai - Hosted from Skynet • Theme: Tech‑Noir$2
+    <footer class="muted">© <span id="year"></span> Ariel (Ari) Feblowitz • WY–Cyberdyne Systems in compliance with Weyland Yutani Mother Ai - Hosted from Skynet • Theme: Tech‑Noir</footer>
+  
   </div>
 
 <script>
@@ -341,7 +343,7 @@ $$('.tab-btn').forEach(btn=>{
     window.scrollTo({ top: $('.wrap').offsetTop, behavior: 'smooth' });
   });
 });
-$1
+document.getElementById('year').textContent = new Date().getFullYear();
 
 // status helper
 const sysStatus = document.getElementById('sysStatus');
@@ -350,7 +352,7 @@ function setStatus(msg){ if(sysStatus) sysStatus.textContent = msg; }
 /**********************
   LOAD + RENDER
 ***********************/
-$1
+(async function init(){
   setStatus('Routing request to MOTHER…');
   // Discover GIDs
   const gids = await discoverGids(PUBHTML);
