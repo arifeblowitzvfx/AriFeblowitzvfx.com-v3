@@ -376,6 +376,17 @@ function buildBanner(){
       if (!arr || !arr.length){ el.innerHTML = `<div class="muted">No items yet. Edit <b>CONFIG</b> in this file to add projects.</div>`; return; }
       arr.forEach(p=>{
         const c = document.createElement('a'); c.className='proj card'; c.href=p.url||'#'; c.target='_blank'; c.rel='noopener';
+        const poster = mkPosterImg(p.posters||[], { placeholderTitle: p.title }); // last resort = title-on-black
+        const wrap = document.createElement('div'); wrap.className='thumb'; wrap.appendChild(poster);
+        const meta = document.createElement('div'); meta.className='meta';
+        meta.innerHTML = `<div class="title">${p.title||''}</div><div class="role">${p.role||''}</div>`;
+        c.appendChild(wrap); c.appendChild(meta);
+        el.appendChild(c);
+      })
+    }
+
+    arr.forEach(p=>{
+        const c = document.createElement('a'); c.className='proj card'; c.href=p.url||'#'; c.target='_blank'; c.rel='noopener';
         const poster = mkPosterImg(p.posters||[]);
         const wrap = document.createElement('div'); wrap.className='thumb'; wrap.appendChild(poster);
         const meta = document.createElement('div'); meta.className='meta';
