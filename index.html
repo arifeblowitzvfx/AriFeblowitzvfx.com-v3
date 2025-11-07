@@ -11,121 +11,109 @@
   <meta name="theme-color" content="#0c0f12" />
   <style>
     /* =========================
-       THEME — "TECH NOIR" (Alien/Terminator‑ish)
-       Single-file, no external deps
+       THEME — TECH NOIR v2 (sleeker, fluid, green-on-black)
+       Single-file, optional GitHub folder auto-pull
        ========================= */
     :root{
-      --bg:#0b0f11;           /* near-black */
-      --bg2:#0e1418;          /* panel */
-      --card:#121a20;         /* cards */
-      --txt:#cfd8dc;          /* body text */
-      --muted:#8fa1a8;        /* secondary */
-      --accent:#00ff9c;       /* CRT green */
-      --accent-soft:#18d6a0;  
-      --danger:#ff3b3b;
-      --shadow:0 10px 30px rgba(0,0,0,.35);
+      --bg:#0b0f11;           /* site background */
+      --panel:#020405;        /* black control-panel windows */
+      --card:#05090b;         /* cards */
+      --txt:#9fffcf;          /* CRT green body text */
+      --muted:#74cdaa;        /* secondary green */
+      --accent:#00ff9c;       /* neon */
+      --accent-2:#42ffd1;     /* soft neon */
+      --grid:clamp(14px, 1.8vw, 24px);
       --radius:18px;
+      --shadow:0 14px 40px rgba(0,0,0,.45);
     }
+
     *{box-sizing:border-box}
     html,body{height:100%}
     body{
-      margin:0; color:var(--txt); background:radial-gradient(1200px 700px at 20% -10%, #132227 0%, transparent 60%),
-                                         radial-gradient(1000px 600px at 120% 10%, #151a1f 0%, transparent 60%),
-                                         linear-gradient(#0a0d10, #0b0f11 40%);
-      font:16px/1.6 system-ui, -apple-system, Segoe UI, Roboto, Inter, Helvetica, Arial, sans-serif;
+      margin:0; color:var(--txt);
+      background:
+        radial-gradient(1200px 700px at 20% -10%, #122e29 0%, transparent 60%),
+        radial-gradient(1000px 600px at 120% 10%, #142027 0%, transparent 60%),
+        linear-gradient(#080b0e, var(--bg) 40%);
+      font:clamp(15px, 1.1vw, 18px)/1.65 Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
       overflow-y:overlay;
+      letter-spacing:.15px;
     }
     /* Subtle CRT scanlines */
-    body::after{
-      content:""; position:fixed; inset:0; pointer-events:none;
-      background-image: repeating-linear-gradient(to bottom, rgba(255,255,255,.02), rgba(255,255,255,.02) 1px, transparent 2px, transparent 3px);
-      mix-blend-mode:soft-light; opacity:.45; z-index:0;
-    }
+    body::after{content:""; position:fixed; inset:0; pointer-events:none; background-image:repeating-linear-gradient(to bottom, rgba(66,255,209,.06), rgba(66,255,209,.06) 1px, transparent 2px, transparent 3px); mix-blend-mode:soft-light; opacity:.35; z-index:0}
+
     a{color:var(--accent); text-decoration:none}
-    a:hover{filter:brightness(1.2)}
+    a:hover{filter:brightness(1.18)}
 
-    .wrap{max-width:1100px; margin:0 auto; padding:28px; position:relative; z-index:1}
+    /* Full-bleed known-for banner */
+    .banner{position:relative; width:100vw; left:50%; right:50%; margin-left:-50vw; margin-right:-50vw; padding:clamp(8px,1.2vw,14px) 0; z-index:1}
+    .banner .rail{height:clamp(110px, 16vw, 220px); position:relative; overflow:hidden; border-radius:clamp(10px,1.4vw,18px); background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0)); border:1px solid rgba(0,255,156,.15); box-shadow:var(--shadow)}
+    .marquee{display:flex; gap:clamp(10px,1.2vw,16px); position:absolute; inset:0; align-items:center; will-change:transform}
+    .tile{flex:0 0 auto; height:calc(100% - clamp(8px,1vw,12px)); aspect-ratio:16/9; position:relative; border-radius:clamp(8px,1vw,14px); overflow:hidden; background:#0b1414; border:1px solid rgba(66,255,209,.18)}
+    .tile img{height:100%; width:100%; object-fit:cover; display:block; filter:saturate(.95) contrast(1.06)}
+    .tile::after{content:attr(data-title); position:absolute; left:0; right:0; bottom:0; font-size:clamp(10px,.9vw,12px); padding:.45em .6em; color:#caffec; background:linear-gradient(180deg, transparent, rgba(0,0,0,.75)); text-shadow:0 1px 2px rgba(0,0,0,.55)}
 
-    /* Top BAR — Known‑For carousel */
-    .knownfor{
-      position:relative; overflow:hidden; border-radius:var(--radius);
-      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0));
-      border:1px solid rgba(255,255,255,.06); box-shadow:var(--shadow); height:110px; margin:16px 0 24px;
-    }
-    .kf-track{display:flex; gap:12px; position:absolute; inset:0; align-items:center; will-change:transform}
-    .kf-item{flex:0 0 auto; height:86px; width:152px; position:relative; border-radius:12px; overflow:hidden; background:#0d1216; border:1px solid rgba(255,255,255,.06)}
-    .kf-item img{height:100%; width:100%; object-fit:cover; display:block; filter:saturate(.9) contrast(1.05)}
-    .kf-item::after{content:attr(data-title); position:absolute; left:0; right:0; bottom:0; font-size:11px; padding:6px 8px; color:#dfe8ea; background:linear-gradient(180deg, transparent, rgba(0,0,0,.75)); text-shadow:0 1px 2px rgba(0,0,0,.55)}
+    /* Wrap & layout */
+    .wrap{max-width:min(1200px, 92vw); margin:0 auto; padding:clamp(16px,2vw,28px); position:relative; z-index:1}
 
-    /* NAV */
-    .nav{
-      display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap; margin:10px 0 6px;
-    }
-    .brand{display:flex; gap:14px; align-items:center}
-    .brand .dot{width:12px; height:12px; border-radius:50%; background:radial-gradient(circle at 30% 30%, var(--accent), #0f4630 70%); box-shadow:0 0 10px var(--accent)}
-    .brand h1{margin:0; font-weight:700; font-size:20px; letter-spacing:.1em; text-transform:uppercase}
-    .tabs{display:flex; gap:8px; flex-wrap:wrap}
-    .tab-btn{padding:10px 14px; border-radius:12px; background:var(--bg2); color:var(--txt); border:1px solid rgba(255,255,255,.06); cursor:pointer}
+    .nav{display:flex; gap:clamp(8px,1vw,12px); align-items:center; justify-content:space-between; flex-wrap:wrap; margin:clamp(6px,.8vw,10px) 0}
+    .brand{display:flex; gap:clamp(10px,1.2vw,14px); align-items:center}
+    .brand .dot{width:clamp(10px,1vw,14px); height:clamp(10px,1vw,14px); border-radius:50%; background:radial-gradient(circle at 30% 30%, var(--accent), #0f4630 70%); box-shadow:0 0 16px var(--accent)}
+    .brand h1{margin:0; font-weight:800; font-size:clamp(18px,2.2vw,28px); letter-spacing:.12em; text-transform:uppercase; color:#d9fff1}
+    .pill{border:1px dashed rgba(66,255,209,.35); border-radius:999px; padding:.4em .8em; font-size:clamp(11px,1vw,12px); color:var(--muted)}
+
+    .tabs{display:flex; gap:clamp(6px,.8vw,10px); flex-wrap:wrap}
+    .tab-btn{padding:.6em .9em; border-radius:12px; background:var(--panel); color:var(--txt); border:1px solid rgba(66,255,209,.18); cursor:pointer; font-weight:600}
     .tab-btn.active{outline:1px solid var(--accent); box-shadow:0 0 0 2px rgba(0,255,156,.12) inset}
 
-    /* HERO */
-    .hero{margin:22px 0 18px; display:grid; grid-template-columns:1.1fr .9fr; gap:22px}
-    @media (max-width:880px){ .hero{grid-template-columns:1fr} }
-    .card{background:var(--card); border:1px solid rgba(255,255,255,.08); border-radius:var(--radius); box-shadow:var(--shadow)}
-    .card h2{margin:0 0 10px}
-    .pad{padding:18px}
+    .hero{margin:clamp(12px,1.6vw,20px) 0; display:grid; grid-template-columns:1.1fr .9fr; gap:var(--grid)}
+    @media (max-width:920px){ .hero{grid-template-columns:1fr} }
 
-    .reel{position:relative; aspect-ratio:16/9; border-radius:14px; overflow:hidden; background:#000; border:1px solid rgba(255,255,255,.08)}
-    .reel iframe{position:absolute; inset:0; width:100%; height:100%;}
+    .card{background:var(--panel); border:1px solid rgba(66,255,209,.2); border-radius:var(--radius); box-shadow:var(--shadow)}
+    .pad{padding:clamp(14px,1.6vw,20px)}
 
-    .badges{display:flex; flex-wrap:wrap; gap:10px; margin-top:12px}
-    .btn{--b:rgba(255,255,255,.08); display:inline-flex; align-items:center; gap:8px; border:1px solid var(--b); background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,0)); padding:10px 14px; border-radius:12px; color:var(--txt); cursor:pointer}
+    .reel{position:relative; aspect-ratio:16/9; border-radius:14px; overflow:hidden; background:#000; border:1px solid rgba(66,255,209,.22)}
+    .reel iframe{position:absolute; inset:0; width:100%; height:100%}
+
+    .badges{display:flex; flex-wrap:wrap; gap:clamp(8px,1vw,12px); margin-top:clamp(8px,1vw,12px)}
+    .btn{--b:rgba(66,255,209,.18); display:inline-flex; align-items:center; gap:.5em; border:1px solid var(--b); background:linear-gradient(180deg, rgba(66,255,209,.09), rgba(66,255,209,0)); padding:.65em 1em; border-radius:12px; color:var(--txt); cursor:pointer; font-weight:600}
     .btn:hover{border-color:var(--accent); box-shadow:0 0 0 1px rgba(0,255,156,.15) inset}
-    .btn.primary{background:linear-gradient(180deg, rgba(0,255,156,.18), rgba(0,255,156,.08)); color:#072e22}
+    .btn.primary{background:linear-gradient(180deg, rgba(0,255,156,.22), rgba(0,255,156,.08)); color:#04271d}
 
-    /* Sections */
     section{display:none}
     section.active{display:block}
-    .grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:14px}
-    @media (max-width:900px){ .grid{grid-template-columns:repeat(2, 1fr)} }
+    .grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:var(--grid)}
+    @media (max-width:1000px){ .grid{grid-template-columns:repeat(2, 1fr)} }
     @media (max-width:620px){ .grid{grid-template-columns:1fr} }
     .proj{overflow:hidden}
-    .thumb{position:relative; aspect-ratio:16/9; overflow:hidden; border-radius:14px; border:1px solid rgba(255,255,255,.08)}
+    .thumb{position:relative; aspect-ratio:16/9; overflow:hidden; border-radius:14px; border:1px solid rgba(66,255,209,.22)}
     .thumb img{width:100%; height:100%; object-fit:cover; display:block}
-    .proj .meta{padding:10px 12px 14px}
-    .proj .title{font-weight:700}
-    .proj .role{color:var(--muted); font-size:13px}
+    .proj .meta{padding:.7em .9em 1em}
+    .proj .title{font-weight:800; color:#e2fff5}
+    .proj .role{color:var(--muted); font-size:.9em}
 
-    /* Footer */
-    footer{opacity:.8; font-size:13px; padding:40px 0 20px}
-
-    /* Small util */
-    .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
-    .muted{color:var(--muted)}
-    .hide{display:none !important}
-    .pill{border:1px dashed rgba(255,255,255,.15); border-radius:999px; padding:6px 10px; font-size:12px; color:var(--muted)}
-
+    footer{opacity:.8; font-size:.85em; padding:clamp(28px,2.5vw,40px) 0 20px}
   </style>
 </head>
 <body>
   <!--
   ================================
-  SETUP NOTES (keep it simple)
+  SETUP NOTES
   ================================
-  1) Put this file in a GitHub repo as "index.html" and enable GitHub Pages.
-  2) Customize the CONFIG section below (video, imdb, resume, links, knownFor).
-  3) Optional: Drop your resume as "resume.pdf" in the repo root — the button will work.
-  4) All data is local (no external APIs) to ensure reliability on GitHub Pages.
-  5) To add projects, edit the arrays below (proProjects, personalProjects).
+  1) Keep as a single-file `index.html` in your repo.
+  2) Prefer local images (committed to your repo). Optionally, set GITHUB_CONFIG below to auto-pull images from a folder using the GitHub API (no keys required, but unauthenticated rate limits apply).
+  3) Drop your resume as `resume.pdf` OR put it in a folder (e.g., `docs/`) and set `resumeFolder` to auto-pick the first .pdf.
+  4) Edit CONFIG for links and manual project lists. Folder auto-pull is for the top banner images; project grids remain manual for best control.
   -->
 
-  <div class="wrap">
-
-    <!-- Known‑For / Credit strip (auto-scrolling) -->
-    <div class="knownfor card">
-      <div class="kf-track" id="kfTrack"></div>
+  <!-- FULL-BLEED BANNER (auto-scroll loop) -->
+  <div class="banner">
+    <div class="rail card">
+      <div class="marquee" id="bannerTrack" aria-label="Known for"></div>
     </div>
+  </div>
 
+  <div class="wrap">
     <!-- NAV -->
     <div class="nav">
       <div class="brand">
@@ -140,28 +128,27 @@
       </div>
     </div>
 
-    <!-- HERO / HOME -->
+    <!-- HOME -->
     <section id="home" class="active" role="tabpanel">
       <div class="hero">
         <div class="card pad">
-          <h2>Demo Reel</h2>
+          <h2 style="margin:0 0 .6em">Demo Reel</h2>
           <div class="reel">
-            <!-- Replace YOUTUBE_ID in CONFIG below -->
             <iframe id="reelFrame" src="" title="Ari Feblowitz — Demo Reel" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
           </div>
           <div class="badges">
             <a id="btnIMDb" class="btn" href="#" target="_blank" rel="noopener">IMDb</a>
             <a id="btnYouTube" class="btn" href="#" target="_blank" rel="noopener">YouTube</a>
             <a id="btnLinks" class="btn" href="#" target="_blank" rel="noopener">All My Links</a>
-            <a id="btnResume" class="btn primary" href="resume.pdf" download>Download Résumé</a>
+            <a id="btnResume" class="btn primary" href="#" download>Download Résumé</a>
             <a id="btnNews" class="btn" href="#" target="_blank" rel="noopener">Ari in the News</a>
           </div>
         </div>
         <div class="card pad">
-          <h2>About</h2>
+          <h2 style="margin:0 0 .6em">About</h2>
           <p>Bridging virtual and physical storytelling across techvis, previs/postvis, and virtual production. I translate complex sequences into precise, repeatable camera plans — trusted by directors, DPs, and VFX supervisors.</p>
           <p class="muted">Credits include Avatar: The Way of Water, Avengers: Endgame, Ant‑Man and the Wasp, Guardians of the Galaxy Vol. 3, Twisters, and more.</p>
-          <div class="row">
+          <div class="badges">
             <span class="pill">Motion Control</span>
             <span class="pill">Unreal Engine</span>
             <span class="pill">Maya</span>
@@ -174,8 +161,8 @@
     <!-- PROFESSIONAL PROJECTS -->
     <section id="professional" role="tabpanel">
       <div class="card pad">
-        <div class="row" style="justify-content:space-between; align-items:flex-end">
-          <h2>Professional Projects</h2>
+        <div class="nav" style="gap:8px; justify-content:space-between; align-items:flex-end">
+          <h2 style="margin:0">Professional Projects</h2>
           <small class="muted">(Edit in CONFIG → proProjects)</small>
         </div>
         <div id="proGrid" class="grid"></div>
@@ -185,15 +172,15 @@
     <!-- PERSONAL PROJECTS -->
     <section id="personal" role="tabpanel">
       <div class="card pad">
-        <div class="row" style="justify-content:space-between; align-items:flex-end">
-          <h2>Personal Projects</h2>
+        <div class="nav" style="gap:8px; justify-content:space-between; align-items:flex-end">
+          <h2 style="margin:0">Personal Projects</h2>
           <small class="muted">(Edit in CONFIG → personalProjects)</small>
         </div>
         <div id="personalGrid" class="grid"></div>
       </div>
     </section>
 
-    <footer class="muted">© <span id="year"></span> Ariel (Ari) Feblowitz • Built as a single‑file GitHub Page • Theme: Tech‑Noir</footer>
+    <footer class="muted">© <span id="year"></span> Ariel (Ari) Feblowitz • Single‑file GitHub Page • Theme: Tech‑Noir v2</footer>
   </div>
 
   <script>
@@ -204,23 +191,38 @@
       youtubeId: "REPLACE_WITH_YOUTUBE_ID", // e.g., "dQw4w9WgXcQ"
       imdbUrl: "https://www.imdb.com/name/nm4409645/",
       youtubeUrl: "https://www.youtube.com/@DirectorPsycho",
-      allLinksUrl: "https://linktr.ee/directorPsycho", // or your site of links
-      newsUrl: "https://www.youtube.com/watch?v=REPLACE_NEWS_VIDEO", // replace or remove
-      // Known‑For strip — use poster or banner URLs you control (raw GitHub URLs work great)
+      allLinksUrl: "https://linktr.ee/directorPsycho",
+      newsUrl: "", // optional
+      resumeFile: "resume.pdf", // direct path OR "" to auto-pick from resumeFolder
+      // Manual fallback tiles for banner if no GitHub folder is configured
       knownFor: [
-        // { title:"Avatar: The Way of Water", img:"https://.../avatar2.jpg", url:"https://www.imdb.com/title/tt1630029/" },
-        // { title:"Avengers: Endgame", img:"https://.../endgame.jpg", url:"https://www.imdb.com/title/tt4154796/" },
+        // { title:"Avatar: The Way of Water", img:"images/avatar2.jpg", url:"https://www.imdb.com/title/tt1630029/" },
       ],
-      // Professional projects grid
+      // Project grids (manual for precision)
       proProjects: [
-        // { title:"Guardians of the Galaxy Vol. 3", role:"Techvis / VP Supervisor", img:"https://.../gotg3.jpg", url:"https://www.imdb.com/title/tt6791350/" },
-        // { title:"Twisters", role:"Techvis", img:"https://.../twisters.jpg", url:"https://www.imdb.com/title/tt12584954/" },
+        // { title:"Guardians of the Galaxy Vol. 3", role:"Techvis / VP Supervisor", img:"images/gotg3.jpg", url:"https://www.imdb.com/title/tt6791350/" },
       ],
-      // Personal projects grid
       personalProjects: [
-        // { title:"Deadpool vs Alien vs Terminator", role:"Animated Short", img:"https://.../dvavt.jpg", url:"https://www.youtube.com/watch?v=..." },
-        // { title:"Siren Tales", role:"Concept / Anim", img:"https://.../siren.jpg", url:"https://www.youtube.com/watch?v=..." },
-      ]
+        // { title:"Deadpool vs Alien vs Terminator", role:"Animated Short", img:"images/dvavt.jpg", url:"https://www.youtube.com/watch?v=..." },
+      ],
+    };
+
+    /* Optional GitHub folder auto-pull. Set these to enable:
+       Example:
+       const GITHUB_CONFIG = {
+         owner: 'AriFeb',
+         repo: 'ari-portfolio',
+         branch: 'main',
+         bannerFolder: 'knownfor',   // folder of poster JPG/PNG in repo
+         resumeFolder: 'docs'        // folder containing a resume .pdf (first found is used)
+       };
+    */
+    const GITHUB_CONFIG = {
+      owner: '',
+      repo: '',
+      branch: 'main',
+      bannerFolder: '',
+      resumeFolder: ''
     };
 
     /* =========================
@@ -233,9 +235,7 @@
     $$(".tab-btn").forEach(btn=>{
       btn.addEventListener('click', ()=>{
         $$(".tab-btn").forEach(b=>{ b.classList.toggle('active', b===btn); b.setAttribute('aria-selected', b===btn) });
-        const name = btn.dataset.tab;
-        $$("section").forEach(s=>s.classList.toggle('active', s.id===name));
-        // Scroll to top of section on mobile
+        const name = btn.dataset.tab; $$("section").forEach(s=>s.classList.toggle('active', s.id===name));
         window.scrollTo({ top: $('.wrap').offsetTop, behavior: 'smooth' });
       })
     });
@@ -247,61 +247,433 @@
     } else {
       reel.srcdoc = `
         <style>body{margin:0;display:grid;place-items:center;background:#000;color:#9fb5b8;font:16px system-ui} .box{opacity:.8;text-align:center} .box b{color:#fff}</style>
-        <div class='box'>
-          <div style='font-size:18px;margin-bottom:6px'>Add your <b>YouTube ID</b> in CONFIG to show the reel.</div>
-          <div class='muted'>Example: youtube.com/watch?v=<b style="color:#fff">dQw4w9WgXcQ</b> → use that ID</div>
-        </div>`;
+        <div class='box'>Add your <b>YouTube ID</b> in CONFIG to show the reel.</div>`;
     }
-
     $("#btnIMDb").href = CONFIG.imdbUrl;
     $("#btnYouTube").href = CONFIG.youtubeUrl;
     $("#btnLinks").href = CONFIG.allLinksUrl;
     if (CONFIG.newsUrl) $("#btnNews").href = CONFIG.newsUrl; else $("#btnNews").classList.add('hide');
 
-    // Known‑For Track (infinite scroll feel)
-    const kfTrack = $("#kfTrack");
-    const list = CONFIG.knownFor.length ? CONFIG.knownFor : [
-      {title:"Add posters to knownFor in CONFIG", img:"data:image/svg+xml;utf8,\
-        <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 450'>\
-        <rect width='100%' height='100%' fill='%230d1216'/>\
-        <text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' fill='%238fa1a8' font-family='monospace' font-size='22'>Your posters here</text></svg>", url:'#'}
-    ];
-    const items = [...list, ...list]; // duplicate for looping illusion
-    items.forEach(it=>{
-      const a = document.createElement('a'); a.className='kf-item'; a.href=it.url||'#'; a.target='_blank'; a.rel='noopener'; a.setAttribute('data-title', it.title||'');
-      const img = document.createElement('img'); img.loading='lazy'; img.alt = it.title||''; img.src = it.img; a.appendChild(img); kfTrack.appendChild(a);
-    });
-    let offset = 0; // pixels
-    function tick(){
-      offset -= 0.25; // speed
-      const width = kfTrack.scrollWidth/2 + 12; // half track width
-      if (Math.abs(offset) >= width) offset = 0;
-      kfTrack.style.transform = `translateX(${offset}px)`;
-      requestAnimationFrame(tick);
+    // Resume: direct file or first PDF from resumeFolder
+    async function setResumeLink(){
+      const btn = $("#btnResume");
+      if (CONFIG.resumeFile){ btn.href = CONFIG.resumeFile; return; }
+      if (!GITHUB_CONFIG.owner || !GITHUB_CONFIG.repo || !GITHUB_CONFIG.resumeFolder) { btn.classList.add('hide'); return; }
+      try{
+        const list = await ghList(GITHUB_CONFIG.resumeFolder);
+        const pdf = list.find(f=>/\.pdf$/i.test(f.name));
+        if (pdf){ btn.href = ghRawUrl(`${GITHUB_CONFIG.resumeFolder}/${pdf.name}`); }
+        else btn.classList.add('hide');
+      }catch{ btn.classList.add('hide'); }
     }
-    requestAnimationFrame(tick);
 
-    // Grids
+    // Banner: build from CONFIG.knownFor or GitHub folder
+    const bannerTrack = $("#bannerTrack");
+    async function buildBanner(){
+      let tiles = [];
+      if (GITHUB_CONFIG.owner && GITHUB_CONFIG.repo && GITHUB_CONFIG.bannerFolder){
+        try{
+          const files = await ghList(GITHUB_CONFIG.bannerFolder);
+          tiles = files.filter(f=>/\.(png|jpe?g|webp|avif)$/i.test(f.name)).map(f=>({
+            title: f.name.replace(/\.[^.]+$/, ''),
+            img: ghRawUrl(`${GITHUB_CONFIG.bannerFolder}/${f.name}`),
+            url: CONFIG.imdbUrl
+          }));
+        }catch(e){ /* fallback to CONFIG */ }
+      }
+      if (!tiles.length) tiles = CONFIG.knownFor.length ? CONFIG.knownFor : [ { title:"Add posters to knownFor in CONFIG", img: placeholderTile(), url:'#' } ];
+      const doubled = [...tiles, ...tiles];
+      bannerTrack.innerHTML = '';
+      doubled.forEach(t=>{
+        const a = document.createElement('a'); a.className='tile'; a.href=t.url||'#'; a.target='_blank'; a.rel='noopener'; a.setAttribute('data-title', t.title||'');
+        const img = document.createElement('img'); img.loading='lazy'; img.alt=t.title||''; img.src=t.img; a.appendChild(img); bannerTrack.appendChild(a);
+      });
+      startMarquee();
+    }
+
+    // Infinite marquee
+    let startTs = null; const SPEED = 40; // px/sec (fluid)
+    function startMarquee(){ startTs = null; requestAnimationFrame(step); }
+    function step(ts){
+      if (!startTs) startTs = ts; const dt = (ts - startTs)/1000; startTs = ts;
+      const x = (parseFloat(getComputedStyle(bannerTrack).getPropertyValue('--x')) || 0) - SPEED*dt;
+      bannerTrack.style.setProperty('--x', x);
+      const total = bannerTrack.scrollWidth/2 + parseFloat(getComputedStyle(bannerTrack).gap||'0');
+      if (Math.abs(x) >= total) bannerTrack.style.setProperty('--x', 0);
+      bannerTrack.style.transform = `translateX(var(--x, 0px))`;
+      requestAnimationFrame(step);
+    }
+
+    // Project grids
     function renderGrid(el, arr){
       el.innerHTML = '';
-      if (!arr || !arr.length){
-        el.innerHTML = `<div class="muted">No items yet. Edit <b>CONFIG</b> in this file to add projects.</div>`;
-        return;
-      }
+      if (!arr || !arr.length){ el.innerHTML = `<div class="muted">No items yet. Edit <b>CONFIG</b> in this file to add projects.</div>`; return; }
       arr.forEach(p=>{
         const c = document.createElement('a'); c.className='proj card'; c.href=p.url||'#'; c.target='_blank'; c.rel='noopener';
-        c.innerHTML = `
-          <div class="thumb"><img loading="lazy" alt="${p.title||''}" src="${p.img||''}"></div>
-          <div class="meta"><div class="title">${p.title||''}</div><div class="role">${p.role||''}</div></div>`;
+        c.innerHTML = `<div class=\"thumb\"><img loading=\"lazy\" alt=\"${p.title||''}\" src=\"${p.img||''}\"></div><div class=\"meta\"><div class=\"title\">${p.title||''}</div><div class=\"role\">${p.role||''}</div></div>`;
         el.appendChild(c);
       })
     }
+
+    // GitHub API helpers
+    const ghApiBase = () => `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/`;
+    const ghRawUrl = (path) => `https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/${GITHUB_CONFIG.branch}/${path}`;
+    async function ghList(path){
+      const url = ghApiBase() + encodeURIComponent(path) + `?ref=${encodeURIComponent(GITHUB_CONFIG.branch)}`;
+      const r = await fetch(url, { headers:{ 'Accept':'application/vnd.github+json' } });
+      if (!r.ok) throw new Error('GitHub API error');
+      const json = await r.json();
+      return Array.isArray(json) ? json.filter(x=>x && x.type==='file') : [];
+    }
+
+    function placeholderTile(){
+      return `data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 450'><defs><linearGradient id='g' x1='0' x2='0' y1='0' y2='1'><stop offset='0' stop-color='#041a14'/><stop offset='1' stop-color='#000'/></linearGradient></defs><rect width='100%' height='100%' fill='url(#g)'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' fill='#74cdaa' font-family='monospace' font-size='22'>Add posters via CONFIG or GitHub folder</text></svg>`)}`;
+    }
+
+    // Init
     renderGrid($("#proGrid"), CONFIG.proProjects);
     renderGrid($("#personalGrid"), CONFIG.personalProjects);
-
-    // Year
+    (async () => { await buildBanner(); await setResumeLink(); })();
     $("#year").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ariel (Ari) Feblowitz — Portfolio</title>
+  <meta name="description" content="Ariel (Ari) Feblowitz — Techvis & Virtual Production Supervisor / Previs-Postvis Artist. Demo reel, credits, projects, and links." />
+  <meta property="og:title" content="Ariel (Ari) Feblowitz — Portfolio" />
+  <meta property="og:description" content="Techvis & Virtual Production Supervisor. Demo reel, IMDb credits, projects, and links." />
+  <meta property="og:type" content="website" />
+  <meta name="theme-color" content="#0c0f12" />
+  <style>
+    /* =========================
+       THEME — TECH NOIR v2 (sleeker, fluid, green-on-black)
+       Single-file, optional GitHub folder auto-pull
+       ========================= */
+    :root{
+      --bg:#0b0f11;           /* site background */
+      --panel:#020405;        /* black control-panel windows */
+      --card:#05090b;         /* cards */
+      --txt:#9fffcf;          /* CRT green body text */
+      --muted:#74cdaa;        /* secondary green */
+      --accent:#00ff9c;       /* neon */
+      --accent-2:#42ffd1;     /* soft neon */
+      --grid:clamp(14px, 1.8vw, 24px);
+      --radius:18px;
+      --shadow:0 14px 40px rgba(0,0,0,.45);
+    }
 
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; color:var(--txt);
+      background:
+        radial-gradient(1200px 700px at 20% -10%, #122e29 0%, transparent 60%),
+        radial-gradient(1000px 600px at 120% 10%, #142027 0%, transparent 60%),
+        linear-gradient(#080b0e, var(--bg) 40%);
+      font:clamp(15px, 1.1vw, 18px)/1.65 Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      overflow-y:overlay;
+      letter-spacing:.15px;
+    }
+    /* Subtle CRT scanlines */
+    body::after{content:""; position:fixed; inset:0; pointer-events:none; background-image:repeating-linear-gradient(to bottom, rgba(66,255,209,.06), rgba(66,255,209,.06) 1px, transparent 2px, transparent 3px); mix-blend-mode:soft-light; opacity:.35; z-index:0}
+
+    a{color:var(--accent); text-decoration:none}
+    a:hover{filter:brightness(1.18)}
+
+    /* Full-bleed known-for banner */
+    .banner{position:relative; width:100vw; left:50%; right:50%; margin-left:-50vw; margin-right:-50vw; padding:clamp(8px,1.2vw,14px) 0; z-index:1}
+    .banner .rail{height:clamp(110px, 16vw, 220px); position:relative; overflow:hidden; border-radius:clamp(10px,1.4vw,18px); background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0)); border:1px solid rgba(0,255,156,.15); box-shadow:var(--shadow)}
+    .marquee{display:flex; gap:clamp(10px,1.2vw,16px); position:absolute; inset:0; align-items:center; will-change:transform}
+    .tile{flex:0 0 auto; height:calc(100% - clamp(8px,1vw,12px)); aspect-ratio:16/9; position:relative; border-radius:clamp(8px,1vw,14px); overflow:hidden; background:#0b1414; border:1px solid rgba(66,255,209,.18)}
+    .tile img{height:100%; width:100%; object-fit:cover; display:block; filter:saturate(.95) contrast(1.06)}
+    .tile::after{content:attr(data-title); position:absolute; left:0; right:0; bottom:0; font-size:clamp(10px,.9vw,12px); padding:.45em .6em; color:#caffec; background:linear-gradient(180deg, transparent, rgba(0,0,0,.75)); text-shadow:0 1px 2px rgba(0,0,0,.55)}
+
+    /* Wrap & layout */
+    .wrap{max-width:min(1200px, 92vw); margin:0 auto; padding:clamp(16px,2vw,28px); position:relative; z-index:1}
+
+    .nav{display:flex; gap:clamp(8px,1vw,12px); align-items:center; justify-content:space-between; flex-wrap:wrap; margin:clamp(6px,.8vw,10px) 0}
+    .brand{display:flex; gap:clamp(10px,1.2vw,14px); align-items:center}
+    .brand .dot{width:clamp(10px,1vw,14px); height:clamp(10px,1vw,14px); border-radius:50%; background:radial-gradient(circle at 30% 30%, var(--accent), #0f4630 70%); box-shadow:0 0 16px var(--accent)}
+    .brand h1{margin:0; font-weight:800; font-size:clamp(18px,2.2vw,28px); letter-spacing:.12em; text-transform:uppercase; color:#d9fff1}
+    .pill{border:1px dashed rgba(66,255,209,.35); border-radius:999px; padding:.4em .8em; font-size:clamp(11px,1vw,12px); color:var(--muted)}
+
+    .tabs{display:flex; gap:clamp(6px,.8vw,10px); flex-wrap:wrap}
+    .tab-btn{padding:.6em .9em; border-radius:12px; background:var(--panel); color:var(--txt); border:1px solid rgba(66,255,209,.18); cursor:pointer; font-weight:600}
+    .tab-btn.active{outline:1px solid var(--accent); box-shadow:0 0 0 2px rgba(0,255,156,.12) inset}
+
+    .hero{margin:clamp(12px,1.6vw,20px) 0; display:grid; grid-template-columns:1.1fr .9fr; gap:var(--grid)}
+    @media (max-width:920px){ .hero{grid-template-columns:1fr} }
+
+    .card{background:var(--panel); border:1px solid rgba(66,255,209,.2); border-radius:var(--radius); box-shadow:var(--shadow)}
+    .pad{padding:clamp(14px,1.6vw,20px)}
+
+    .reel{position:relative; aspect-ratio:16/9; border-radius:14px; overflow:hidden; background:#000; border:1px solid rgba(66,255,209,.22)}
+    .reel iframe{position:absolute; inset:0; width:100%; height:100%}
+
+    .badges{display:flex; flex-wrap:wrap; gap:clamp(8px,1vw,12px); margin-top:clamp(8px,1vw,12px)}
+    .btn{--b:rgba(66,255,209,.18); display:inline-flex; align-items:center; gap:.5em; border:1px solid var(--b); background:linear-gradient(180deg, rgba(66,255,209,.09), rgba(66,255,209,0)); padding:.65em 1em; border-radius:12px; color:var(--txt); cursor:pointer; font-weight:600}
+    .btn:hover{border-color:var(--accent); box-shadow:0 0 0 1px rgba(0,255,156,.15) inset}
+    .btn.primary{background:linear-gradient(180deg, rgba(0,255,156,.22), rgba(0,255,156,.08)); color:#04271d}
+
+    section{display:none}
+    section.active{display:block}
+    .grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:var(--grid)}
+    @media (max-width:1000px){ .grid{grid-template-columns:repeat(2, 1fr)} }
+    @media (max-width:620px){ .grid{grid-template-columns:1fr} }
+    .proj{overflow:hidden}
+    .thumb{position:relative; aspect-ratio:16/9; overflow:hidden; border-radius:14px; border:1px solid rgba(66,255,209,.22)}
+    .thumb img{width:100%; height:100%; object-fit:cover; display:block}
+    .proj .meta{padding:.7em .9em 1em}
+    .proj .title{font-weight:800; color:#e2fff5}
+    .proj .role{color:var(--muted); font-size:.9em}
+
+    footer{opacity:.8; font-size:.85em; padding:clamp(28px,2.5vw,40px) 0 20px}
+  </style>
+</head>
+<body>
+  <!--
+  ================================
+  SETUP NOTES
+  ================================
+  1) Keep as a single-file `index.html` in your repo.
+  2) Prefer local images (committed to your repo). Optionally, set GITHUB_CONFIG below to auto-pull images from a folder using the GitHub API (no keys required, but unauthenticated rate limits apply).
+  3) Drop your resume as `resume.pdf` OR put it in a folder (e.g., `docs/`) and set `resumeFolder` to auto-pick the first .pdf.
+  4) Edit CONFIG for links and manual project lists. Folder auto-pull is for the top banner images; project grids remain manual for best control.
+  -->
+
+  <!-- FULL-BLEED BANNER (auto-scroll loop) -->
+  <div class="banner">
+    <div class="rail card">
+      <div class="marquee" id="bannerTrack" aria-label="Known for"></div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <!-- NAV -->
+    <div class="nav">
+      <div class="brand">
+        <div class="dot" aria-hidden="true"></div>
+        <h1>Ariel (Ari) Feblowitz</h1>
+        <span class="pill">Techvis & Virtual Production Supervisor</span>
+      </div>
+      <div class="tabs" role="tablist" aria-label="Sections">
+        <button class="tab-btn active" data-tab="home" role="tab" aria-selected="true">Home</button>
+        <button class="tab-btn" data-tab="professional" role="tab" aria-selected="false">Professional</button>
+        <button class="tab-btn" data-tab="personal" role="tab" aria-selected="false">Personal</button>
+      </div>
+    </div>
+
+    <!-- HOME -->
+    <section id="home" class="active" role="tabpanel">
+      <div class="hero">
+        <div class="card pad">
+          <h2 style="margin:0 0 .6em">Demo Reel</h2>
+          <div class="reel">
+            <iframe id="reelFrame" src="" title="Ari Feblowitz — Demo Reel" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+          </div>
+          <div class="badges">
+            <a id="btnIMDb" class="btn" href="#" target="_blank" rel="noopener">IMDb</a>
+            <a id="btnYouTube" class="btn" href="#" target="_blank" rel="noopener">YouTube</a>
+            <a id="btnLinks" class="btn" href="#" target="_blank" rel="noopener">All My Links</a>
+            <a id="btnResume" class="btn primary" href="#" download>Download Résumé</a>
+            <a id="btnNews" class="btn" href="#" target="_blank" rel="noopener">Ari in the News</a>
+          </div>
+        </div>
+        <div class="card pad">
+          <h2 style="margin:0 0 .6em">About</h2>
+          <p>Bridging virtual and physical storytelling across techvis, previs/postvis, and virtual production. I translate complex sequences into precise, repeatable camera plans — trusted by directors, DPs, and VFX supervisors.</p>
+          <p class="muted">Credits include Avatar: The Way of Water, Avengers: Endgame, Ant‑Man and the Wasp, Guardians of the Galaxy Vol. 3, Twisters, and more.</p>
+          <div class="badges">
+            <span class="pill">Motion Control</span>
+            <span class="pill">Unreal Engine</span>
+            <span class="pill">Maya</span>
+            <span class="pill">Shot Design</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROFESSIONAL PROJECTS -->
+    <section id="professional" role="tabpanel">
+      <div class="card pad">
+        <div class="nav" style="gap:8px; justify-content:space-between; align-items:flex-end">
+          <h2 style="margin:0">Professional Projects</h2>
+          <small class="muted">(Edit in CONFIG → proProjects)</small>
+        </div>
+        <div id="proGrid" class="grid"></div>
+      </div>
+    </section>
+
+    <!-- PERSONAL PROJECTS -->
+    <section id="personal" role="tabpanel">
+      <div class="card pad">
+        <div class="nav" style="gap:8px; justify-content:space-between; align-items:flex-end">
+          <h2 style="margin:0">Personal Projects</h2>
+          <small class="muted">(Edit in CONFIG → personalProjects)</small>
+        </div>
+        <div id="personalGrid" class="grid"></div>
+      </div>
+    </section>
+
+    <footer class="muted">© <span id="year"></span> Ariel (Ari) Feblowitz • Single‑file GitHub Page • Theme: Tech‑Noir v2</footer>
+  </div>
+
+  <script>
+    /* =========================
+       CONFIG — EDIT THIS ONLY
+       ========================= */
+    const CONFIG = {
+      youtubeId: "REPLACE_WITH_YOUTUBE_ID", // e.g., "dQw4w9WgXcQ"
+      imdbUrl: "https://www.imdb.com/name/nm4409645/",
+      youtubeUrl: "https://www.youtube.com/@DirectorPsycho",
+      allLinksUrl: "https://linktr.ee/directorPsycho",
+      newsUrl: "", // optional
+      resumeFile: "resume.pdf", // direct path OR "" to auto-pick from resumeFolder
+      // Manual fallback tiles for banner if no GitHub folder is configured
+      knownFor: [
+        // { title:"Avatar: The Way of Water", img:"images/avatar2.jpg", url:"https://www.imdb.com/title/tt1630029/" },
+      ],
+      // Project grids (manual for precision)
+      proProjects: [
+        // { title:"Guardians of the Galaxy Vol. 3", role:"Techvis / VP Supervisor", img:"images/gotg3.jpg", url:"https://www.imdb.com/title/tt6791350/" },
+      ],
+      personalProjects: [
+        // { title:"Deadpool vs Alien vs Terminator", role:"Animated Short", img:"images/dvavt.jpg", url:"https://www.youtube.com/watch?v=..." },
+      ],
+    };
+
+    /* Optional GitHub folder auto-pull. Set these to enable:
+       Example:
+       const GITHUB_CONFIG = {
+         owner: 'AriFeb',
+         repo: 'ari-portfolio',
+         branch: 'main',
+         bannerFolder: 'knownfor',   // folder of poster JPG/PNG in repo
+         resumeFolder: 'docs'        // folder containing a resume .pdf (first found is used)
+       };
+    */
+    const GITHUB_CONFIG = {
+      owner: '',
+      repo: '',
+      branch: 'main',
+      bannerFolder: '',
+      resumeFolder: ''
+    };
+
+    /* =========================
+       RUNTIME — minimal JS
+       ========================= */
+    const $ = (sel, el=document) => el.querySelector(sel);
+    const $$ = (sel, el=document) => [...el.querySelectorAll(sel)];
+
+    // Tabs
+    $$(".tab-btn").forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        $$(".tab-btn").forEach(b=>{ b.classList.toggle('active', b===btn); b.setAttribute('aria-selected', b===btn) });
+        const name = btn.dataset.tab; $$("section").forEach(s=>s.classList.toggle('active', s.id===name));
+        window.scrollTo({ top: $('.wrap').offsetTop, behavior: 'smooth' });
+      })
+    });
+
+    // Links & Reel
+    const reel = $("#reelFrame");
+    if (CONFIG.youtubeId && CONFIG.youtubeId !== 'REPLACE_WITH_YOUTUBE_ID') {
+      reel.src = `https://www.youtube.com/embed/${CONFIG.youtubeId}?rel=0&modestbranding=1`;
+    } else {
+      reel.srcdoc = `
+        <style>body{margin:0;display:grid;place-items:center;background:#000;color:#9fb5b8;font:16px system-ui} .box{opacity:.8;text-align:center} .box b{color:#fff}</style>
+        <div class='box'>Add your <b>YouTube ID</b> in CONFIG to show the reel.</div>`;
+    }
+    $("#btnIMDb").href = CONFIG.imdbUrl;
+    $("#btnYouTube").href = CONFIG.youtubeUrl;
+    $("#btnLinks").href = CONFIG.allLinksUrl;
+    if (CONFIG.newsUrl) $("#btnNews").href = CONFIG.newsUrl; else $("#btnNews").classList.add('hide');
+
+    // Resume: direct file or first PDF from resumeFolder
+    async function setResumeLink(){
+      const btn = $("#btnResume");
+      if (CONFIG.resumeFile){ btn.href = CONFIG.resumeFile; return; }
+      if (!GITHUB_CONFIG.owner || !GITHUB_CONFIG.repo || !GITHUB_CONFIG.resumeFolder) { btn.classList.add('hide'); return; }
+      try{
+        const list = await ghList(GITHUB_CONFIG.resumeFolder);
+        const pdf = list.find(f=>/\.pdf$/i.test(f.name));
+        if (pdf){ btn.href = ghRawUrl(`${GITHUB_CONFIG.resumeFolder}/${pdf.name}`); }
+        else btn.classList.add('hide');
+      }catch{ btn.classList.add('hide'); }
+    }
+
+    // Banner: build from CONFIG.knownFor or GitHub folder
+    const bannerTrack = $("#bannerTrack");
+    async function buildBanner(){
+      let tiles = [];
+      if (GITHUB_CONFIG.owner && GITHUB_CONFIG.repo && GITHUB_CONFIG.bannerFolder){
+        try{
+          const files = await ghList(GITHUB_CONFIG.bannerFolder);
+          tiles = files.filter(f=>/\.(png|jpe?g|webp|avif)$/i.test(f.name)).map(f=>({
+            title: f.name.replace(/\.[^.]+$/, ''),
+            img: ghRawUrl(`${GITHUB_CONFIG.bannerFolder}/${f.name}`),
+            url: CONFIG.imdbUrl
+          }));
+        }catch(e){ /* fallback to CONFIG */ }
+      }
+      if (!tiles.length) tiles = CONFIG.knownFor.length ? CONFIG.knownFor : [ { title:"Add posters to knownFor in CONFIG", img: placeholderTile(), url:'#' } ];
+      const doubled = [...tiles, ...tiles];
+      bannerTrack.innerHTML = '';
+      doubled.forEach(t=>{
+        const a = document.createElement('a'); a.className='tile'; a.href=t.url||'#'; a.target='_blank'; a.rel='noopener'; a.setAttribute('data-title', t.title||'');
+        const img = document.createElement('img'); img.loading='lazy'; img.alt=t.title||''; img.src=t.img; a.appendChild(img); bannerTrack.appendChild(a);
+      });
+      startMarquee();
+    }
+
+    // Infinite marquee
+    let startTs = null; const SPEED = 40; // px/sec (fluid)
+    function startMarquee(){ startTs = null; requestAnimationFrame(step); }
+    function step(ts){
+      if (!startTs) startTs = ts; const dt = (ts - startTs)/1000; startTs = ts;
+      const x = (parseFloat(getComputedStyle(bannerTrack).getPropertyValue('--x')) || 0) - SPEED*dt;
+      bannerTrack.style.setProperty('--x', x);
+      const total = bannerTrack.scrollWidth/2 + parseFloat(getComputedStyle(bannerTrack).gap||'0');
+      if (Math.abs(x) >= total) bannerTrack.style.setProperty('--x', 0);
+      bannerTrack.style.transform = `translateX(var(--x, 0px))`;
+      requestAnimationFrame(step);
+    }
+
+    // Project grids
+    function renderGrid(el, arr){
+      el.innerHTML = '';
+      if (!arr || !arr.length){ el.innerHTML = `<div class="muted">No items yet. Edit <b>CONFIG</b> in this file to add projects.</div>`; return; }
+      arr.forEach(p=>{
+        const c = document.createElement('a'); c.className='proj card'; c.href=p.url||'#'; c.target='_blank'; c.rel='noopener';
+        c.innerHTML = `<div class=\"thumb\"><img loading=\"lazy\" alt=\"${p.title||''}\" src=\"${p.img||''}\"></div><div class=\"meta\"><div class=\"title\">${p.title||''}</div><div class=\"role\">${p.role||''}</div></div>`;
+        el.appendChild(c);
+      })
+    }
+
+    // GitHub API helpers
+    const ghApiBase = () => `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/`;
+    const ghRawUrl = (path) => `https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/${GITHUB_CONFIG.branch}/${path}`;
+    async function ghList(path){
+      const url = ghApiBase() + encodeURIComponent(path) + `?ref=${encodeURIComponent(GITHUB_CONFIG.branch)}`;
+      const r = await fetch(url, { headers:{ 'Accept':'application/vnd.github+json' } });
+      if (!r.ok) throw new Error('GitHub API error');
+      const json = await r.json();
+      return Array.isArray(json) ? json.filter(x=>x && x.type==='file') : [];
+    }
+
+    function placeholderTile(){
+      return `data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 450'><defs><linearGradient id='g' x1='0' x2='0' y1='0' y2='1'><stop offset='0' stop-color='#041a14'/><stop offset='1' stop-color='#000'/></linearGradient></defs><rect width='100%' height='100%' fill='url(#g)'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' fill='#74cdaa' font-family='monospace' font-size='22'>Add posters via CONFIG or GitHub folder</text></svg>`)}`;
+    }
+
+    // Init
+    renderGrid($("#proGrid"), CONFIG.proProjects);
+    renderGrid($("#personalGrid"), CONFIG.personalProjects);
+    (async () => { await buildBanner(); await setResumeLink(); })();
+    $("#year").textContent = new Date().getFullYear();
   </script>
 </body>
 </html>
