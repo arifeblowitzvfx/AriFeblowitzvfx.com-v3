@@ -11,7 +11,7 @@
   <meta name="theme-color" content="#0c0f12" />
   <style>
     /* =========================
-       THEME — TECH NOIR (sleek, fluid, green-on-black)
+       THEME — TECH NOIR v5 (sleek, fluid, green-on-black)
        ========================= */
     :root{
       --bg:#0b0f11;           /* site background */
@@ -83,7 +83,7 @@
     .badges{display:flex; flex-wrap:wrap; gap:clamp(8px,1vw,12px); margin-top:clamp(8px,1vw,12px)}
     .btn{--b:rgba(66,255,209,.18); display:inline-flex; align-items:center; gap:.5em; border:1px solid var(--b); background:linear-gradient(180deg, rgba(66,255,209,.09), rgba(66,255,209,0)); padding:.65em 1em; border-radius:12px; color:var(--txt); cursor:pointer; font-weight:700}
     .btn:hover{border-color:var(--accent); box-shadow:0 0 0 1px rgba(0,255,156,.15) inset}
-    .btn.primary{background:linear-gradient(180deg, rgba(0,255,156,.22), rgba(0,255,156,.08)); color:#eafff6}
+    .btn.primary{background:linear-gradient(180deg, rgba(0,255,156,.28), rgba(0,255,156,.12)); color:#07251a; text-shadow:0 1px 0 rgba(255,255,255,.35)} /* brighter text for résumé */
 
     section{display:none}
     section.active{display:block}
@@ -161,7 +161,7 @@
       <div class="card pad">
         <div class="nav" style="gap:8px; justify-content:space-between; align-items:flex-end">
           <h2 style="margin:0">Professional Projects</h2>
-          <small class="muted">(Auto-populated from CONFIG • Posters have smart fallbacks)</small>
+          <small class="muted">(Curated via CONFIG • Posters auto-fallback & hide if all fail)</small>
         </div>
         <div id="proGrid" class="grid"></div>
       </div>
@@ -172,13 +172,14 @@
       <div class="card pad">
         <div class="nav" style="gap:8px; justify-content:space-between; align-items:flex-end">
           <h2 style="margin:0">Personal Projects</h2>
+          <small class="muted">(Hand-picked videos • Shorts excluded)</small>
         </div>
         <div id="personalGrid" class="grid"></div>
         <div class="muted" style="margin-top:1rem;font-size:.9em">Also archiving my father's documentary work: <a href="https://www.youtube.com/@FebzFoundFootage" target="_blank" rel="noopener">FebzFoundFootage</a>.</div>
       </div>
     </section>
 
-    <footer class="muted">© <span id="year"></span> Ariel (Ari) Feblowitz • Single-file GitHub Page • Theme: Tech-Noir</footer>
+    <footer class="muted">© <span id="year"></span> Ariel (Ari) Feblowitz • Single-file GitHub Page • Theme: Tech-Noir v5</footer>
   </div>
 
   <script>
@@ -186,121 +187,87 @@
        CONFIG — EDIT THIS ONLY
        ========================= */
     const CONFIG = {
-      youtubeId: "REPLACE_WITH_YOUTUBE_ID",
+      youtubeId: "REPLACE_WITH_YOUTUBE_ID", // e.g. 7YIVcQLS9Cw
       imdbUrl: "https://www.imdb.com/name/nm4409645/",
       youtubeUrl: "https://www.youtube.com/@DirectorPsycho",
       allLinksUrl: "https://linktr.ee/arielfeblowitz",
       newsUrl: "https://www.youtube.com/watch?v=gM5H6vsGIcs",
-      // You can replace this with "resume.pdf" if hosting locally
       resumeFile: "https://raw.githubusercontent.com/arifeblowitzvfx/AriFeblowitzvfx.com-v3/main/Ari_Feblowitz_Resume_2025.pdf",
 
-      /* ======= KNOWN FOR (banner) — removed low RT, added your newer priorities ======= */
+      /* Top banner tiles — removed low-RT titles per your note */
       knownFor: [
-        { title:"Predator: Badlands", posters:[
-          "https://upload.wikimedia.org/wikipedia/en/9/9b/Predator_%281987%29_poster.jpg"
-        ], url:"https://www.imdb.com/title/tt31227572/" },
-
-        { title:"Avatar 3 (Ash & Fire)", posters:[
-          "data:image/svg+xml;utf8,<?xml version='1.0'?><svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 450'><rect width='100%' height='100%' fill='#041a14'/><text x='50%' y='50%' fill='#74cdaa' font-family='monospace' font-size='28' text-anchor='middle' dominant-baseline='middle'>Avatar 3 — Ash & Fire</text></svg>",
-          "https://upload.wikimedia.org/wikipedia/en/2/2c/Avatar_The_Way_of_Water_poster.jpg"
-        ], url:"https://www.imdb.com/title/tt1757678/" },
-
-        { title:"The Fantastic Four (First Steps)", posters:[
-          "https://upload.wikimedia.org/wikipedia/commons/0/0c/Marvel_Studios_2016_logo.svg"
-        ], url:"https://www.imdb.com/title/tt10676048/" },
-
-        { title:"Star Wars: Skeleton Crew", posters:[
-          "https://upload.wikimedia.org/wikipedia/commons/6/6c/Star_Wars_Logo.svg"
-        ], url:"https://www.imdb.com/title/tt13918718/" },
-
-        { title:"Twisters", posters:[
-          "https://upload.wikimedia.org/wikipedia/en/8/8f/Twisters_film_poster.jpg"
-        ], url:"https://www.imdb.com/title/tt12584954/" },
-
+        { title:"Avatar: The Way of Water", posters:[
+          "https://upload.wikimedia.org/wikipedia/en/2/2c/Avatar_The_Way_of_Water_poster.jpg",
+          "https://upload.wikimedia.org/wikipedia/en/a/a1/Avatar_2_teaser_poster.jpg"
+        ], url:"https://www.imdb.com/title/tt1630029/" },
+        { title:"Avengers: Endgame", posters:[
+          "https://upload.wikimedia.org/wikipedia/en/0/0d/Avengers_Endgame_poster.jpg"
+        ], url:"https://www.imdb.com/title/tt4154796/" },
         { title:"Guardians of the Galaxy Vol. 3", posters:[
           "https://upload.wikimedia.org/wikipedia/en/5/50/Guardians_of_the_Galaxy_Vol._3_poster.jpg",
           "https://upload.wikimedia.org/wikipedia/en/4/4f/Guardians_of_the_Galaxy_Vol._3_teaser_poster.jpg"
         ], url:"https://www.imdb.com/title/tt6791350/" },
-
-        { title:"Shazam! Fury of the Gods", posters:[
-          "https://upload.wikimedia.org/wikipedia/en/6/6c/Shazam%21_Fury_of_the_Gods_poster.jpg",
-          "https://upload.wikimedia.org/wikipedia/en/6/60/Shazam%21_%28film%29_poster.jpg"
-        ], url:"https://www.imdb.com/title/tt10151854/" },
-
-        { title:"Avatar: The Way of Water", posters:[
-          "https://upload.wikimedia.org/wikipedia/en/2/2c/Avatar_The_Way_of_Water_poster.jpg"
-        ], url:"https://www.imdb.com/title/tt1630029/" },
-
-        { title:"Avengers: Endgame", posters:[
-          "https://upload.wikimedia.org/wikipedia/en/0/0d/Avengers_Endgame_poster.jpg"
-        ], url:"https://www.imdb.com/title/tt4154796/" },
-
+        { title:"Twisters", posters:[
+          "https://upload.wikimedia.org/wikipedia/en/8/8f/Twisters_film_poster.jpg"
+        ], url:"https://www.imdb.com/title/tt12584954/" },
+        { title:"The Mandalorian (TV)", posters:[
+          "https://upload.wikimedia.org/wikipedia/en/c/c5/The_Mandalorian_season_2_poster.jpg",
+          "https://upload.wikimedia.org/wikipedia/en/c/c4/The_Mandalorian_season_3_poster.jpg"
+        ], url:"https://www.imdb.com/title/tt8111088/" },
         { title:"Ant-Man and the Wasp", posters:[
           "https://upload.wikimedia.org/wikipedia/en/2/2c/Ant-Man_and_the_Wasp_poster.jpg"
         ], url:"https://www.imdb.com/title/tt5095030/" }
       ],
 
-      /* ======= PROFESSIONAL (newest/highest profile first; low RT removed) ======= */
+      // Professional — newest/high-profile first (you can expand freely)
       proProjects: [
         { title:"Predator: Badlands (TBA)", role:"Visualization / Techvis", posters:[
-          "https://upload.wikimedia.org/wikipedia/en/9/9b/Predator_%281987%29_poster.jpg"
+          "https://upload.wikimedia.org/wikipedia/en/9/90/Predator_Badlands_Poster.jpg"
         ], url:"https://www.imdb.com/title/tt31227572/" },
-
-        { title:"Avatar 3 (Ash & Fire)", role:"Virtual Production / Techvis", posters:[
-          "data:image/svg+xml;utf8,<?xml version='1.0'?><svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 450'><rect width='100%' height='100%' fill='#041a14'/><text x='50%' y='50%' fill='#74cdaa' font-family='monospace' font-size='28' text-anchor='middle' dominant-baseline='middle'>Avatar 3 — Ash & Fire</text></svg>",
-          "https://upload.wikimedia.org/wikipedia/en/2/2c/Avatar_The_Way_of_Water_poster.jpg"
+        { title:"Fantastic Four — First Steps (Pre-Prod)", role:"Visualization / Techvis", posters:[
+          "https://upload.wikimedia.org/wikipedia/commons/2/2f/Fantastic_Four_text_logo.svg"
+        ], url:"#" },
+        { title:"Avatar 3 (Working Title)", role:"Virtual Production / Techvis", posters:[
+          "https://upload.wikimedia.org/wikipedia/en/8/81/Avatar_3_logo.jpg"
         ], url:"https://www.imdb.com/title/tt1757678/" },
-
-        { title:"The Fantastic Four (First Steps)", role:"Visualization", posters:[
-          "https://upload.wikimedia.org/wikipedia/commons/0/0c/Marvel_Studios_2016_logo.svg"
-        ], url:"https://www.imdb.com/title/tt10676048/" },
-
-        { title:"Star Wars: Skeleton Crew (TV)", role:"Virtual Production / Visualization", posters:[
-          "https://upload.wikimedia.org/wikipedia/commons/6/6c/Star_Wars_Logo.svg"
-        ], url:"https://www.imdb.com/title/tt13918718/" },
-
-        { title:"Twisters (2024)", role:"Visualization", posters:[
-          "https://upload.wikimedia.org/wikipedia/en/8/8f/Twisters_film_poster.jpg"
-        ], url:"https://www.imdb.com/title/tt12584954/" },
-
+        { title:"Star Wars: Skeleton Crew (2023)", role:"Visualization", posters:[
+          "https://upload.wikimedia.org/wikipedia/en/5/5f/Skeleton_Crew_logo.jpg"
+        ], url:"https://www.imdb.com/title/tt13918776/" },
+        { title:"Shazam! Fury of the Gods (2023)", role:"Visualization", posters:[
+          "https://upload.wikimedia.org/wikipedia/en/1/1a/Shazam!_Fury_of_the_Gods_poster.jpg"
+        ], url:"https://www.imdb.com/title/tt10151854/" },
         { title:"Guardians of the Galaxy Vol. 3 (2023)", role:"Visualization", posters:[
           "https://upload.wikimedia.org/wikipedia/en/5/50/Guardians_of_the_Galaxy_Vol._3_poster.jpg",
           "https://upload.wikimedia.org/wikipedia/en/4/4f/Guardians_of_the_Galaxy_Vol._3_teaser_poster.jpg"
         ], url:"https://www.imdb.com/title/tt6791350/" },
-
-        { title:"Shazam! Fury of the Gods (2023)", role:"Visualization", posters:[
-          "https://upload.wikimedia.org/wikipedia/en/6/6c/Shazam%21_Fury_of_the_Gods_poster.jpg",
-          "https://upload.wikimedia.org/wikipedia/en/6/60/Shazam%21_%28film%29_poster.jpg"
-        ], url:"https://www.imdb.com/title/tt10151854/" },
-
+        { title:"Twisters (2024)", role:"Visualization", posters:[
+          "https://upload.wikimedia.org/wikipedia/en/8/8f/Twisters_film_poster.jpg"
+        ], url:"https://www.imdb.com/title/tt12584954/" },
         { title:"Avatar: The Way of Water (2022)", role:"Virtual Production / Techvis / Motion Control — On-Set", posters:[
           "https://upload.wikimedia.org/wikipedia/en/2/2c/Avatar_The_Way_of_Water_poster.jpg"
         ], url:"https://www.imdb.com/title/tt1630029/" },
-
         { title:"Avengers: Endgame (2019)", role:"Techvis / Previs — On-Set", posters:[
           "https://upload.wikimedia.org/wikipedia/en/0/0d/Avengers_Endgame_poster.jpg"
         ], url:"https://www.imdb.com/title/tt4154796/" },
-
         { title:"Ant-Man and the Wasp (2018)", role:"Techvis — On-Set; scale & motion planning", posters:[
           "https://upload.wikimedia.org/wikipedia/en/2/2c/Ant-Man_and_the_Wasp_poster.jpg"
         ], url:"https://www.imdb.com/title/tt5095030/" },
-
-        { title:"The Mandalorian (TV)", role:"Virtual Production / Techvis — On-Set", posters:[
+        { title:"The Mandalorian (TV)", role:"Virtual Production / Visualization — On-Set", posters:[
           "https://upload.wikimedia.org/wikipedia/en/c/c5/The_Mandalorian_season_2_poster.jpg",
           "https://upload.wikimedia.org/wikipedia/en/c/c4/The_Mandalorian_season_3_poster.jpg"
         ], url:"https://www.imdb.com/title/tt8111088/" }
       ],
 
-      /* ======= PERSONAL VIDEOS (thumbnails auto from YouTube IDs) ======= */
+      // Personal — manual curation (Shorts excluded)
       personalProjects: [
-        { title:"Deadpool vs Alien vs Terminator", role:"Animated Fan Parody (Unreal)", videoId:"7YIVcQLS9Cw" },
-        { title:"Pumpkin Smashers", role:"Animated Short (Unreal). Award-Winning — Chicago Horror Film Fest: Best Animation.", videoId:"q_MFAiCeWUk" },
-        { title:"Deadpool vs Alien vs Terminator — Part 2", role:"Animated Fan Parody (Unreal)", videoId:"6Wxxci5F_lw" }
-        // Add more: { title:"Cyclops Virtual Production – Jurassic Park", role:"VP Test / Breakdown", videoId:"VIDEO_ID" }
-      ],
-
-      // Optional: auto-embed channel uploads playlist under Personal
-      youtubeChannelId: "UC926CKBvQdno5vqAav7DKlg"
+        { title:"Deadpool vs Alien vs Terminator", role:"Animated Fan Parody (Unreal) — viral hit", videoId:"7YIVcQLS9Cw" },
+        { title:"Siren Vs Syren — Siren Tales", role:"Animated Short (Unreal)", videoId:"W5PPhhmMw_g" },
+        { title:"Rusalky — Ukrainian Sirens vs Russian Soldiers", role:"Animated Short (Unreal)", videoId:"Jvd-ZTLviOc" },
+        { title:"Krampus Night — Animated Christmas Horror Short", role:"Animated Short (Unreal)", videoId:"psCIvWKpHnU" },
+        { title:"Siren Tales — Trailer", role:"Series Trailer", videoId:"1OazLvklmdE" },
+        // Add your Cyclops VP piece here when ready:
+        // { title:"Jurassic Park in Real Life | Reverse Virtual Production with Cyclops", role:"VP Test / Breakdown", videoId:"REPLACE_WITH_ID" }
+      ]
     };
 
     /* =========================
@@ -333,19 +300,18 @@
     if (CONFIG.newsUrl) $("#btnNews").href = CONFIG.newsUrl; else $("#btnNews").classList.add('hide');
     if (CONFIG.resumeFile) $("#btnResume").href = CONFIG.resumeFile;
 
-    // Banner: build two tracks; CSS keyframes handle looping scroll
+    // ===== Banner: build two tracks; CSS keyframes handle looping scroll
     const trackA = document.getElementById('trackA');
     const trackB = document.getElementById('trackB');
 
     function mkPosterImg(posterList){
       const img = document.createElement('img');
       img.loading='lazy'; img.alt='';
-      let i = 0; const posters = Array.isArray(posterList)? posterList.slice():[];
-      const setNext = ()=>{
-        if (i < posters.length){ img.src = posters[i++]; }
-        else { img.src = placeholderTile(); }
-      };
-      img.onerror = ()=> setNext();
+      let i = 0; const posters = Array.isArray(posterList)? posterList.filter(Boolean).slice():[];
+      const fallbacks = [placeholderTile()];
+      const candidates = posters.concat(fallbacks);
+      const setNext = ()=>{ if (i < candidates.length){ img.src = candidates[i++]; } };
+      img.addEventListener('error', setNext, { once:false });
       setNext();
       return img;
     }
@@ -354,7 +320,10 @@
       const tiles = (CONFIG.knownFor||[]).length ? CONFIG.knownFor : [ { title:"Add posters via CONFIG", posters:[placeholderTile()], url:'#' } ];
       const mk = t => {
         const a = document.createElement('a'); a.className='tile'; a.href=t.url||'#'; a.target='_blank'; a.rel='noopener'; a.setAttribute('data-title', t.title||'');
-        a.appendChild(mkPosterImg(t.posters||[]));
+        const img = mkPosterImg(t.posters||[]);
+        a.appendChild(img);
+        // If every image fails (incl. placeholder), hide tile
+        img.addEventListener('error', ()=>{ if (!img.src) a.style.display='none'; });
         return a;
       };
       trackA.innerHTML = ''; trackB.innerHTML = '';
@@ -362,20 +331,23 @@
       tiles.forEach(t=> trackB.appendChild(mk(t))); // duplicate set for seamless -50% scroll
     }
 
-    // Project grids (with poster fallbacks)
+    // Project grids (with poster fallbacks + hide on total failure)
     function renderGrid(el, arr){
       el.innerHTML = '';
       if (!arr || !arr.length){ el.innerHTML = `<div class="muted">No items yet. Edit <b>CONFIG</b> in this file to add projects.</div>`; return; }
       arr.forEach(p=>{
         const c = document.createElement('a'); c.className='proj card'; c.href=p.url||'#'; c.target='_blank'; c.rel='noopener';
         const poster = mkPosterImg(p.posters||[]);
-        c.innerHTML = `<div class="thumb"></div><div class="meta"><div class="title">${p.title||''}</div><div class="role">${p.role||''}</div></div>`;
-        c.querySelector('.thumb').appendChild(poster);
+        const wrap = document.createElement('div'); wrap.className='thumb'; wrap.appendChild(poster);
+        const meta = document.createElement('div'); meta.className='meta';
+        meta.innerHTML = `<div class="title">${p.title||''}</div><div class="role">${p.role||''}</div>`;
+        c.appendChild(wrap); c.appendChild(meta);
+        poster.addEventListener('error', ()=>{ if (!poster.src) c.style.display='none'; });
         el.appendChild(c);
       })
     }
 
-    // Personal videos grid from IDs (thumbnails auto)
+    // Personal videos grid from IDs (thumbnails auto; Shorts excluded by definition)
     function renderPersonal(el, arr){
       const items = (arr||[]).map(v=>({
         title:v.title,
@@ -387,9 +359,7 @@
     }
 
     function placeholderTile(){
-      return `data:image/svg+xml;utf8,${encodeURIComponent(
-        "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 450'><defs><linearGradient id='g' x1='0' x2='0' y1='0' y2='1'><stop offset='0' stop-color='#041a14'/><stop offset='1' stop-color='#000'/></linearGradient></defs><rect width='100%' height='100%' fill='url(#g)'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' fill='#74cdaa' font-family='monospace' font-size='22'>Poster unavailable</text></svg>"
-      )}`;
+      return `data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 450'><defs><linearGradient id='g' x1='0' x2='0' y1='0' y2='1'><stop offset='0' stop-color='#041a14'/><stop offset='1' stop-color='#000'/></linearGradient></defs><rect width='100%' height='100%' fill='url(#g)'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' fill='#74cdaa' font-family='monospace' font-size='22'>Poster unavailable</text></svg>`)} }`;
     }
 
     // Init
@@ -398,19 +368,8 @@
     renderPersonal($("#personalGrid"), CONFIG.personalProjects);
     $("#year").textContent = new Date().getFullYear();
 
-    // Optional: channel uploads playlist under Personal
-    if (CONFIG.youtubeChannelId){
-      const uploadsId = 'UU' + CONFIG.youtubeChannelId.slice(2); // UCxxxx -> UUxxxx
-      const section = document.getElementById('personal');
-      const box = document.createElement('div');
-      box.className = 'card pad';
-      box.innerHTML = `
-        <h3 style="margin-top:0">Latest from YouTube</h3>
-        <div class="reel" style="aspect-ratio:16/9">
-          <iframe src="https://www.youtube.com/embed/videoseries?list=${uploadsId}&rel=0" title="YouTube uploads" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-        </div>`;
-      section.appendChild(box);
-    }
+    // Note: We removed the automatic "Latest from YouTube" uploads embed, since Shorts
+    // can be injected by YouTube and there's no reliable client-side filter without the API.
   </script>
 </body>
 </html>
