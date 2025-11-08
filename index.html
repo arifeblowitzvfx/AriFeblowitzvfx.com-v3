@@ -123,7 +123,11 @@
     .toast.show{ opacity:1; transform:translateY(0); }
 
     /* CLICK-ALERT: exact 1s yellow flicker on click */
-    .brand .dot.alert{ background:radial-gradient(circle at 30% 30%, #ffd24a, #6b5a1a 70%); box-shadow:0 0 22px #ffd24a, 0 0 36px rgba(255,210,74,.5); animation:alertFlick .125s linear 8; }
+    .brand .dot.alert{
+      background:radial-gradient(circle at 30% 30%, #ffd24a, #6b5a1a 70%);
+      box-shadow:0 0 22px #ffd24a, 0 0 36px rgba(255,210,74,.5);
+      animation:alertFlick .125s linear 8;
+    }
     @keyframes alertFlick{0%,100%{opacity:.45}50%{opacity:1}}
 
     #testimonialsBox .tlist{display:flex; flex-direction:column; gap:14px; margin-top:8px}
@@ -335,55 +339,72 @@
 
   function enhanceContactLinks(){ const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent); const scope = [document.getElementById('topContact'), document.getElementById('contactInfo')].filter(Boolean); const showToast = (text, x, y)=>{ const t=document.createElement('div'); t.className='toast'; t.textContent=text; document.body.appendChild(t); const px = Math.min(window.innerWidth-160, Math.max(12, x|| (window.innerWidth-160)/2)); const py = Math.min(window.innerHeight-60, Math.max(8, y|| 18)); t.style.left = px+'px'; t.style.top = py+'px'; requestAnimationFrame(()=> t.classList.add('show')); setTimeout(()=>{ t.classList.remove('show'); setTimeout(()=>t.remove(),180); }, 1100); }; scope.forEach(root=>{ root.querySelectorAll('a[href^="tel:"], a[href^="mailto:"]').forEach(a=>{ a.addEventListener('click', e=>{ if (isMobile) return; e.preventDefault(); const text = a.textContent.trim(); navigator.clipboard?.writeText(text).then(()=>{ showToast('Copied: '+text, e.clientX, e.clientY); }).catch(()=>{ showToast(text, e.clientX, e.clientY); }); }, {passive:false}); }); }); }
 
-   (function sysDotEffects(){
+  /* >>> REPLACED sysDotEffects WITH YOUR STRONGER VERSION <<< */
+  (function sysDotEffects(){
     const dot = document.querySelector('.brand .dot');
     if (!dot) return;
 
-    // helper to (re)play a CSS keyframe reliably
+    // Replay any keyframe reliably
     function replay(name, ms){
       dot.style.animation = 'none';
-      void dot.offsetWidth; // reflow to restart
+      void dot.offsetWidth;            // reflow to restart animation
       dot.style.animation = `${name} ${ms}ms linear 1`;
     }
 
     const isInteractive = el => el && el.closest && el.closest('a, button, .tab-btn, .tile, .btn');
 
-    // subtle hover flicker stays as before
+    // Hover: keep your subtle green flicker
     function onHover(){ replay('dotFlick', 950); }
     document.addEventListener('mouseover', e=>{ if (isInteractive(e.target)) onHover(); }, {passive:true});
     document.addEventListener('focusin',   e=>{ if (isInteractive(e.target)) onHover(); });
 
-    // CLICK → force 1s yellow flicker, overriding green glow
+    // Click: force 1s yellow, then restore green
     function onClick(){
       if (!document.body.classList.contains('ready')) return;
 
-      // apply yellow via inline styles so it always wins the cascade
+      // save current inline styles so we can restore cleanly
       const prevBG   = dot.style.background;
       const prevBox  = dot.style.boxShadow;
       const prevAnim = dot.style.animation;
 
+      // apply yellow state with high priority so it always wins
+      dot.classList.add('alert');
       dot.style.setProperty('background','radial-gradient(circle at 30% 30%, #ffd24a, #6b5a1a 70%)','important');
       dot.style.setProperty('box-shadow','0 0 22px #ffd24a, 0 0 36px rgba(255,210,74,.5)','important');
 
-      // play the alert keyframe for ~1s
+      // play flicker ~1s
       replay('alertFlick', 1000);
 
-      // cleanly restore green state after 1s
+      // restore original state after 1s
       setTimeout(()=>{
+        dot.classList.remove('alert');
         dot.style.background = prevBG;
         dot.style.boxShadow  = prevBox;
         dot.style.animation  = prevAnim || '';
       }, 1000);
     }
 
-    const isInteractive = el => el && el.closest && el.closest('a, button, .tab-btn, .tile, .btn');
-    function onHover(){ playAnim('dotFlick', 950); }
-    document.addEventListener('mouseover', e=>{ if (isInteractive(e.target)) onHover(); }, {passive:true});
-    document.addEventListener('focusin',   e=>{ if (isInteractive(e.target)) onHover(); });
-    function onClick(){ if (!document.body.classList.contains('ready')) return; dot.classList.add('alert'); playAnim('alertFlick', 1000); setTimeout(()=>{ dot.classList.remove('alert'); dot.style.animation=''; }, 1000); }
     document.addEventListener('pointerdown', e=>{ if (isInteractive(e.target)) onClick(); }, {passive:true});
     document.addEventListener('keydown', e=>{ if ((e.key==='Enter'||e.key===' ') && isInteractive(e.target)) onClick(); });
-    function tryInject(){ const wrap = document.getElementById('contactInfo'); const links = document.getElementById('btnLinks'); const resume = document.getElementById('btnResume'); if (!wrap || !links) return false; if (!wrap.querySelector('[data-extra="links"]')){ const a = document.createElement('a'); a.className='btn'; a.href=links.href; a.target='_blank'; a.rel='noopener'; a.textContent='All My Links'; a.setAttribute('data-extra','links'); wrap.appendChild(a); } if (resume && resume.href && !wrap.querySelector('[data-extra="resume"]')){ const a = document.createElement('a'); a.className='btn'; a.href=resume.href; a.download=''; a.textContent='Download Résumé'; a.setAttribute('data-extra','resume'); wrap.appendChild(a); } return true; }
+
+    // Leave your contact “extras” injector intact
+    function tryInject(){
+      const wrap = document.getElementById('contactInfo');
+      const links = document.getElementById('btnLinks');
+      const resume = document.getElementById('btnResume');
+      if (!wrap || !links) return false;
+      if (!wrap.querySelector('[data-extra="links"]')){
+        const a = document.createElement('a');
+        a.className='btn'; a.href=links.href; a.target='_blank'; a.rel='noopener';
+        a.textContent='All My Links'; a.setAttribute('data-extra','links'); wrap.appendChild(a);
+      }
+      if (resume && resume.href && !wrap.querySelector('[data-extra="resume"]')){
+        const a = document.createElement('a');
+        a.className='btn'; a.href=resume.href; a.download='';
+        a.textContent='Download Résumé'; a.setAttribute('data-extra','resume'); wrap.appendChild(a);
+      }
+      return true;
+    }
     let tries = 0; const timer = setInterval(()=>{ if (tryInject() || ++tries>20) clearInterval(timer); }, 250);
   })();
   </script>
