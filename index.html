@@ -84,17 +84,17 @@
     .tab-btn{padding:.6em .9em; border-radius:12px; background:var(--panel); color:var(--txt); border:1px solid rgba(66,255,209,.32); cursor:pointer; font-weight:600}
     .tab-btn.active{outline:1px solid var(--accent); box-shadow:0 0 0 2px rgba(0,255,156,.12) inset}
 
-    /* HERO GRID LAYOUT (wide: reel|hud; under: test|hud) */
-    .hero{ 
-      margin:clamp(12px,1.6vw,20px) 0; 
-      display:grid; 
+    /* HERO GRID (wide: Reel over Testimonials, HUD spans right; mobile: Reel → HUD → Testimonials) */
+    .hero{
+      margin:clamp(12px,1.6vw,20px) 0;
+      display:grid;
       grid-template-columns: minmax(0, 2.1fr) minmax(0, .9fr);
       grid-template-areas:
         "reel hud"
         "test hud";
-      column-gap: calc(var(--grid) + 18px); 
-      row-gap: var(--grid);
-      align-items:start; 
+      column-gap: calc(var(--grid) + 18px);
+      row-gap: 0; /* butt Testimonials directly under Reel */
+      align-items:start;
     }
     .area-reel{ grid-area: reel; }
     .area-hud { grid-area: hud; }
@@ -269,7 +269,7 @@
             <h2 class="crt-glow" style="margin:0">Rides</h2>
             <small class="muted">Themed entertainment</small>
           </div>
-          <div id="ridesGrid" class="grid"></div>
+        <div id="ridesGrid" class="grid"></div>
         </div>
       </section>
 
@@ -280,7 +280,7 @@
             <h2 class="crt-glow" style="margin:0">Personal Work</h2>
             <small class="muted">Original shorts & experiments</small>
           </div>
-          <div id="personalGrid" class="grid"></div>
+        <div id="personalGrid" class="grid"></div>
 
           <div class="card pad" id="febzBox" style="margin-top:var(--grid); display:none">
             <h3 class="crt-glow" style="margin-top:0"><span id="febzHeading"></span> <a href="https://www.youtube.com/@FebzFoundFootage" target="_blank" rel="noopener">@FebzFoundFootage</a></h3>
@@ -430,6 +430,44 @@
 
   const loaded = { main:false, reel:false, sections:false, banner:false, testimonials:false };
 
+  // --- PRELOAD PLACEHOLDERS (render immediately) ---
+  (function preloadFrames(){
+    // HUD placeholder immediately visible
+    const hudCard = document.getElementById('hudCard');
+    const hudTitle = document.getElementById('hudTitle');
+    const hudBody  = document.getElementById('hudBody');
+    function renderHUD(lines){
+      hudBody.innerHTML='';
+      lines.forEach(l=>{
+        const row = document.createElement('div'); row.className='line';
+        const tag = document.createElement('span'); tag.className='tag'; tag.textContent = String(l.tag||'').toUpperCase();
+        const body = document.createElement('div'); body.className='body'; body.textContent = l.body||'';
+        row.appendChild(tag); row.appendChild(body); hudBody.appendChild(row);
+      });
+      hudCard.style.display='block';
+    }
+    hudTitle.textContent = 'Scanning Subject Attributes…';
+    renderHUD([
+      {tag:'WY:LINK', body:'Handshake with Weyland Yutani mainframe… OK'},
+      {tag:'CYBD:PROC', body:'Cyberdyne predictive model warm-up… OK'},
+      {tag:'SKNET:SIG', body:'Skynet heuristic prefetch… nominal'},
+      {tag:'IO/TIMEBASE', body:'Genlock sync… LTC/VITC stable'},
+      {tag:'LENS DB', body:'FF/APS-C tables cached; distortion LUTs primed'},
+      {tag:'RIGS', body:'Technodolly/Graphlite/Spidercam/MILO profiles loaded'}
+    ]);
+
+    // Testimonials placeholder immediately visible
+    const tBox  = document.getElementById('testimonialsBox');
+    const tList = document.getElementById('testimonialsList');
+    const gag = (q,f)=>`<div class="testimonial"><span class="quote">“${q}”</span><span class="from">— ${f}</span></div>`;
+    tList.innerHTML = [
+      gag('Satellite uplink awaiting interstellar comms to verify subject with known associates…','WY Relay Node • LV-426'),
+      gag('Cross-referencing guild logs, call sheets, and lunch orders…','Mother // Unit 1824'),
+      gag('Decrypting production radio chatter: “He solved it on set.”','Cyberdyne Archive • Tape B-12')
+    ].join('');
+    tBox.style.display = 'block';
+  })();
+
   (async function init(){
     try{
       setStatus('Routing request to MOTHER…', sysStatus.href);
@@ -453,6 +491,7 @@
       const mainInfo = {};
       (mainInfoRows||[]).forEach(r=> mainInfo[(r.key||'').trim()] = (r.value||'').trim());
 
+      // Basic labels/links
       $('#siteTitle').textContent = mainInfo.site_title || 'Ariel (Ari) Feblowitz';
       const imdbUrl = fixImdb(mainInfo.imdb_url || 'https://www.imdb.me/ArielFeblowitz');
       const subtitleTxt = mainInfo.site_subtitle || 'Techvis & Virtual Production Supervisor';
@@ -480,38 +519,27 @@
       setContactSection(phone, email);
       enhanceContactLinks();
 
-      // HUD: Title from ASSESSMENT; preload line; then Strengths
-      const hudCard = $('#hudCard');
-      const hudBody = $('#hudBody');
+      // --- HUD: Title from ASSESSMENT; then Strengths replaces preload
       const hudTitleEl = $('#hudTitle');
       const assessTitle = mainInfo.ASSESSMENT || mainInfo.assessment || 'THREAT ASSESSMENT // SKNET_0001';
       hudTitleEl.textContent = assessTitle;
 
-      function renderHUD(lines){
-        hudBody.innerHTML='';
-        lines.forEach(l=>{
-          const row = document.createElement('div'); row.className='line';
-          const tag = document.createElement('span'); tag.className='tag'; tag.textContent = String(l.tag||'').toUpperCase();
-          const body = document.createElement('div'); body.className='body'; body.textContent = l.body||'';
-          row.appendChild(tag); row.appendChild(body); hudBody.appendChild(row);
-        });
-        hudCard.style.display='block';
-      }
-
-      // Show preload status first
-      renderHUD([{ tag:'STATUS', body:'Scanning Subject Attributes…' }]);
-
       const strengthsText = (mainInfo.Strengths || mainInfo.strengths || '').trim();
       if (strengthsText){
-        const lines = strengthsText.split(/\n+/).map(s=>s.trim()).filter(Boolean).map(s=>{
+        const hudBody = $('#hudBody');
+        hudBody.innerHTML = '';
+        strengthsText.split(/\n+/).map(s=>s.trim()).filter(Boolean).forEach(s=>{
           const m = s.match(/^([^:]+):\s*(.+)$/);
-          return m ? {tag:m[1], body:m[2]} : {tag:'Signal', body:s};
+          const tag = (m ? m[1] : 'Signal'), body = (m ? m[2] : s);
+          const row = document.createElement('div'); row.className='line';
+          const t = document.createElement('span'); t.className='tag'; t.textContent = tag.toUpperCase();
+          const b = document.createElement('div'); b.className='body'; b.textContent = body;
+          row.appendChild(t); row.appendChild(b); hudBody.appendChild(row);
         });
-        renderHUD(lines);
+        document.getElementById('hudCard').style.display='block';
       }
 
-      loadTestimonials();
-
+      // --- Reel (supports direct id, Vimeo, or full iframe embed pasted in the sheet)
       (function loadReel(){
         const reelInput = (mainInfo.reel_youtube_id||'').trim();
         const reelFrame = $('#reelFrame');
@@ -537,10 +565,11 @@
       async function loadSections(){
         try{
           if (loaded.sections) return; loaded.sections = true;
-          const [personalTab, proRows, ridesRows] = await Promise.all([
+          const [personalTab, proRows, ridesRows, testimonialsRows] = await Promise.all([
             pullTab('Personal Youtube'),
             pullTab('Ariel_Feblowitz_Works'),
-            pullTab('Rides')
+            pullTab('Rides'),
+            pullTab('Testimonials')
           ]);
 
           const meta = {}; const videos=[];
@@ -555,6 +584,7 @@
             }
           });
 
+          // Febz featured box
           const febzId = (meta.febz_video_id || '').trim();
           if (febzId){
             const febzHeading = meta.febz_heading || "Also archiving my father's documentary work: FebzFoundFootage";
@@ -565,6 +595,7 @@
             $('#febzBox').style.display = 'block';
           }
 
+          // Latest uploads embed (optional)
           const showLatest = (String(meta.latest_mode||'').toLowerCase()==='auto') || false;
           if (showLatest && meta.latest_playlist_or_channel_id){
             const channelId = meta.latest_playlist_or_channel_id;
@@ -575,6 +606,7 @@
             }
           }
 
+          // Pro
           const proItems = (proRows||[]).map(r=>({
             title:(r['Name']||'').trim(),
             url:fixImdb((r['URL']||'').trim()),
@@ -587,6 +619,7 @@
           .filter(x=>x.title && x.prio>0)
           .sort((a,b)=> (a.onSet!==b.onSet)? (a.onSet? -1:1) : (b.prio-a.prio) || a.title.localeCompare(b.title));
 
+          // Rides
           const rideItems = (ridesRows||[]).map(r=>({
             title:(r['Ride Name']||'').trim(),
             url:(r['Ride Link']||'').trim(),
@@ -599,13 +632,31 @@
           .filter(x=>x.title && x.prio>0)
           .sort((a,b)=> b.prio-a.prio || a.title.localeCompare(b.title));
 
+          // Render sections
           renderPro(proItems); renderRides(rideItems); renderPersonal(videos, (meta.featured_video_id||'').trim());
 
+          // Banner tiles
           window.__tilesData = {
             pro: proItems.filter(p=>p.prio>=5).map(p=>({type:'pro', kind:'poster', title:p.title, img:p.posters[0]||'', url:p.url||'#'})),
             ride: rideItems.filter(r=>r.prio===10).map(r=>({type:'ride', kind:'wide', title:r.title, img:r.posters[0]||'', url:r.url||'#'})),
             per: videos.filter(v=>(v.prio||0)>=5 || v.includeInBanner).map(v=>({type:'personal', kind:'wide', title:v.title, img:v.thumb||'', url:v.url||'#', ytid:v.videoId||''}))
           };
+
+          // Override Testimonials with real data (replacing preload gags)
+          const tBox  = document.getElementById('testimonialsBox');
+          const tList = document.getElementById('testimonialsList');
+          const items = (testimonialsRows||[]).map(r=>({ from:(r['From']||'').trim(), text:(r['Testimonial']||'').trim() })).filter(t=>t.from && t.text);
+          if (items.length){
+            const smartQuote = s=>{ const t = s.trim(); const b = /^["“]/.test(t); const e = /["”]$/.test(t); return (b&&e)?t:`“${t.replace(/^\"|^“|^'|^‘|^`/, '').replace(/\"$|”$|'$|‘$|`$/, '')}”`; };
+            const esc = s=> s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+            tList.innerHTML = '';
+            items.forEach(it=>{
+              const el = document.createElement('div'); el.className='testimonial';
+              el.innerHTML = `<span class="quote">${esc(smartQuote(it.text))}</span><span class="from">— ${esc(it.from)}</span>`;
+              tList.appendChild(el);
+            });
+            tBox.style.display = 'block';
+          }
         }catch(err){ console.error('[loadSections]', err); }
       }
 
@@ -660,21 +711,6 @@
         const interleaved=[]; const L=Math.max(pro.length, ride.length, per.length);
         for(let i=0;i<L;i++){ if(pro[i]) interleaved.push(pro[i]); if(ride[i]) interleaved.push(ride[i]); if(per[i]) interleaved.push(per[i]); }
         fillBanner(interleaved);
-      }
-
-      async function loadTestimonials(){
-        if (loaded.testimonials) return; loaded.testimonials = true;
-        try{
-          const rows = await pullTab('Testimonials');
-          const items = (rows||[]).map(r=>({ from:(r['From']||'').trim(), text:(r['Testimonial']||'').trim() })).filter(t=>t.from && t.text);
-          if (!items.length) return;
-          const box = document.getElementById('testimonialsBox'); const list = document.getElementById('testimonialsList');
-          list.innerHTML='';
-          const smartQuote = s=>{ const t = s.trim(); const begins = /^["“]/.test(t); const ends = /["”]$/.test(t); if (begins && ends) return t; return `“${t.replace(/^\"|^“|^'|^‘|^`/, '').replace(/\"$|”$|'$|‘$|`$/, '')}”`; };
-          const esc = s=> s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
-          items.forEach(it=>{ const el = document.createElement('div'); el.className='testimonial'; el.innerHTML = `<span class="quote">${esc(smartQuote(it.text))}</span><span class="from">— ${esc(it.from)}</span>`; list.appendChild(el); });
-          box.style.display = 'block';
-        }catch(e){ console.error('[testimonials]', e); }
       }
 
     }catch(err){ console.error('[init]', err); }
