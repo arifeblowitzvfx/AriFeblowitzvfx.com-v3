@@ -84,7 +84,10 @@
     .tab-btn{padding:.6em .9em; border-radius:12px; background:var(--panel); color:var(--txt); border:1px solid rgba(66,255,209,.32); cursor:pointer; font-weight:600}
     .tab-btn.active{outline:1px solid var(--accent); box-shadow:0 0 0 2px rgba(0,255,156,.12) inset}
 
-    /* === HERO LAYOUT === */
+    /* === HERO LAYOUT ===
+       Wide: two columns → Left stack (Reel + Testimonials, gap:0) and Right HUD
+       Narrow: dissolve left stack (display:contents) and order as Reel → HUD → Testimonials
+    */
     .hero{
       margin:clamp(12px,1.6vw,20px) 0;
       display:grid;
@@ -96,9 +99,11 @@
     .area-left{ grid-area:left; }
     .area-hud{ grid-area:hud; }
 
+    /* Left column stack: guarantees Testimonials touches Reel */
     .leftStack{ display:flex; flex-direction:column; gap:0; }
-    .leftStack > .card{ margin:0; }
+    .leftStack > .card{ margin:0; } /* ensure no accidental gaps */
 
+    /* For grid-placed children (used on narrow layout) */
     .area-reel{ grid-area:reel; }
     .area-test{ grid-area:test; }
 
@@ -110,14 +115,17 @@
           "hud"
           "test";
       }
+      /* Dissolve the left stack so children become direct grid items */
       .leftStack{ display:contents; }
     }
 
     .card{background:var(--panel); border:1px solid rgba(66,255,209,.34); border-radius:var(--radius); box-shadow:var(--shadow)}
     .pad{padding:clamp(14px,1.6vw,20px)}
 
+    /* Reel frame */
     .reel{ position:relative; aspect-ratio:16/9; width:100%; border-radius:14px; overflow:hidden; background:#000; border:1px solid rgba(0,255,156,.34); outline:1px solid rgba(0,255,156,.2); box-shadow:0 0 20px rgba(0,255,156,.12) inset, 0 0 18px rgba(0,0,0,.6); contain:layout paint; isolation:isolate; }
     .reel > iframe{position:absolute; inset:0; width:100%; height:100%; border:0; display:block; box-sizing:border-box}
+    .reel iframe{ max-width:100%; max-height:100%; }
     @media (min-height:900px){ .reel{min-height:560px} }
 
     .badges{display:flex; flex-wrap:wrap; gap:clamp(8px,1vw,12px); margin-top:clamp(8px,1vw,12px)}
@@ -125,8 +133,9 @@
     section{display:none; content-visibility:auto; contain-intrinsic-size: 1px 1000px}
     section.active{display:block}
 
+    /* Grids */
     .grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:var(--grid); content-visibility:auto}
-    @media (max-width:1000px){ .grid{grid-template-columns:repeat(2, 1fr)} }
+    @media (max-width:1000px){ .grid{grid-template-columns:repeat(2, 1 fr)} }
     @media (max-width:620px){ .grid{grid-template-columns:1fr} }
     .proj{overflow:hidden}
     .thumb{position:relative; aspect-ratio:16/9; overflow:hidden; border-radius:14px; border:1px solid rgba(66,255,209,.26)}
@@ -137,7 +146,6 @@
     .proj .role{color:var(--muted); font-size:.9em}
 
     footer{opacity:.85; font-size:.9em; padding:clamp(28px,2.5vw,40px) 0 20px}
-
     #professional .grid{grid-template-columns:repeat(4, 1fr)}
     @media (max-width:1100px){ #professional .grid{grid-template-columns:repeat(3, 1 fr)} }
     @media (max-width:820px){ #professional .grid{grid-template-columns:repeat(2, 1 fr)} }
@@ -149,7 +157,12 @@
     .toast{ position:fixed; z-index:9999; padding:.5em .75em; border-radius:10px; background:#0b1414; color:#caffec; border:1px solid rgba(66,255,209,.4); box-shadow:var(--shadow); font-size:.9em; opacity:0; transform:translateY(-6px); transition:opacity .15s ease, transform .15s ease; }
     .toast.show{ opacity:1; transform:translateY(0); }
 
-    .brand .dot.alert{ background:radial-gradient(circle at 30% 30%, #ffd24a, #6b5a1a 70%); box-shadow:0 0 22px #ffd24a, 0 0 36px rgba(255,210,74,.5); animation:alertFlick .125s linear 8; }
+    /* CLICK-ALERT */
+    .brand .dot.alert{
+      background:radial-gradient(circle at 30% 30%, #ffd24a, #6b5a1a 70%);
+      box-shadow:0 0 22px #ffd24a, 0 0 36px rgba(255,210,74,.5);
+      animation:alertFlick .125s linear 8;
+    }
     @keyframes alertFlick{0%,100%{opacity:.45}50%{opacity:1}}
 
     #testimonialsBox .tlist{display:flex; flex-direction:column; gap:14px; margin-top:8px}
@@ -157,6 +170,7 @@
     .testimonial .quote{display:block; font-weight:700; color:#eafff6}
     .testimonial .from{display:block; color:#74cdaa; font-size:.95em; margin-top:4px}
 
+    /* HUD card */
     .hud{margin-top:var(--grid); border:1px solid rgba(0,255,156,.35); border-radius:14px; background:
       linear-gradient(0deg, rgba(0,255,156,.08), rgba(0,255,156,.02)),
       repeating-linear-gradient(0deg, rgba(0,255,156,.05), rgba(0,255,156,.05) 2px, transparent 3px, transparent 6px);
@@ -188,7 +202,7 @@
       <div class="nav">
         <div class="brand">
           <div class="dot" aria-hidden="true"></div>
-          <h1 id="siteTitle" class="crt-glow">Subject: ARI FEBLOWITZ</h1>
+          <h1 id="siteTitle" class="crt-glow">Loading data for SUBJECT: ARI FEBLOWITZ</h1>
           <a id="siteSubtitle" class="pill crt-glow" href="https://www.imdb.me/ArielFeblowitz" target="_blank" rel="noopener">Techvis & Virtual Production Supervisor</a>
           <a id="sysStatus" class="pill crt-glow" href="https://linktr.ee/admin/links" target="_blank" rel="noopener">Routing request to MOTHER…</a>
           <div id="topContact" class="badges" style="margin-left:6px"></div>
@@ -207,6 +221,7 @@
       <!-- HOME -->
       <section id="home" class="active" role="tabpanel">
         <div class="hero">
+          <!-- LEFT COLUMN: Reel + Testimonials stacked with zero gap -->
           <div class="area-left leftStack">
             <!-- Reel -->
             <div class="card pad area-reel">
@@ -223,7 +238,7 @@
               </div>
             </div>
 
-            <!-- Testimonials -->
+            <!-- Testimonials (docks right under Reel on wide) -->
             <div class="card pad area-test" id="testimonialsBox" style="display:none">
               <h3 id="testimonialsTitle" class="crt-glow" style="margin:.2em 0 .6em">Testimonials</h3>
               <div class="tlist" id="testimonialsList"></div>
@@ -239,6 +254,7 @@
             <div id="skillsRow1" class="badges"></div>
             <div id="skillsRow2" class="badges"></div>
 
+            <!-- HUD -->
             <div id="hudCard" class="hud" style="display:none">
               <h3 id="hudTitle" class="crt-glow">THREAT ASSESSMENT // SKNET_0001</h3>
               <div class="grid2" id="hudBody"></div>
@@ -309,63 +325,21 @@
   </div>
 
   <script>
-  (function guard(){
-    const roots = document.querySelectorAll('#appRoot');
-    if (roots.length > 1){ roots.forEach((el, i)=>{ if(i>0) el.remove(); }); }
-    if (window.__siteInitDone) { console.warn('Init already run; skipping.'); return; }
-    window.__siteInitDone = true;
-  })();
+  (function guard(){ const roots = document.querySelectorAll('#appRoot'); if (roots.length > 1){ roots.forEach((el, i)=>{ if(i>0) el.remove(); }); } if (window.__siteInitDone) { console.warn('Init already run; skipping.'); return; } window.__siteInitDone = true; })();
 
   const PUBHTML = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQxBxTbb-Ax7rpnnn5zWDUW6fGq1nUGIEPJb5qfaxifqKyZexNLK28gwpQLS5T5vpeuSvZicAEg69U1/pubhtml";
   const TAB_MAP = {};
 
-  const DEFAULT_PHONE = "(818)434-8013";
-  const DEFAULT_EMAIL = "arifeblowitzvfx@gmail.com";
-  const DEFAULT_RESUME = "https://docs.google.com/document/d/1NnKyzE8TtjMOe8WdTEBE7zNscM_RIHBMGF1CMjOn29s/export?format=pdf";
+  const DEFAULT_PHONE = "(818)434-8013"; const DEFAULT_EMAIL = "arifeblowitzvfx@gmail.com"; const DEFAULT_RESUME = "https://docs.google.com/document/d/1NnKyzE8TtjMOe8WdTEBE7zNscM_RIHBMGF1CMjOn29s/export?format=pdf";
+  function setTopContact(phone, email){ const top = document.getElementById('topContact'); if (!top) return; top.innerHTML = ''; if (phone){ const a=document.createElement('a'); a.className='btn'; a.href='tel:' + phone.replace(/[^0-9+]/g,''); a.textContent=phone; top.appendChild(a); } if (email){ const a=document.createElement('a'); a.className='btn'; a.href='mailto:' + email; a.textContent=email; top.appendChild(a); } }
+  function setContactSection(phone, email){ const wrap = document.getElementById('contactInfo'); if (!wrap) return; wrap.innerHTML=''; if (phone){ const a=document.createElement('a'); a.className='btn'; a.href='tel:' + phone.replace(/[^0-9+]/g,''); a.textContent=phone; wrap.appendChild(a); } if (email){ const a=document.createElement('a'); a.className='btn'; a.href='mailto:' + email; a.textContent=email; wrap.appendChild(a); } }
+  setTopContact(DEFAULT_PHONE, DEFAULT_EMAIL); setContactSection(DEFAULT_PHONE, DEFAULT_EMAIL); (function(){ const r = document.getElementById('btnResume'); if (r) r.href = DEFAULT_RESUME; })();
 
-  function setTopContact(phone, email){
-    const top = document.getElementById('topContact');
-    if (!top) return;
-    top.innerHTML = '';
-    if (phone){
-      const a=document.createElement('a'); a.className='btn'; a.href='tel:' + phone.replace(/[^0-9+]/g,''); a.textContent=phone; top.appendChild(a);
-    }
-    if (email){
-      const a=document.createElement('a'); a.className='btn'; a.href='mailto:' + email; a.textContent=email; top.appendChild(a);
-    }
-  }
-  function setContactSection(phone, email){
-    const wrap = document.getElementById('contactInfo'); if (!wrap) return;
-    wrap.innerHTML='';
-    if (phone){ const a=document.createElement('a'); a.className='btn'; a.href='tel:' + phone.replace(/[^0-9+]/g,''); a.textContent=phone; wrap.appendChild(a); }
-    if (email){ const a=document.createElement('a'); a.className='btn'; a.href='mailto:' + email; a.textContent=email; wrap.appendChild(a); }
-  }
-  setTopContact(DEFAULT_PHONE, DEFAULT_EMAIL);
-  setContactSection(DEFAULT_PHONE, DEFAULT_EMAIL);
-  (function(){ const r = document.getElementById('btnResume'); if (r) r.href = DEFAULT_RESUME; })();
-
-  const $  = (sel, el=document) => el.querySelector(sel);
-  const $$ = (sel, el=document) => [...el.querySelectorAll(sel)];
-  const ytThumb   = id => `https://img.youtube.com/vi/${id}/maxresdefault.jpg`;
-  const ytThumbHQ = id => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
-  const fixImdb   = url => (url||"").replace(/https?:\/\/pro\.imdb\.com/i,'https://www.imdb.com').replace(/\?ref_=pro.*$/,'');
+  const $ = (sel, el=document) => el.querySelector(sel); const $$ = (sel, el=document) => [...el.querySelectorAll(sel)];
+  const ytThumb = id => `https://img.youtube.com/vi/${id}/maxresdefault.jpg`; const ytThumbHQ = id => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`; const fixImdb = url => (url||"").replace(/https?:\/\/pro\.imdb\.com/i,'https://www.imdb.com').replace(/\?ref_=pro.*$/,'');
 
   // CSV helpers
-  function csvToObjects(csvText){
-    const rows = []; let field="", row=[], inQ=false;
-    for (let c of String(csvText||"").replace(/\r/g,'')){
-      if (c==='"'){ inQ = !inQ; field+=c; }
-      else if (c===',' && !inQ){ row.push(field.replace(/^("|“)|("|”)$/g,'').replace(/""/g,'"')); field=""; }
-      else if (c==='\n' && !inQ){ row.push(field.replace(/^("|“)|("|”)$/g,'').replace(/""/g,'"')); rows.push(row); row=[]; field=""; }
-      else field+=c;
-    }
-    if (field.length || row.length){ row.push(field.replace(/^("|“)|("|”)$/g,'').replace(/""/g,'"')); rows.push(row); }
-    if (!rows.length) return [];
-    const headers = rows[0].map(h=>h.trim());
-    return rows.slice(1).filter(r=>r.length>1).map(r=>{
-      const o={}; headers.forEach((h,i)=>o[h]=r[i]!==undefined?r[i]:""); return o;
-    });
-  }
+  function csvToObjects(csvText){ const rows = []; let field="", row=[], inQ=false; for (let c of String(csvText||"").replace(/\r/g,'')){ if (c==='"'){ inQ = !inQ; field+=c; } else if (c===',' && !inQ){ row.push(field.replace(/^("|“)|("|”)$/g,'').replace(/""/g,'"')); field=""; } else if (c==='\n' && !inQ){ row.push(field.replace(/^("|“)|("|”)$/g,'').replace(/""/g,'"')); rows.push(row); row=[]; field=""; } else field+=c; } if (field.length || row.length){ row.push(field.replace(/^("|“)|("|”)$/g,'').replace(/""/g,'"')); rows.push(row); } if (!rows.length) return []; const headers = rows[0].map(h=>h.trim()); return rows.slice(1).filter(r=>r.length>1).map(r=>{ const o={}; headers.forEach((h,i)=>o[h]=r[i]!==undefined?r[i]:""); return o; }); }
   function csvFirstRowSecondCol(csvText){
     let inQ=false, col=0, val="";
     for (let i=0;i<csvText.length;i++){
@@ -384,17 +358,12 @@
   }
 
   const normBool = v => String(v||"").trim().toLowerCase()==='true' || String(v||"").trim().toLowerCase()==='yes';
-  const normNum  = v => { const n = Number(String(v||"").replace(/[^\d.-]/g,"")); return isNaN(n)?0:n; };
+  const normNum = v => { const n = Number(String(v||"").replace(/[^\d.-]/g,"")); return isNaN(n)?0:n; };
   function buildCsvUrlFromGid(pubhtml, gid){ return pubhtml.replace(/\/pubhtml.*/, '/pub') + `?gid=${gid}&single=true&output=csv`; }
 
-  const cache = {
-    get(key){ try{ return JSON.parse(localStorage.getItem(key)||'null'); }catch{return null} },
-    set(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch{} }
-  };
+  const cache = { get(key){ try{ return JSON.parse(localStorage.getItem(key)||'null'); }catch{return null} }, set(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch{} } };
 
-  async function discoverGids(pubhtml){
-    const map = {};
-    try{
+  async function discoverGids(pubhtml){ const map = {}; try{
       const html = await fetch(pubhtml, {mode:"cors"}).then(r=>r.text());
       const uniqueGids = [...new Set([...html.matchAll(/gid=(\d+)/g)].map(m=>m[1]))];
       for (const gid of uniqueGids){
@@ -414,7 +383,7 @@
 
   const rail = $('#bannerRail'); const scrollEl = $('#bannerScroll');
 
-  // IMG lazy loader
+  /* --- IMG LAZY LOADER --- */
   const io = new IntersectionObserver((entries)=>{
     entries.forEach(({isIntersecting, target})=>{
       if (!isIntersecting) return;
@@ -431,22 +400,12 @@
     img.alt = alt || '';
     img.loading = 'lazy'; img.decoding = 'async'; img.fetchPriority = 'low';
     if (kind==='poster'){ img.width = 800; img.height = 1200; } else { img.width = 1280; img.height = 720; }
-    let main = src;
-    if (ytId){
-      const hq = ytThumbHQ(ytId); main = ytThumb(ytId);
-      img.dataset.srcset = `${hq} 480w, ${main} 1280w`;
-      img.sizes = kind==='poster' ? "(max-width: 900px) 35vw, 12vw" : "(max-width: 900px) 70vw, 24vw";
-    } else {
-      img.sizes = kind==='poster' ? "(max-width: 900px) 35vw, 12vw" : "(max-width: 900px) 70vw, 24vw";
-    }
+    let main = src; if (ytId){ const hq = ytThumbHQ(ytId); main = ytThumb(ytId); img.dataset.srcset = `${hq} 480w, ${main} 1280w`; img.sizes = kind==='poster' ? "(max-width: 900px) 35vw, 12vw" : "(max-width: 900px) 70vw, 24vw"; }
+    else { img.sizes = kind==='poster' ? "(max-width: 900px) 35vw, 12vw" : "(max-width: 900px) 70vw, 24vw"; }
     img.dataset.src = main; io.observe(img); return img;
   }
 
-  function titlePlaceholderSVG(title){
-    const safe = (title||'Untitled').replace(/&/g,'&amp;').replace(/</g,'&lt;');
-    const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 800'><rect width='100%' height='100%' fill='#000'/><text x='50%' y='50%' fill='#9fffcf' font-family='Inter, Segoe UI, Roboto, Arial, sans-serif' font-size='36' text-anchor='middle' dominant-baseline='middle'>${safe}</text></svg>`;
-    return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
-  }
+  function titlePlaceholderSVG(title){ const safe = (title||'Untitled').replace(/&/g,'&amp;').replace(/</g,'&lt;'); const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 800'><rect width='100%' height='100%' fill='#000'/><text x='50%' y='50%' fill='#9fffcf' font-family='Inter, Segoe UI, Roboto, Arial, sans-serif' font-size='36' text-anchor='middle' dominant-baseline='middle'>${safe}</text></svg>`; return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg); }
 
   function makeTile(t){
     const a=document.createElement('a');
@@ -494,14 +453,13 @@
       window.scrollTo({ top: $('.wrap').offsetTop, behavior: 'smooth' });
     });
   });
-
   $('#year').textContent = new Date().getFullYear();
   const sysStatus = document.getElementById('sysStatus');
   function setStatus(msg, linkHref){ if (!sysStatus) return; sysStatus.textContent = msg; if (linkHref) { sysStatus.href = linkHref; } }
 
   const loaded = { main:false, reel:false, sections:false, banner:false, testimonials:false };
 
-  // PRELOAD PLACEHOLDERS
+  // --- PRELOAD PLACEHOLDERS ---
   (function preloadFrames(){
     // HUD placeholder
     const hudCard = document.getElementById('hudCard');
@@ -549,13 +507,12 @@
         const gid = gids[name]; if(!gid) return {rows:[], raw:null};
         const key = `csv:${gid}`;
         let txt;
-        if (name === 'Main site info'){
-          // main uses no cache so edits are instant
+        // FIX 1: Always fetch fresh for "Main site info" and "Testimonials"
+        if (name === 'Main site info' || name === 'Testimonials'){
           txt = await fetch(buildCsvUrlFromGid(PUBHTML, gid) + `&cb=${Date.now()}`).then(r=>r.text());
         } else {
           const cached = cache.get(key);
-          if (cached && cached.txt){ txt = cached.txt; }
-          else { txt = await fetch(buildCsvUrlFromGid(PUBHTML, gid)).then(r=>r.text()); cache.set(key, {ts:Date.now(), txt}); }
+          if (cached && cached.txt){ txt = cached.txt; } else { txt = await fetch(buildCsvUrlFromGid(PUBHTML, gid)).then(r=>r.text()); cache.set(key, {ts:Date.now(), txt}); }
         }
         return { rows: csvToObjects(txt), raw: txt };
       }
@@ -565,18 +522,18 @@
       const mainInfo = {}; (mainInfoPull.rows||[]).forEach(r=> mainInfo[(r.key||'').trim()] = (r.value||'').trim());
 
       // Labels/links
-      $('#siteTitle').textContent = mainInfo.site_title || 'Subject: ARI FEBLOWITZ';
-      const imdbUrl   = fixImdb(mainInfo.imdb_url || 'https://www.imdb.me/ArielFeblowitz');
-      const subtitle  = mainInfo.site_subtitle || 'Techvis & Virtual Production Supervisor';
-      const subtitleEl = $('#siteSubtitle'); subtitleEl.textContent = subtitle; subtitleEl.href = imdbUrl;
+      $('#siteTitle').textContent = mainInfo.site_title || 'Ariel (Ari) Feblowitz';
+      const imdbUrl = fixImdb(mainInfo.imdb_url || 'https://www.imdb.me/ArielFeblowitz');
+      const subtitleTxt = mainInfo.site_subtitle || 'Techvis & Virtual Production Supervisor';
+      const subtitleEl = $('#siteSubtitle'); subtitleEl.textContent = subtitleTxt; subtitleEl.href = imdbUrl;
 
       $('#about1').textContent = mainInfo.about_paragraph_1 || $('#about1').textContent;
       $('#about2').textContent = mainInfo.about_paragraph_2 || $('#about2').textContent;
 
       const linksHref = mainInfo.all_links_url || 'https://linktr.ee/admin/links';
-      $('#btnIMDb').href   = imdbUrl;
-      $('#btnYouTube').href= mainInfo.youtube_url || $('#btnYouTube').href;
-      $('#btnLinks').href  = linksHref;
+      $('#btnIMDb').href = imdbUrl;
+      $('#btnYouTube').href = mainInfo.youtube_url || $('#btnYouTube').href;
+      $('#btnLinks').href = linksHref;
       $('#btnResume').href = (mainInfo.resume_url && mainInfo.resume_url.trim()) || DEFAULT_RESUME;
 
       setStatus('Link established', linksHref);
@@ -592,7 +549,7 @@
       setContactSection(phone, email);
       enhanceContactLinks();
 
-      // HUD title
+      // HUD title from ASSESSMENT
       const hudTitleEl = $('#hudTitle');
       const assessTitle = mainInfo.ASSESSMENT || mainInfo.assessment || 'THREAT ASSESSMENT // SKNET_0001';
       hudTitleEl.textContent = assessTitle;
@@ -606,7 +563,7 @@
           const m = s.match(/^([^:]+):\s*(.+)$/);
           const tag = (m ? m[1] : 'Signal'), body = (m ? m[2] : s);
           const row = document.createElement('div'); row.className='line';
-          const t = document.createElement('span'); t.className='tag';  t.textContent = tag.toUpperCase();
+          const t = document.createElement('span'); t.className='tag'; t.textContent = tag.toUpperCase();
           const b = document.createElement('div'); b.className='body'; b.textContent = body;
           row.appendChild(t); row.appendChild(b); hudBody.appendChild(row);
         });
@@ -632,21 +589,18 @@
         loaded.reel=true;
       })();
 
-      // 🚀 Run sections immediately (not only on idle) so Testimonials overwrite the placeholder
-      await loadSections();
-
-      // Also schedule the banner build a bit later for smoothness
       const defer = window.requestIdleCallback || (fn=>setTimeout(fn, 0));
-      defer(()=> setTimeout(buildBannerDeferred, 350));
+      defer(loadSections);
+      defer(()=> setTimeout(buildBannerDeferred, 400));
 
       async function loadSections(){
         try{
           if (loaded.sections) return; loaded.sections = true;
 
-          const personalPull = await pullTab('Personal Youtube');
-          const proPull      = await pullTab('Ariel_Feblowitz_Works');
-          const ridesPull    = await pullTab('Rides');
-          const testiPull    = await pullTab('Testimonials');
+          const personalPull   = await pullTab('Personal Youtube');
+          const proPull        = await pullTab('Ariel_Feblowitz_Works');
+          const ridesPull      = await pullTab('Rides');
+          const testiPull      = await pullTab('Testimonials');
 
           const personalTab = personalPull.rows;
           const proRows     = proPull.rows;
@@ -667,7 +621,7 @@
             }
           });
 
-          // Febz box
+          // Febz featured box
           const febzId = (meta.febz_video_id || '').trim();
           if (febzId){
             const febzHeading = meta.febz_heading || "Also archiving my father's documentary work: FebzFoundFootage";
@@ -715,40 +669,39 @@
           .filter(x=>x.title && x.prio>0)
           .sort((a,b)=> b.prio-a.prio || a.title.localeCompare(b.title));
 
-          renderPro(proItems);
-          renderRides(rideItems);
-          renderPersonal(videos, (meta.featured_video_id||'').trim());
+          // Render content grids
+          renderPro(proItems); renderRides(rideItems); renderPersonal(videos, (meta.featured_video_id||'').trim());
 
           // Banner tiles
           window.__tilesData = {
-            pro:  proItems.filter(p=>p.prio>=5).map(p=>({type:'pro', kind:'poster', title:p.title, img:p.posters[0]||'', url:p.url||'#'})),
-            ride: rideItems.filter(r=>r.prio===10).map(r=>({type:'ride', kind:'wide', title:r.title, img:r.posters[0]||'', url:r.url||'#'})),
-            per:  videos.filter(v=>(v.prio||0)>=5 || v.includeInBanner).map(v=>({type:'personal', kind:'wide', title:v.title, img:v.thumb||'', url:v.url||'#', ytid:v.videoId||''}))
+            pro: proItems.filter(p=>p.prio>=5).map(p=>({type:'pro', kind:'poster', title:p.title, img:p.posters[0]||'', url:p.url||'#'})),
+            ride: rideItems.filter(r=>r.prio===10).map(r=>({type:'ride', kind:'wide', title:r.title, img:r.postters?.[0]||r.posters[0]||'', url:r.url||'#'})), /* tolerate minor var */
+            per: videos.filter(v=>(v.prio||0)>=5 || v.includeInBanner).map(v=>({type:'personal', kind:'wide', title:v.title, img:v.thumb||'', url:v.url||'#', ytid:v.videoId||''}))
           };
 
-          // === TESTIMONIALS (restored to the last-known-working logic) ===
-          const tBox   = document.getElementById('testimonialsBox');
-          const tList  = document.getElementById('testimonialsList');
-          const tTitle = document.getElementById('testimonialsTitle');
+          /* === FIX 2: Robust Testimonials renderer (plural-aware) === */
+          const tBox  = document.getElementById('testimonialsBox');
+          const tList = document.getElementById('testimonialsList');
+          const tTitle= document.getElementById('testimonialsTitle');
 
+          // Keep B1 heading behavior (title in B1 / first row, second column)
           let tHeading = 'Testimonials';
-          if (testiRaw){
-            try{
-              const b1 = csvFirstRowSecondCol(testiRaw);
-              if (b1) tHeading = b1;
-            }catch{}
-          }
+          if (testiRaw){ try{ const b1 = csvFirstRowSecondCol(testiRaw); if (b1) tHeading = b1; }catch{} }
           tTitle.textContent = tHeading;
 
-          const items = (testiRows||[]).map(r=>({
-            from:(r['From']||'').trim(),
-            text:(r['Testimonial']||'').trim()
+          // Detect the correct keys, expecting "From" and "Testimonials"
+          const headers = testiRows && testiRows[0] ? Object.keys(testiRows[0]) : [];
+          const fromKey = headers.find(k => /^from$/i.test(k)) || 'From';
+          const textKey = headers.find(k => /^(testimonials?|quote|text)$/i.test(k)) || 'Testimonials';
+
+          const items = (t testiRows||[]).map(r=>({
+            from: (r[fromKey]||'').trim(),
+            text: (r[textKey]||'').trim()
           })).filter(t=>t.from && t.text);
 
           if (items.length){
             const smartQuote = s=>{
-              const t = s.trim();
-              const b = /^["“]/.test(t); const e = /["”]$/.test(t);
+              const t = s.trim(); const b = /^["“]/.test(t); const e = /["”]$/.test(t);
               return (b&&e)?t:`“${t.replace(/^\"|^“|^'|^‘|^`/, '').replace(/\"$|”$|'$|‘$|`$/, '')}”`;
             };
             const esc = s=> s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
@@ -761,12 +714,13 @@
             });
             tBox.style.display = 'block';
           } else {
-            console.warn('[testimonials] No rows parsed. Expecting headers "From" and "Testimonial".');
-            // leave the placeholder gags visible
+            console.warn('[testimonials] No rows found. Expecting columns "From" and "Testimonials".');
+            // Leave gag placeholder as-is if the sheet is empty or headers are mismatched.
           }
+          /* === end testimonials fix === */
 
         }catch(err){ console.error('[loadSections]', err); }
-      } // end loadSections
+      }
 
       function renderPro(items){
         const grid = $('#proGrid'); grid.innerHTML='';
@@ -846,7 +800,7 @@
     });
   }
 
-  // sysDotEffects
+  /* sysDotEffects preserved */
   (function sysDotEffects(){
     const dot = document.querySelector('.brand .dot');
     if (!dot) return;
