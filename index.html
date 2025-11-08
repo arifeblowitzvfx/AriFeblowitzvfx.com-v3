@@ -774,6 +774,45 @@
 
           // Personal meta + videos
           const meta = {}; const videos=[];
+          // --- TESTIMONIALS: title from B1 + real rows
+          const tBox   = document.getElementById('testimonialsBox');
+          const tList  = document.getElementById('testimonialsList');
+          const tTitle = document.getElementById('testimonialsTitle');
+          
+          let tHeading = 'Testimonials';
+          if (testiRaw){
+            try{
+              const b1 = csvFirstRowSecondCol(testiRaw);
+              if (b1) tHeading = b1;
+            } catch(e){
+              console.warn('Could not read B1 from testimonials CSV', e);
+            }
+          }
+          tTitle.textContent = tHeading;
+          
+          const items = (testiRows||[]).map(r=>({
+            from: (r['From']||'').trim(),
+            text: (r['Testimonial']||'').trim()
+          })).filter(t=> t.from && t.text);
+          
+          // Debug log
+          if (items.length === 0){
+            console.warn('No testimonial items found. Raw CSV text starts:', testiRaw.slice(0,200));
+          }
+          
+          if (items.length){
+            tList.innerHTML = '';
+            items.forEach(it=>{
+              const el = document.createElement('div');
+              el.className = 'testimonial';
+              el.innerHTML = `<span class="quote">${it.text}</span><span class="from">— ${it.from}</span>`;
+              tList.appendChild(el);
+            });
+            tBox.style.display = 'block';
+          } else {
+            tBox.style.display = 'none';
+          }
+
           (personalTab||[]).forEach(r=>{
             const type=(r.type||'').toLowerCase();
             if (type==='meta'){ meta[(r.key||'').trim()] = (r.value||'').trim(); }
