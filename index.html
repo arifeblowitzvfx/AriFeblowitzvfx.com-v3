@@ -123,13 +123,13 @@
     .toast.show{ opacity:1; transform:translateY(0); }
 
     /* CLICK-ALERT: exact 1s yellow flicker on click */
-    /* Force-yellow flash that overrides any baseline animation */
-    .brand .dot.force-yellow{ 
-      background:radial-gradient(circle at 30% 30%, #ffd24a, #6b5a1a 70%) !important; 
-      box-shadow:0 0 22px #ffd24a, 0 0 36px rgba(255,210,74,.5) !important; 
-      animation:alertPulse .12s linear 8 !important; /* ~0.96s */
+    /* Click alert: flash yellow for ~1s on clicks (original working version) */
+    .brand .dot.alert{
+      background:radial-gradient(circle at 30% 30%, #ffd24a, #6b5a1a 70%);
+      box-shadow:0 0 22px #ffd24a, 0 0 36px rgba(255,210,74,.5);
+      animation:alertFlick .12s linear 8; /* ~0.96s total */
     }
-    @keyframes alertPulse{0%,100%{opacity:.45}50%{opacity:1}}50%{opacity:1}}
+    @keyframes alertFlick{0%,100%{opacity:.45}50%{opacity:1}}50%{opacity:1}}50%{opacity:1}}
 
     #testimonialsBox .tlist{display:flex; flex-direction:column; gap:14px; margin-top:8px}
     .testimonial{border:1px solid rgba(66,255,209,.26); border-radius:14px; padding:12px 14px; background:linear-gradient(180deg, rgba(66,255,209,.06), rgba(66,255,209,.01))}
@@ -327,12 +327,11 @@
     document.addEventListener('mouseover', e=>{ if (isInteractive(e.target)) onHover(); }, {passive:true});
     document.addEventListener('focusin',   e=>{ if (isInteractive(e.target)) onHover(); });
     function onClick(){
-      // Hard override: force yellow style for 1s, regardless of current blink state
-      dot.classList.add('force-yellow');
-      const prevAnim = dot.style.animation;
-      dot.style.animation = 'none';
-      void dot.offsetWidth; // reflow
-      setTimeout(()=>{ dot.classList.remove('force-yellow'); dot.style.animation = prevAnim || ''; }, 1000);
+      // Original working behavior: add temporary yellow pulse class
+      dot.classList.add('alert');
+      playAnim('alertFlick', 960);
+      setTimeout(()=>{ dot.classList.remove('alert'); }, 980);
+    }, 1000);
     }, 1000); }
     document.addEventListener('pointerdown', e=>{ if (isInteractive(e.target)) onClick(); }, {passive:true});
     document.addEventListener('keydown', e=>{ if ((e.key==='Enter'||e.key===' ') && isInteractive(e.target)) onClick(); });
