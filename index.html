@@ -123,13 +123,8 @@
     .toast.show{ opacity:1; transform:translateY(0); }
 
     /* CLICK-ALERT: exact 1s yellow flicker on click */
-    /* Click alert: flash yellow for ~1s on clicks (original working version) */
-    .brand .dot.alert{
-      background:radial-gradient(circle at 30% 30%, #ffd24a, #6b5a1a 70%);
-      box-shadow:0 0 22px #ffd24a, 0 0 36px rgba(255,210,74,.5);
-      animation:alertFlick .12s linear 8; /* ~0.96s total */
-    }
-    @keyframes alertFlick{0%,100%{opacity:.45}50%{opacity:1}}50%{opacity:1}}50%{opacity:1}}
+    .brand .dot.alert{ background:radial-gradient(circle at 30% 30%, #ffd24a, #6b5a1a 70%); box-shadow:0 0 22px #ffd24a, 0 0 36px rgba(255,210,74,.5); animation:alertFlick .125s linear 8; }
+    @keyframes alertFlick{0%,100%{opacity:.45}50%{opacity:1}}
 
     #testimonialsBox .tlist{display:flex; flex-direction:column; gap:14px; margin-top:8px}
     .testimonial{border:1px solid rgba(66,255,209,.26); border-radius:14px; padding:12px 14px; background:linear-gradient(180deg, rgba(66,255,209,.06), rgba(66,255,209,.01))}
@@ -295,7 +290,8 @@
       const mainInfoRows = await pullTab('Main site info'); const mainInfo = {}; (mainInfoRows||[]).forEach(r=> mainInfo[(r.key||'').trim()] = (r.value||'').trim());
       $('#siteTitle').textContent = mainInfo.site_title || 'Ariel (Ari) Feblowitz'; const imdbUrl = fixImdb(mainInfo.imdb_url || 'https://www.imdb.me/ArielFeblowitz'); const subtitleTxt = mainInfo.site_subtitle || 'Techvis & Virtual Production Supervisor'; const subtitleEl = $('#siteSubtitle'); subtitleEl.textContent = subtitleTxt; subtitleEl.href = imdbUrl;
       $('#about1').textContent = mainInfo.about_paragraph_1 || $('#about1').textContent; $('#about2').textContent = mainInfo.about_paragraph_2 || $('#about2').textContent;
-      const linksHref = mainInfo.all_links_url || 'https://linktr.ee/admin/links'; $('#btnIMDb').href = imdbUrl; $('#btnYouTube').href = mainInfo.youtube_url || $('#btnYouTube').href; $('#btnLinks').href = linksHref; $('#btnResume').href = DEFAULT_RESUME; const aboutStatus = $('#aboutStatus'); if (aboutStatus) aboutStatus.style.display = 'none'; document.body.classList.add('ready'); $('#reelHeader').textContent = 'Demo Reel'; $('#aboutHeader').textContent = 'About'; loaded.main = true;
+      const linksHref = mainInfo.all_links_url || 'https://linktr.ee/admin/links'; $('#btnIMDb').href = imdbUrl; $('#btnYouTube').href = mainInfo.youtube_url || $('#btnYouTube').href; $('#btnLinks').href = linksHref; $('#btnResume').href = (mainInfo.resume_url && mainInfo.resume_url.trim()) || DEFAULT_RESUME;
+      setStatus('Link established', linksHref); const aboutStatus = $('#aboutStatus'); if (aboutStatus) aboutStatus.style.display = 'none'; document.body.classList.add('ready'); $('#reelHeader').textContent = 'Demo Reel'; $('#aboutHeader').textContent = 'About'; loaded.main = true;
       const phone = (mainInfo.phone||DEFAULT_PHONE).trim(); const email = (mainInfo.email||DEFAULT_EMAIL).trim(); setTopContact(phone, email); setContactSection(phone, email); enhanceContactLinks();
       loadTestimonials();
       (function loadReel(){ const reelInput = (mainInfo.reel_youtube_id||'').trim(); const reelFrame = $('#reelFrame'); const setIframe = src => { reelFrame.loading='lazy'; reelFrame.decoding='async'; reelFrame.fetchPriority='low'; reelFrame.src = src; }; if (/^\s*</i.test(reelInput)){ const tmp = document.createElement('div'); tmp.innerHTML = reelInput; const ifr = tmp.querySelector('iframe'); if (ifr && ifr.src){ setIframe(ifr.src); loaded.reel=true; return; } } const vimeoM = reelInput.match(/vimeo\.com\/(?:video\/)?(\d+)/i); if (vimeoM){ setIframe(`https://player.vimeo.com/video/${vimeoM[1]}?badge=0&autopause=0&title=0&byline=0`); loaded.reel=true; return; } if (/^\d{7,}$/.test(reelInput)){ setIframe(`https://player.vimeo.com/video/${reelInput}?badge=0&autopause=0&title=0&byline=0`); loaded.reel=true; return; } const ytM = reelInput.match(/[?&]v=([\w-]{6,})/) || reelInput.match(/youtu\.be\/([\w-]{6,})/); if (ytM){ setIframe(`https://www.youtube.com/embed/${ytM[1]}?rel=0&modestbranding=1`); loaded.reel=true; return; } if (/^[\w-]{6,}$/.test(reelInput)){ setIframe(`https://www.youtube.com/embed/${reelInput}?rel=0&modestbranding=1`); loaded.reel=true; return; } loaded.reel=true; })();
@@ -326,13 +322,7 @@
     function onHover(){ playAnim('dotFlick', 950); }
     document.addEventListener('mouseover', e=>{ if (isInteractive(e.target)) onHover(); }, {passive:true});
     document.addEventListener('focusin',   e=>{ if (isInteractive(e.target)) onHover(); });
-    function onClick(){
-      // Original working behavior: add temporary yellow pulse class
-      dot.classList.add('alert');
-      playAnim('alertFlick', 960);
-      setTimeout(()=>{ dot.classList.remove('alert'); }, 980);
-    }, 1000);
-    }, 1000); }
+    function onClick(){ dot.classList.add('alert'); playAnim('alertFlick', 1000); setTimeout(()=>{ dot.classList.remove('alert'); dot.style.animation=''; }, 1000); }
     document.addEventListener('pointerdown', e=>{ if (isInteractive(e.target)) onClick(); }, {passive:true});
     document.addEventListener('keydown', e=>{ if ((e.key==='Enter'||e.key===' ') && isInteractive(e.target)) onClick(); });
     function tryInject(){ const wrap = document.getElementById('contactInfo'); const links = document.getElementById('btnLinks'); const resume = document.getElementById('btnResume'); if (!wrap || !links) return false; if (!wrap.querySelector('[data-extra="links"]')){ const a = document.createElement('a'); a.className='btn'; a.href=links.href; a.target='_blank'; a.rel='noopener'; a.textContent='All My Links'; a.setAttribute('data-extra','links'); wrap.appendChild(a); } if (resume && resume.href && !wrap.querySelector('[data-extra="resume"]')){ const a = document.createElement('a'); a.className='btn'; a.href=resume.href; a.download=''; a.textContent='Download Résumé'; a.setAttribute('data-extra','resume'); wrap.appendChild(a); } return true; }
