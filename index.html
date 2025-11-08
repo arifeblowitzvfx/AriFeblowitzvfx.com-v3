@@ -55,7 +55,7 @@
       opacity:.45;
     }
 
-    /* CRT scan + glow */
+    /* CRT scan + glow (now guaranteed non-interactive) */
     body::after{
       content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
       background-image: repeating-linear-gradient(to bottom, rgba(0,255,156,.24), rgba(0,255,156,.24) 2px, rgba(0,0,0,0) 3px, rgba(0,0,0,0) 7px);
@@ -127,7 +127,7 @@
     .tab-btn{padding:.6em .9em; border-radius:12px; background:var(--panel); color:var(--txt); border:1px solid rgba(66,255,209,.32); cursor:pointer; font-weight:700}
     .tab-btn.active{outline:1px solid var(--accent); box-shadow:0 0 0 2px rgba(0,255,156,.12) inset}
 
-    /* === HERO LAYOUT === */
+    /* === HERO LAYOUT === (unchanged logic; new cosmetics below) */
     .hero{
       margin:clamp(12px,1.6vw,20px) 0;
       display:grid;
@@ -155,7 +155,7 @@
       .leftStack{ display:contents; }
     }
 
-    /* Card + animated sweep */
+    /* Card style + animated “light sweep” — NOW NON-INTERACTIVE */
     .card{
       position:relative;
       background:linear-gradient(180deg, rgba(10,18,16,.85), rgba(5,9,11,.9));
@@ -172,6 +172,7 @@
       content:""; position:absolute; top:-60%; left:-40%; width:60%; height:220%;
       background:linear-gradient(120deg, transparent 40%, rgba(255,255,255,.08), transparent 60%);
       transform:rotate(14deg); animation:sweep 8s linear infinite;
+      pointer-events:none; /* <<< KEY FIX: decorative sweep never blocks clicks */
     }
     @keyframes edgeSpin{to{transform:rotate(360deg)}}
     @keyframes sweep{0%{transform:translateX(-40%) rotate(14deg)} 100%{transform:translateX(200%) rotate(14deg)}}
@@ -206,8 +207,8 @@
     footer{opacity:.85; font-size:.9em; padding:clamp(28px,2.5vw,40px) 0 20px}
 
     #professional .grid{grid-template-columns:repeat(4, 1fr)}
-    @media (max-width:1100px){ #professional .grid{grid-template-columns:repeat(3, 1fr)} }
-    @media (max-width:820px){ #professional .grid{grid-template-columns:repeat(2, 1fr)} }
+    @media (max-width:1100px){ #professional .grid{grid-template-columns:repeat(3, 1 fr)} }
+    @media (max-width:820px){ #professional .grid{grid-template-columns:repeat(2, 1 fr)} }
     @media (max-width:520px){ #professional .grid{grid-template-columns:1fr} }
 
     details.summaryless > summary{list-style:none}
@@ -224,6 +225,7 @@
     }
     @keyframes alertFlick{0%,100%{opacity:.45}50%{opacity:1}}
 
+    /* Testimonials */
     #testimonialsBox .tlist{display:flex; flex-direction:column; gap:14px; margin-top:8px}
     .testimonial{border:1px solid rgba(66,255,209,.26); border-radius:14px; padding:12px 14px; background:linear-gradient(180deg, rgba(66,255,209,.06), rgba(66,255,209,.01))}
     .testimonial .quote{display:block; font-weight:700; color:#eafff6}
@@ -292,7 +294,7 @@
       <!-- HOME -->
       <section id="home" class="active" role="tabpanel">
         <div class="hero">
-          <!-- LEFT COLUMN -->
+          <!-- LEFT COLUMN: Reel + Testimonials -->
           <div class="area-left leftStack">
             <!-- Reel -->
             <div class="card pad area-reel">
@@ -457,7 +459,7 @@
 
   const $ = (sel, el=document) => el.querySelector(sel);
   const $$ = (sel, el=document) => [...el.querySelectorAll(sel)];
-  const ytThumb   = id => `https://img.youtube.com/vi/${id}/maxresdefault.jpg`;
+  const ytThumb = id => `https://img.youtube.com/vi/${id}/maxresdefault.jpg`;
   const ytThumbHQ = id => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
   const fixImdb = url => (url||"").replace(/https?:\/\/pro\.imdb\.com/i,'https://www.imdb.com').replace(/\?ref_=pro.*$/,'');
 
@@ -476,28 +478,27 @@
     return rows.slice(1).filter(r=>r.length>1).map(r=>{ const o={}; headers.forEach((h,i)=>o[h]=r[i]!==undefined?r[i]:""); return o; });
   }
   function csvFirstRowSecondCol(csvText){
-    const rows = csvText.replace(/\r/g,'').split('\n');
-    if (!rows.length) return '';
-    const first = rows[0]; // naive but fine for B1 header
-    // Split first row safely for first two columns
     let inQ=false, col=0, val="";
-    for (let i=0;i<first.length;i++){
-      const ch = first[i];
+    for (let i=0;i<csvText.length;i++){
+      const ch = csvText[i];
       if (ch === '"'){ inQ = !inQ; continue; }
-      if (!inQ && ch === ','){ col++; if (col>1) break; continue; }
+      if (!inQ && (ch === ',' || ch === '\n')){
+        if (col === 1) return val.trim();
+        if (ch === ',') col++;
+        if (ch === '\n') break;
+        continue;
+      }
       if (col === 1) val += ch;
+      if (!inQ && ch === ',') col++;
     }
     return val.trim();
   }
 
   const normBool = v => String(v||"").trim().toLowerCase()==='true' || String(v||"").trim().toLowerCase()==='yes';
-  const normNum  = v => { const n = Number(String(v||"").replace(/[^\d.-]/g,"")); return isNaN(n)?0:n; };
+  const normNum = v => { const n = Number(String(v||"").replace(/[^\d.-]/g,"")); return isNaN(n)?0:n; };
   function buildCsvUrlFromGid(pubhtml, gid){ return pubhtml.replace(/\/pubhtml.*/, '/pub') + `?gid=${gid}&single=true&output=csv`; }
 
-  const cache = {
-    get(key){ try{ return JSON.parse(localStorage.getItem(key)||'null'); }catch{return null} },
-    set(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch{} }
-  };
+  const cache = { get(key){ try{ return JSON.parse(localStorage.getItem(key)||'null'); }catch{return null} }, set(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch{} } };
 
   async function discoverGids(pubhtml){
     const map = {};
@@ -513,14 +514,13 @@
         else if (hdr.includes('ride image') && hdr.includes('ride name')) map['Rides']=gid;
         else if (hdr.includes('type') && hdr.includes('video_id')) map['Personal Youtube']=gid;
         else if (hdr.includes('key') && hdr.includes('value')) map['Main site info']=gid;
-        else if (hdr.includes('from') && (hdr.includes('testimonial') || hdr.includes('quote') || hdr.includes('text') || hdr.includes('body'))) map['Testimonials']=gid;
+        else if (hdr.includes('from') && hdr.includes('testimonial')) map['Testimonials']=gid;
       }
     }catch(e){ console.error('[discoverGids]', e); }
     return { ...map, ...TAB_MAP };
   }
 
-  const rail = $('#bannerRail');
-  const scrollEl = $('#bannerScroll');
+  const rail = $('#bannerRail'); const scrollEl = $('#bannerScroll');
 
   /* --- IMG LAZY LOADER --- */
   const io = new IntersectionObserver((entries)=>{
@@ -602,7 +602,6 @@
       window.scrollTo({ top: $('.wrap').offsetTop, behavior: 'smooth' });
     });
   });
-
   $('#year').textContent = new Date().getFullYear();
   const sysStatus = document.getElementById('sysStatus');
   function setStatus(msg, linkHref){ if (!sysStatus) return; sysStatus.textContent = msg; if (linkHref) { sysStatus.href = linkHref; } }
@@ -635,7 +634,7 @@
       {tag:'RIGS', body:'Technodolly/Graphlite/Spydercam/MILO profiles loaded'}
     ]);
 
-    // Testimonials placeholder
+    // Testimonials placeholder (gag text gets replaced on sheet load)
     const tBox  = document.getElementById('testimonialsBox');
     const tList = document.getElementById('testimonialsList');
     const tTitle= document.getElementById('testimonialsTitle');
@@ -678,18 +677,16 @@
       const imdbUrl = fixImdb(mainInfo.imdb_url || 'https://www.imdb.me/ArielFeblowitz');
       const subtitleTxt = mainInfo.site_subtitle || 'Techvis & Virtual Production Supervisor';
       const subtitleEl = $('#siteSubtitle'); subtitleEl.textContent = subtitleTxt; subtitleEl.href = imdbUrl;
-
       $('#about1').textContent = mainInfo.about_paragraph_1 || $('#about1').textContent;
       $('#about2').textContent = mainInfo.about_paragraph_2 || $('#about2').textContent;
-
       const linksHref = mainInfo.all_links_url || 'https://linktr.ee/admin/links';
       $('#btnIMDb').href = imdbUrl;
       $('#btnYouTube').href = mainInfo.youtube_url || $('#btnYouTube').href;
       $('#btnLinks').href = linksHref;
       const resumeURL = (mainInfo.resume_url && mainInfo.resume_url.trim()) || DEFAULT_RESUME;
       $('#btnResume').href = resumeURL; $('#dockResume').href = resumeURL;
-      setStatus('Link established', linksHref);
 
+      setStatus('Link established', linksHref);
       const aboutStatus = $('#aboutStatus'); if (aboutStatus) aboutStatus.style.display = 'none';
       document.body.classList.add('ready');
       $('#reelHeader').textContent = 'Demo Reel';
@@ -702,22 +699,20 @@
       setContactSection(phone, email);
       enhanceContactLinks();
 
-      // Dock copy button wires to current email text
+      // Dock copy button wires to current email
       document.getElementById('dockCopy')?.addEventListener('click', ()=>{
         const e = (mainInfo.email || DEFAULT_EMAIL).trim();
         navigator.clipboard?.writeText(e).then(()=> toast('Copied: '+e)).catch(()=> toast(e));
       });
 
-      // HUD title from ASSESSMENT (sheet can override)
+      // HUD title & strengths
       const hudTitleEl = $('#hudTitle');
       const assessTitle = mainInfo.ASSESSMENT || mainInfo.assessment || 'THREAT ASSESSMENT // SKNET_0001';
       hudTitleEl.textContent = assessTitle;
 
-      // HUD Strengths
       const strengthsText = (mainInfo.Strengths || mainInfo.strengths || '').trim();
       if (strengthsText){
-        const hudBody = $('#hudBody');
-        hudBody.innerHTML = '';
+        const hudBody = $('#hudBody'); hudBody.innerHTML = '';
         strengthsText.split(/\n+/).map(s=>s.trim()).filter(Boolean).forEach(s=>{
           const m = s.match(/^([^:]+):\s*(.+)$/);
           const tag = (m ? m[1] : 'Signal'), body = (m ? m[2] : s);
@@ -754,8 +749,7 @@
 
       async function loadSections(){
         try{
-          if (loaded.sections) return;
-          loaded.sections = true;
+          if (loaded.sections) return; loaded.sections = true;
 
           const personalPull = await pullTab('Personal Youtube');
           const proPull      = await pullTab('Ariel_Feblowitz_Works');
@@ -763,17 +757,18 @@
           const testiPull    = await pullTab('Testimonials');
 
           const personalTab = personalPull.rows;
-          const proRows  = proPull.rows;
-          const ridesRows= ridesPull.rows;
-          const testiRows= testiPull.rows;
-          const testiRaw = testiPull.raw || '';
+          const proRows = proPull.rows;
+          const ridesRows = ridesPull.rows;
+          const testiRows = testiPull.rows;
+          const testiRaw  = testiPull.raw || '';
 
           // Personal meta + videos
           const meta = {}; const videos=[];
-          (personalTab||{}).forEach?.(r=>{
+          (personalTab||[]).forEach(r=>{
             const type=(r.type||'').toLowerCase();
-            if (type==='meta'){ meta[(r.key||'').trim()] = (r.value||'').trim(); }
-            else if (type==='video'){
+            if (type==='meta'){
+              meta[(r.key||'').trim()] = (r.value||'').trim();
+            } else if (type==='video'){
               const videoId=(r.video_id||'').trim();
               const url=(r.youtube_url||'').trim() || (videoId?`https://www.youtube.com/watch?v=${videoId}`:'');
               const thumb=(r.thumb_url||'').trim() || (videoId? ytThumb(videoId) : '');
@@ -821,22 +816,20 @@
             role:(r['My Role']||'').trim(),
             company:(r['Ride Company']||'').trim(),
             desc:(r['Description']||'').trim(),
-            prio:normNum(r['Prio']) || normNum(r['prio']),
-            posters:[(r['Ride Image']||r['Ride image']||'').trim()].filter(Boolean)
+            prio:normNum(r['Prio']),
+            posters:[(r['Ride Image']||'').trim()].filter(Boolean)
           }))
           .filter(x=>x.title && x.prio>0)
           .sort((a,b)=> b.prio-a.prio || a.title.localeCompare(b.title));
 
           // Render content grids
-          renderPro(proItems);
-          renderRides(rideItems);
-          renderPersonal(videos, (meta.featured_video_id||'').trim());
+          renderPro(proItems); renderRides(rideItems); renderPersonal(videos, (meta.featured_video_id||'').trim());
 
           // Banner tiles
           window.__tilesData = {
-            pro:  proItems.filter(p=>p.prio>=5).map(p=>({type:'pro', kind:'poster',  title:p.title, img:p.posters[0]||'', url:p.url||'#'})),
-            ride: rideItems.filter(r=>r.prio===10).map(r=>({type:'ride', kind:'wide',    title:r.title, img:r.posters[0]||'', url:r.url||'#'})),
-            per:  videos.filter(v=>(v.prio||0)>=5 || v.includeInBanner).map(v=>({type:'personal', kind:'wide', title:v.title, img:v.thumb||'', url:v.url||'#', ytid:v.videoId||''}))
+            pro: proItems.filter(p=>p.prio>=5).map(p=>({type:'pro', kind:'poster', title:p.title, img:p.posters[0]||'', url:p.url||'#'})),
+            ride: rideItems.filter(r=>r.prio===10).map(r=>({type:'ride', kind:'wide', title:r.title, img:r.posters[0]||'', url:r.url||'#'})),
+            per: videos.filter(v=>(v.prio||0)>=5 || v.includeInBanner).map(v=>({type:'personal', kind:'wide', title:v.title, img:v.thumb||'', url:v.url||'#', ytid:v.videoId||''}))
           };
 
           // --- TESTIMONIALS: title from B1 + real rows
@@ -845,24 +838,21 @@
           const tTitle= document.getElementById('testimonialsTitle');
 
           let tHeading = 'Testimonials';
-          if (testiRaw){ try{ const b1 = csvFirstRowSecondCol(testiRaw); if (b1) tHeading = b1; }catch{} }
+          if (testiRaw){
+            try{ const b1 = csvFirstRowSecondCol(testiRaw); if (b1) tHeading = b1; }catch{}
+          }
           tTitle.textContent = tHeading;
 
-          // Flexible column names
-          const items = (testiRows||[]).map(r=>{
-            const from = (r['From']||r['from']||'').trim();
-            const text = (r['Testimonial']||r['Testimonials']||r['Quote']||r['Text']||r['Body']||'').trim();
-            return { from, text };
-          }).filter(t=>t.from && t.text);
+          const items = (testiRows||[])
+            .map(r=>({ from:(r['From']||'').trim(), text:(r['Testimonial']||r['Testimonials']||r['Quote']||r['Text']||'').trim() }))
+            .filter(t=>t.from && t.text);
 
           if (items.length){
             const smartQuote = s=>{
-              const t = s.trim();
-              const b = /^["“]/.test(t), e = /["”]$/.test(t);
-              return (b&&e)?t:`“${t.replace(/^["“'‘`]/,'').replace(/["”'‘`]$/,'')}”`;
+              const t = s.trim(); const b = /^["“]/.test(t); const e = /["”]$/.test(t);
+              return (b&&e)?t:`“${t.replace(/^["“'‘`]/,'').replace(/["”'’`]$/,'')}”`;
             };
             const esc = s=> s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
-
             tList.innerHTML = '';
             items.forEach(it=>{
               const el = document.createElement('div'); el.className='testimonial';
@@ -888,6 +878,7 @@
           c.appendChild(wrap); c.appendChild(meta); grid.appendChild(c);
         });
       }
+
       function renderRides(items){
         const grid = $('#ridesGrid'); grid.innerHTML='';
         if (!items.length){ grid.innerHTML = `<div class="muted">No items yet — add rows in the “Rides” tab.</div>`; return; }
@@ -903,6 +894,7 @@
           c.appendChild(wrap); c.appendChild(meta); grid.appendChild(c);
         });
       }
+
       function renderPersonal(videos, featuredId){
         const grid = $('#personalGrid'); grid.innerHTML='';
         if (!videos.length){ grid.innerHTML = `<div class="muted">No videos yet — add rows in the “Personal Youtube” tab.</div>`; return; }
@@ -918,13 +910,11 @@
         });
       }
 
-      // === Banner builder (pulled from your working script) ===
       function buildBannerDeferred(){
         if (loaded.banner || !window.__tilesData) return;
         loaded.banner = true;
-        const {pro=[], ride=[], per=[]} = window.__tilesData;
-        const interleaved=[];
-        const L=Math.max(pro.length, ride.length, per.length);
+        const {pro, ride, per} = window.__tilesData;
+        const interleaved=[]; const L=Math.max(pro.length, ride.length, per.length);
         for(let i=0;i<L;i++){ if(pro[i]) interleaved.push(pro[i]); if(ride[i]) interleaved.push(ride[i]); if(per[i]) interleaved.push(per[i]); }
         fillBanner(interleaved);
       }
@@ -967,15 +957,14 @@
     }
     const isInteractive = el => el && el.closest && el.closest('a, button, .tab-btn, .tile, .btn');
 
-    function onHover(){ replay('dotFlick', 950); }
-    document.addEventListener('mouseover', e=>{ if (isInteractive(e.target)) onHover(); }, {passive:true});
-    document.addEventListener('focusin',   e=>{ if (isInteractive(e.target)) onHover(); });
+    document.addEventListener('mouseover', e=>{ if (isInteractive(e.target)) replay('dotFlick', 950); }, {passive:true});
+    document.addEventListener('focusin',   e=>{ if (isInteractive(e.target)) replay('dotFlick', 950); });
 
     function onClick(){
       if (!document.body.classList.contains('ready')) return;
       const prevBG = dot.style.background;
-      const prevBox= dot.style.boxShadow;
-      const prevAn = dot.style.animation;
+      const prevBox = dot.style.boxShadow;
+      const prevAnim = dot.style.animation;
       dot.classList.add('alert');
       dot.style.setProperty('background','radial-gradient(circle at 30% 30%, #ffd24a, #6b5a1a 70%)','important');
       dot.style.setProperty('box-shadow','0 0 22px #ffd24a, 0 0 36px rgba(255,210,74,.5)','important');
@@ -983,8 +972,8 @@
       setTimeout(()=>{
         dot.classList.remove('alert');
         dot.style.background = prevBG;
-        dot.style.boxShadow  = prevBox;
-        dot.style.animation  = prevAn || '';
+        dot.style.boxShadow = prevBox;
+        dot.style.animation = prevAnim || '';
       }, 1000);
     }
     document.addEventListener('pointerdown', e=>{ if (isInteractive(e.target)) onClick(); }, {passive:true});
@@ -992,8 +981,8 @@
 
     function tryInject(){
       const wrap = document.getElementById('contactInfo');
-      const links= document.getElementById('btnLinks');
-      const resume=document.getElementById('btnResume');
+      const links = document.getElementById('btnLinks');
+      const resume = document.getElementById('btnResume');
       if (!wrap || !links) return false;
       if (!wrap.querySelector('[data-extra="links"]')){
         const a = document.createElement('a');
