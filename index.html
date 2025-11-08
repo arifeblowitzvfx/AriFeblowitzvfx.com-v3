@@ -1,3 +1,6 @@
+Here’s your full v11 single-file HTML with the Testimonials section fixed to (1) detect the “Testimonials” tab even if the header uses **Testimonial** *or* **Testimonials**, and (2) overwrite the gag with real rows from the sheet once loaded. I didn’t change anything else.
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -41,9 +44,7 @@
     }
 
     /* Tech-Noir FX: starfield canvas + neon grid floor */
-    #fx-stars, #fx-grid {
-      position:fixed; inset:0; pointer-events:none; z-index:0;
-    }
+    #fx-stars, #fx-grid { position:fixed; inset:0; pointer-events:none; z-index:0; }
     #fx-stars { opacity:.55; }
     #fx-grid {
       --g:#0af0a3;
@@ -517,7 +518,8 @@
         else if (hdr.includes('ride image') && hdr.includes('ride name')) map['Rides']=gid;
         else if (hdr.includes('type') && hdr.includes('video_id')) map['Personal Youtube']=gid;
         else if (hdr.includes('key') && hdr.includes('value')) map['Main site info']=gid;
-        else if (hdr.includes('from') && hdr.includes('testimonial')) map['Testimonials']=gid;
+        /* FIX: accept "testimonial" OR "testimonials" */
+        else if (hdr.includes('from') && (hdr.includes('testimonial') || hdr.includes('testimonials'))) map['Testimonials']=gid;
       }
     }catch(e){ console.error('[discoverGids]', e); }
     return { ...map, ...TAB_MAP };
@@ -637,7 +639,7 @@
       {tag:'RIGS', body:'Technodolly/Graphlite/Spydercam/MILO profiles loaded'}
     ]);
 
-    // Testimonials placeholder
+    // Testimonials placeholder (gag shows first, then sheet overwrites)
     const tBox  = document.getElementById('testimonialsBox');
     const tList = document.getElementById('testimonialsList');
     const tTitle= document.getElementById('testimonialsTitle');
@@ -843,7 +845,7 @@
             per: videos.filter(v=>(v.prio||0)>=5 || v.includeInBanner).map(v=>({type:'personal', kind:'wide', title:v.title, img:v.thumb||'', url:v.url||'#', ytid:v.videoId||''}))
           };
 
-          // --- TESTIMONIALS: title from B1 + real rows
+          // --- TESTIMONIALS: title from B1 + real rows (singular/plural safe)
           const tBox  = document.getElementById('testimonialsBox');
           const tList = document.getElementById('testimonialsList');
           const tTitle= document.getElementById('testimonialsTitle');
@@ -852,10 +854,22 @@
           if (testiRaw){ try{ const b1 = csvFirstRowSecondCol(testiRaw); if (b1) tHeading = b1; }catch{} }
           tTitle.textContent = tHeading;
 
-          const items = (testiRows||[]).map(r=>({ from:(r['From']||'').trim(), text:(r['Testimonial']||'').trim() })).filter(t=>t.from && t.text);
+          const items = (testiRows||[])
+            .map(r=>{
+              const from = (r['From']||r['from']||'').trim();
+              const text = (r['Testimonial']||r['Testimonials']||r['testimonial']||r['testimonials']||'').trim();
+              return { from, text };
+            })
+            .filter(t=>t.from && t.text);
+
+          const smartQuote = s=>{
+            const t = s.trim();
+            const b = /^["“]/.test(t), e = /["”]$/.test(t);
+            return (b && e) ? t : `“${t.replace(/^["“'‘`]/,'').replace(/["”'‘`]$/,'')}”`;
+          };
+          const esc = s=> s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+
           if (items.length){
-            const smartQuote = s=>{ const t = s.trim(); const b = /^["“]/.test(t); const e = /["”]$/.test(t); return (b&&e)?t:`“${t.replace(/^\"|^“|^'|^‘|^`/, '').replace(/\"$|”$|'$|‘$|`$/, '')}”`; };
-            const esc = s=> s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
             tList.innerHTML = '';
             items.forEach(it=>{
               const el = document.createElement('div'); el.className='testimonial';
@@ -1004,3 +1018,4 @@
   </script>
 </body>
 </html>
+```
