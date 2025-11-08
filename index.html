@@ -79,29 +79,10 @@
     .tab-btn{padding:.6em .9em; border-radius:12px; background:var(--panel); color:var(--txt); border:1px solid rgba(66,255,209,.32); cursor:pointer; font-weight:600}
     .tab-btn.active{outline:1px solid var(--accent); box-shadow:0 0 0 2px rgba(0,255,156,.12) inset}
 
-    /* HERO GRID with areas: reel | assess; second row: testi | assess */
-    .hero{
-      margin:clamp(12px,1.6vw,20px) 0;
-      display:grid;
-      grid-template-columns: minmax(0, 2.1fr) minmax(0, .9fr);
-      grid-template-areas:
-        "reel assess"
-        "testi assess";
-      column-gap: calc(var(--grid) + 18px);
-      align-items:start;
-    }
-    .reelCard{ grid-area: reel; }
-    .assessCard{ grid-area: assess; }
-    .testiCard{ grid-area: testi; }
-    @media (max-width:920px){
-      .hero{
-        grid-template-columns:1fr;
-        grid-template-areas:
-          "reel"
-          "assess"
-          "testi";
-      }
-    }
+    /* Hero */
+    .hero{ margin:clamp(12px,1.6vw,20px) 0; display:grid; grid-template-columns: minmax(0, 2.1fr) minmax(0, .9fr); column-gap: calc(var(--grid) + 18px); align-items:start; }
+    @media (max-width:1200px){ .hero{grid-template-columns:1.5fr .9fr} }
+    @media (max-width:920px){ .hero{grid-template-columns:1fr} }
 
     .card{background:var(--panel); border:1px solid rgba(66,255,209,.34); border-radius:var(--radius); box-shadow:var(--shadow)}
     .pad{padding:clamp(14px,1.6vw,20px)}
@@ -119,7 +100,7 @@
 
     /* Grids */
     .grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:var(--grid); content-visibility:auto}
-    @media (max-width:1000px){ .grid{grid-template-columns:repeat(2, 1fr)} }
+    @media (max-width:1000px){ .grid{grid-template-columns:repeat(2, 1 fr)} }
     @media (max-width:620px){ .grid{grid-template-columns:1fr} }
     .proj{overflow:hidden}
     .thumb{position:relative; aspect-ratio:16/9; overflow:hidden; border-radius:14px; border:1px solid rgba(66,255,209,.26)}
@@ -132,7 +113,7 @@
     footer{opacity:.85; font-size:.9em; padding:clamp(28px,2.5vw,40px) 0 20px}
     #professional .grid{grid-template-columns:repeat(4, 1fr)}
     @media (max-width:1100px){ #professional .grid{grid-template-columns:repeat(3, 1fr)} }
-    @media (max-width:820px){ #professional .grid{grid-template-columns:repeat(2, 1fr)} }
+    @media (max-width:820px){ #professional .grid{grid-template-columns:repeat(2, 1 fr)} }
     @media (max-width:520px){ #professional .grid{grid-template-columns:1fr} }
 
     details.summaryless > summary{list-style:none}
@@ -145,18 +126,10 @@
     .brand .dot.alert{ background:radial-gradient(circle at 30% 30%, #ffd24a, #6b5a1a 70%); box-shadow:0 0 22px #ffd24a, 0 0 36px rgba(255,210,74,.5); animation:alertFlick .125s linear 8; }
     @keyframes alertFlick{0%,100%{opacity:.45}50%{opacity:1}}
 
-    /* Testimonials list */
     #testimonialsBox .tlist{display:flex; flex-direction:column; gap:14px; margin-top:8px}
     .testimonial{border:1px solid rgba(66,255,209,.26); border-radius:14px; padding:12px 14px; background:linear-gradient(180deg, rgba(66,255,209,.06), rgba(66,255,209,.01))}
     .testimonial .quote{display:block; font-weight:700; color:#eafff6}
     .testimonial .from{display:block; color:#74cdaa; font-size:.95em; margin-top:4px}
-
-    /* Assessment formatting */
-    .assess-header{margin:0 0 .6em}
-    .assess-status{margin:.2em 0 .8em; color:var(--muted)}
-    .assess-block{border:1px dashed rgba(66,255,209,.25); border-radius:12px; padding:.65em .8em; margin:.55em 0}
-    .assess-label{font-weight:800; color:#d9fff1}
-    .assess-text{display:block; color:#c9ffee; margin-top:.2em}
   </style>
 </head>
 <body>
@@ -195,8 +168,7 @@
       <!-- HOME -->
       <section id="home" class="active" role="tabpanel">
         <div class="hero">
-          <!-- Left: Reel + buttons -->
-          <div class="card pad reelCard">
+          <div class="card pad">
             <h2 id="reelHeader" class="crt-glow" style="margin:0 0 .6em">Initializing video uplink…</h2>
             <div class="reel" id="reelBox">
               <iframe id="reelFrame" src="https://player.vimeo.com/video/1134518013?badge=0&autopause=0&title=0&byline=0" title="Ari Feblowitz — Demo Reel" frameborder="0" loading="lazy" decoding="async" fetchpriority="low" allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" allowfullscreen></iframe>
@@ -209,27 +181,19 @@
               <a id="btnNews" class="btn" href="https://www.youtube.com/watch?v=gM5H6vsGIcs" target="_blank" rel="noopener">Ari in the News</a>
             </div>
           </div>
-
-          <!-- Right: Threat Assessment + Strengths -->
-          <div class="card pad assessCard">
-            <h2 id="assessmentHeader" class="crt-glow assess-header">THREAT ASSESSMENT // SKNET_0001</h2>
-            <p id="assessmentStatus" class="assess-status crt-glow">Cyberdyne scanning for threat assessment…</p>
-            <div id="assessmentBody"></div>
-          </div>
-
-          <!-- Under Reel (wide) or under Assessment (narrow): Testimonials -->
-          <div class="card pad testiCard" id="testimonialsBox" style="display:none">
-            <h3 class="crt-glow" style="margin:.2em 0 .6em">Testimonials</h3>
-            <div class="tlist" id="testimonialsList"></div>
+          <div class="card pad">
+            <h2 id="aboutHeader" class="crt-glow" style="margin:0 0 .6em">Subject dossier…</h2>
+            <p class="muted crt-glow" id="aboutStatus" style="margin:.2em 0 .8em">Initializing: Weyland Yutani–Cyberdyne link…</p>
+            <p id="about1">Bridging virtual and physical storytelling across techvis, previs/postvis, and virtual production. I translate complex sequences into precise, repeatable camera plans — trusted by directors, DPs, and VFX supervisors.</p>
+            <p id="about2" class="muted">Credits include Avatar: The Way of the Water, Avengers: Endgame, Ant-Man and the Wasp, Guardians of the Galaxy Vol. 3, and more.</p>
+            <div id="skillsRow1" class="badges"></div>
+            <div id="skillsRow2" class="badges"></div>
           </div>
         </div>
 
-        <!-- “About” stays readable, below the hero block -->
-        <div class="card pad">
-          <h2 id="aboutHeader" class="crt-glow" style="margin:0 0 .6em">Subject dossier…</h2>
-          <p class="muted crt-glow" id="aboutStatus" style="margin:.2em 0 .8em">Initializing: Weyland Yutani–Cyberdyne link…</p>
-          <p id="about1">Bridging virtual and physical storytelling across techvis, previs/postvis, and virtual production. I translate complex sequences into precise, repeatable camera plans — trusted by directors, DPs, and VFX supervisors.</p>
-          <p id="about2" class="muted">Credits include Avatar: The Way of the Water, Avengers: Endgame, Ant-Man and the Wasp, Guardians of the Galaxy Vol. 3, and more.</p>
+        <div class="card pad" id="testimonialsBox" style="display:none">
+          <h3 class="crt-glow" style="margin:.2em 0 .6em">Testimonials</h3>
+          <div class="tlist" id="testimonialsList"></div>
         </div>
       </section>
 
@@ -340,7 +304,7 @@
       if (src){ img.src = src; img.removeAttribute('data-src'); }
       obs.unobserve(img);
     }
-  }, {rootMargin: '400px'});
+  }, {rootMargin: '400px'}); // prefetch a bit ahead
 
   function makeLazyImg(src, alt){
     const img = new Image();
@@ -348,8 +312,8 @@
     img.loading = 'lazy';
     img.decoding = 'async';
     img.fetchPriority = 'low';
-    img.setAttribute('data-src', src);
-    img.src = 'data:image/gif;base64,R0lGODlhAQABAAAAACw=';
+    img.setAttribute('data-src', src); // network deferred
+    img.src = 'data:image/gif;base64,R0lGODlhAQABAAAAACw='; // 1x1 transparent
     __imgIO.observe(img);
     return img;
   }
@@ -378,6 +342,7 @@
   const scrollEl = $('#bannerScroll');
   let autoRAF=null, paused=false, lastT=0;
 
+  /* makeTile now lazy-loads */
   function makeTile(t){
     const a=document.createElement('a');
     a.className='tile ' + (t.type==='pro'?'poster':'wide');
@@ -432,7 +397,7 @@
         const gid = gids[name]; if(!gid) return [];
         const key = `csv:${gid}`;
         const cached = cache.get(key);
-        // Always bust cache for Main site info so edits reflect instantly
+        // Bypass cache for Main site info so resume_url updates immediately
         if (name === 'Main site info'){
           const txt = await fetch(buildCsvUrlFromGid(PUBHTML, gid) + `&cb=${Date.now()}`).then(r=>r.text());
           cache.set(key, {ts:Date.now(), txt});
@@ -443,7 +408,6 @@
         cache.set(key, {ts:Date.now(), txt}); return csvToObjects(txt);
       }
 
-      /* ----- MAIN SITE INFO ----- */
       const mainInfoRows = await pullTab('Main site info');
       const mainInfo = {}; (mainInfoRows||[]).forEach(r=> mainInfo[(r.key||'').trim()] = (r.value||'').trim());
 
@@ -459,7 +423,7 @@
       $('#btnIMDb').href = imdbUrl;
       $('#btnYouTube').href = mainInfo.youtube_url || $('#btnYouTube').href;
       $('#btnLinks').href = linksHref;
-      $('#btnResume').href = (mainInfo.resume_url && mainInfo.resume_url.trim()) || DEFAULT_RESUME;
+      $('#btnResume').href = (mainInfo.resume_url && mainInfo.resume_url.trim()) || DEFAULT_RESUME; // fresh sheet value
       setStatus('Link established', linksHref);
 
       const aboutStatus = $('#aboutStatus'); if (aboutStatus) aboutStatus.style.display = 'none';
@@ -474,84 +438,8 @@
       setContactSection(phone, email);
       enhanceContactLinks();
 
-      /* ----- THREAT ASSESSMENT + STRENGTHS ----- */
-      const assessTitle = mainInfo.ASSESSMENT_TITLE || mainInfo.assessment_title || 'THREAT ASSESSMENT // SKNET_0001';
-      const assessText  = mainInfo.ASSESSMENT || mainInfo.assessment || '';
-      const strengthsText = mainInfo.Strengths || mainInfo.STRENGTHS || '';
-
-      $('#assessmentHeader').textContent = assessTitle;
-
-      function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-      // Render strengths into labeled blocks, preserving "Word:" sections
-      function renderStrengths(raw){
-        const out = document.createDocumentFragment();
-        if (!raw) return out;
-
-        // Split on label: “Label: text” keeping the label
-        // Handles unicode quotes etc. Leave commas/semicolons intact.
-        const parts = [];
-        const re = /(^|\n)\s*([A-Za-z][A-Za-z\s\/\+\-&]+):\s*/g;
-        let lastIdx = 0, m;
-        const text = raw.replace(/\r/g,'');
-        while ((m = re.exec(text))){
-          if (m.index > lastIdx){
-            const chunk = text.slice(lastIdx, m.index);
-            if (chunk.trim()) parts.push({label:'', body:chunk});
-          }
-          const label = m[2].trim();
-          lastIdx = re.lastIndex;
-          // find next label or end
-          const next = re.exec(text);
-          const body = text.slice(lastIdx, next ? next.index : text.length);
-          parts.push({label, body});
-          if (next) { re.lastIndex = next.index; lastIdx = next.index; }
-        }
-        if (!parts.length) parts.push({label:'', body:text});
-
-        parts.forEach(({label, body})=>{
-          const blk = document.createElement('div');
-          blk.className = 'assess-block';
-          if (label){
-            const span = document.createElement('span');
-            span.className = 'assess-label';
-            span.textContent = label + ':';
-            blk.appendChild(span);
-          }
-          const p = document.createElement('span');
-          p.className = 'assess-text';
-          p.textContent = body.trim().replace(/\s+\n/g,'\n').replace(/\n{2,}/g,'\n');
-          blk.appendChild(p);
-          out.appendChild(blk);
-        });
-        return out;
-      }
-
-      const assessBody = $('#assessmentBody');
-      // Preload status stays visible until we have at least one section to render
-      let renderedAny = false;
-
-      if (assessText){
-        const a = document.createElement('div');
-        a.className = 'assess-block';
-        const label = document.createElement('span'); label.className='assess-label'; label.textContent='Assessment:';
-        const txt = document.createElement('span'); txt.className='assess-text'; txt.textContent = assessText;
-        a.appendChild(label); a.appendChild(txt);
-        assessBody.appendChild(a);
-        renderedAny = true;
-      }
-      if (strengthsText){
-        assessBody.appendChild(renderStrengths(strengthsText));
-        renderedAny = true;
-      }
-      if (renderedAny){
-        const st = $('#assessmentStatus'); if (st) st.style.display='none';
-      }
-
-      /* Testimonials */
       loadTestimonials();
 
-      /* ----- REEL ----- */
       (function loadReel(){
         const reelInput = (mainInfo.reel_youtube_id||'').trim();
         const reelFrame = $('#reelFrame');
@@ -570,9 +458,9 @@
       })();
 
       const defer = window.requestIdleCallback || (fn=>setTimeout(fn, 0));
-      defer(loadSections);
+      defer(loadSections); // section grids still load after idle
 
-      /* ----- Banner build when visible ----- */
+      // Banner: build only when visible
       const bannerWatch = new IntersectionObserver((ents, obs)=>{
         if (ents.some(e=>e.isIntersecting)){
           buildBannerDeferred();
@@ -581,8 +469,14 @@
       }, {rootMargin: '0px 0px 200px 0px'});
       bannerWatch.observe(rail);
 
+      // Pause RAF when tab hidden
       document.addEventListener('visibilitychange', ()=>{ pauseAuto(document.hidden); });
-      const railWatch = new IntersectionObserver((ents)=>{ const inView = ents.some(e=>e.isIntersecting); pauseAuto(!inView); }, {root:null, rootMargin:'0px', threshold:0});
+
+      // Pause RAF when banner off-screen
+      const railWatch = new IntersectionObserver((ents)=>{
+        const inView = ents.some(e=>e.isIntersecting);
+        pauseAuto(!inView);
+      }, {root: null, rootMargin: '0px', threshold: 0});
       railWatch.observe(rail);
 
       async function loadSections(){
@@ -614,7 +508,7 @@
             $('#febzHeading').textContent = febzHeading; $('#febzBody').textContent = febzBody;
             $('#febzLink').href = `https://www.youtube.com/watch?v=${febzId}`;
             $('#febzThumb').src = ytBest(ytThumb(febzId));
-            // (Personal tab owns where it's displayed; unchanged)
+            $('#febzBox').style.display = 'block';
           }
 
           const showLatest = (String(meta.latest_mode||'').toLowerCase()==='auto') || false;
@@ -659,6 +553,7 @@
         }catch(err){ console.error('[loadSections]', err); }
       }
 
+      /* Renders use lazy images */
       function renderPro(items){
         const grid = $('#proGrid'); grid.innerHTML='';
         if (!items.length){ grid.innerHTML = `<div class="muted">No items yet — add rows in the “Ariel_Feblowitz_Works” tab.</div>`; return; }
@@ -709,11 +604,14 @@
         });
       }
 
+      /* Build banner with a minimal DOM footprint */
       function fillBanner(tiles){
         scrollEl.innerHTML='';
         if (!tiles || !tiles.length) return;
-        const approxTileWidth = 200;
+
+        const approxTileWidth = 200; // conservative average width buffer
         const need = Math.max(tiles.length, Math.ceil((rail.clientWidth * 1.8) / approxTileWidth) + 6);
+
         for (let i=0; i<need; i++){
           const t = tiles[i % tiles.length];
           scrollEl.appendChild(makeTile(t));
