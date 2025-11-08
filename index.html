@@ -109,7 +109,7 @@
     @keyframes dotFlick{ 0%{opacity:1} 5%{opacity:.2} 10%{opacity:1} 15%{opacity:.15} 20%{opacity:1} 30%{opacity:.3} 40%{opacity:1} 55%{opacity:.25} 70%{opacity:1} 85%{opacity:.2} 100%{opacity:.55} }
 
     .brand h1{margin:0; font-weight:900; font-size:clamp(20px,2.6vw,34px); letter-spacing:.12em; text-transform:uppercase; color:#d9fff1}
-    .pill{border:1px dashed rgba(66,255,209,.5); border-radius:999px; padding:.4em .8em; font-size:clamp(11px,1vw,12px); color:#caffec; backdrop-filter:blur(2px)}
+    .pill{border:1px dashed rgba(66,255,209,.5); border-radius:999px; padding:.4em .8em; font-size:clamp(11px,1vw,12px); color:var(--muted); backdrop-filter:blur(2px)}
 
     /* Buttons */
     .btn{--b:rgba(66,255,209,.34); display:inline-flex; align-items:center; gap:.5em; border:1px solid var(--b); background:linear-gradient(180deg, rgba(66,255,209,.12), rgba(66,255,209,0));
@@ -154,7 +154,7 @@
       .leftStack{ display:contents; }
     }
 
-    /* Card + light sweep (now non-interactive) */
+    /* Card + light sweep (non-interactive) */
     .card{
       position:relative;
       background:linear-gradient(180deg, rgba(10,18,16,.85), rgba(5,9,11,.9));
@@ -191,7 +191,7 @@
 
     /* Grids */
     .grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:var(--grid); content-visibility:auto}
-    @media (max-width:1000px){ .grid{grid-template-columns:repeat(2, 1fr)} }
+    @media (max-width:1000px){ .grid{grid-template-columns:repeat(2, 1 fr)} }
     @media (max-width:620px){ .grid{grid-template-columns:1fr} }
     .proj{overflow:hidden}
     .thumb{position:relative; aspect-ratio:16/9; overflow:hidden; border-radius:14px; border:1px solid rgba(66,255,209,.26)}
@@ -220,8 +220,8 @@
     /* Testimonials */
     #testimonialsBox .tlist{display:flex; flex-direction:column; gap:14px; margin-top:8px}
     .testimonial{border:1px solid rgba(66,255,209,.26); border-radius:14px; padding:12px 14px; background:linear-gradient(180deg, rgba(66,255,209,.06), rgba(66,255,209,.01))}
-    .testimonial .quote{display:block; font-weight:700; color:#eafff6; line-height:1.5}
-    .testimonial .from{display:block; color:#74cdaa; font-size:.95em; margin-top:6px; overflow-wrap:anywhere}
+    .testimonial .quote{display:block; font-weight:700; color:#eafff6}
+    .testimonial .from{display:block; color:#74cdaa; font-size:.95em; margin-top:4px}
 
     /* HUD card */
     .hud{margin-top:var(--grid); border:1px solid rgba(0,255,156,.35); border-radius:14px; background:
@@ -356,22 +356,22 @@
             <h2 class="crt-glow" style="margin:0">Personal Work</h2>
             <small class="muted">Original shorts & experiments</small>
           </div>
-        <div id="personalGrid" class="grid"></div>
+          <div id="personalGrid" class="grid"></div>
 
-        <div class="card pad" id="febzBox" style="margin-top:var(--grid); display:none">
-          <h3 class="crt-glow" style="margin-top:0"><span id="febzHeading"></span> <a href="https://www.youtube.com/@FebzFoundFootage" target="_blank" rel="noopener">@FebzFoundFootage</a></h3>
-          <a id="febzLink" href="#" target="_blank" rel="noopener" class="thumb" style="display:block; aspect-ratio:16/9;">
-            <img id="febzThumb" alt="FebzFoundFootage — Featured" loading="lazy" decoding="async" fetchpriority="low" style="width:100%; height:100%; object-fit:cover; display:block; border-radius:14px; border:1px solid rgba(66,255,209,.26)" />
-          </a>
-          <small id="febzBody" class="muted"></small>
-        </div>
-
-        <div class="card pad" id="latestBox" style="margin-top:var(--grid); display:none">
-          <h3 class="crt-glow" style="margin-top:0">Latest from YouTube</h3>
-          <div class="reel" style="aspect-ratio:16/9">
-            <iframe id="latestFrame" src="" title="YouTube uploads" frameborder="0" loading="lazy" decoding="async" fetchpriority="low" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+          <div class="card pad" id="febzBox" style="margin-top:var(--grid); display:none">
+            <h3 class="crt-glow" style="margin-top:0"><span id="febzHeading"></span> <a href="https://www.youtube.com/@FebzFoundFootage" target="_blank" rel="noopener">@FebzFoundFootage</a></h3>
+            <a id="febzLink" href="#" target="_blank" rel="noopener" class="thumb" style="display:block; aspect-ratio:16/9;">
+              <img id="febzThumb" alt="FebzFoundFootage — Featured" loading="lazy" decoding="async" fetchpriority="low" style="width:100%; height:100%; object-fit:cover; display:block; border-radius:14px; border:1px solid rgba(66,255,209,.26)" />
+            </a>
+            <small id="febzBody" class="muted"></small>
           </div>
-        </div>
+
+          <div class="card pad" id="latestBox" style="margin-top:var(--grid); display:none">
+            <h3 class="crt-glow" style="margin-top:0">Latest from YouTube</h3>
+            <div class="reel" style="aspect-ratio:16/9">
+              <iframe id="latestFrame" src="" title="YouTube uploads" frameborder="0" loading="lazy" decoding="async" fetchpriority="low" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -408,7 +408,7 @@
       h = canvas.height= Math.floor(innerHeight*dpr);
       canvas.style.width = innerWidth+'px'; canvas.style.height = innerHeight+'px';
       if (!stars.length){
-        const count = Math.floor((innerWidth*innerHeight)/9600); // ~50% fewer
+        const count = Math.floor((innerWidth*innerHeight)/9600);
         stars = Array.from({length:count}, ()=>({ x: Math.random()*w, y: Math.random()*h, z: Math.random()*1.2 + .3, a: Math.random()*0.6 + 0.2 }));
       }
     }
@@ -474,14 +474,13 @@
   }
   function objectsFromDetectedHeader(rows, headerPredicate){
     if (!rows || !rows.length) return [];
-    // Find the first row that looks like the header
     let hIdx = rows.findIndex(r => headerPredicate(r.map(x=>String(x||'').trim())));
     if (hIdx === -1) hIdx = 0;
     const headers = rows[hIdx].map(h=>String(h||'').trim());
     const out = [];
     for (let i=hIdx+1;i<rows.length;i++){
       const r = rows[i];
-      if (!r || r.every(x=>!String(x||'').trim())) continue; // skip blank lines
+      if (!r || r.every(x=>!String(x||'').trim())) continue;
       const obj = {};
       headers.forEach((h,idx)=> obj[h] = r[idx]!==undefined ? r[idx] : "");
       out.push(obj);
@@ -493,11 +492,28 @@
   const normNum = v => { const n = Number(String(v||"").replace(/[^\d.-]/g,"")); return isNaN(n)?0:n; };
   function buildCsvUrlFromGid(pubhtml, gid){ return pubhtml.replace(/\/pubhtml.*/, '/pub') + `?gid=${gid}&single=true&output=csv`; }
 
-  // Legacy cache helper (kept only for safety; we won't use it)
-  const cache = { get(key){ try{ return JSON.parse(localStorage.getItem(key)||'null'); }catch{return null} }, set(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch{} } };
+  /* ================= SMART CACHE: stale-while-revalidate ================= */
+  const CACHE_VER = 'v3'; // bump to invalidate all prior caches if schema changes
+  const TAB_POLICY = {
+    'Main site info':   { ttl: 10*60*1000 },   // 10 min
+    'Testimonials':     { ttl: 30*60*1000 },   // 30 min (refresh more often)
+    'Personal Youtube': { ttl: 3*60*60*1000 }, // 3 hours
+    'Ariel_Feblowitz_Works': { ttl: 6*60*60*1000 }, // 6 hours
+    'Rides':            { ttl: 6*60*60*1000 }  // 6 hours
+  };
 
-  // --- One-time: nuke any previous csv:* entries so desktop can't be stale
-  try { Object.keys(localStorage).filter(k=>k.startsWith('csv:')).forEach(k=>localStorage.removeItem(k)); } catch {}
+  const cacheStore = {
+    get(key){ try{ return JSON.parse(localStorage.getItem(key)||'null'); }catch{return null} },
+    set(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch{} },
+    del(key){ try{ localStorage.removeItem(key); }catch{} }
+  };
+
+  function hashText(s){
+    // djb2-ish: lightweight checksum for change detection
+    let h = 5381, i = s.length;
+    while(i) h = (h*33) ^ s.charCodeAt(--i);
+    return (h>>>0).toString(36);
+  }
 
   async function discoverGids(pubhtml){
     const map = {};
@@ -505,8 +521,7 @@
       const html = await fetch(pubhtml, {mode:"cors"}).then(r=>r.text());
       const uniqueGids = [...new Set([...html.matchAll(/gid=(\d+)/g)].map(m=>m[1]))];
       for (const gid of uniqueGids){
-        // cache-bust CSV peeks too
-        const txt = await fetch(buildCsvUrlFromGid(pubhtml, gid) + `&cb=${Date.now()}`).then(r=>r.text()).catch(()=>null);
+        const txt = await fetch(buildCsvUrlFromGid(pubhtml, gid)).then(r=>r.text()).catch(()=>null);
         if (!txt) continue;
         const rows = csvToMatrix(txt);
         const headerRow = rows[0] ? rows[0].join('|').toLowerCase() : '';
@@ -518,6 +533,69 @@
       }
     }catch(e){ console.error('[discoverGids]', e); }
     return { ...map, ...TAB_MAP };
+  }
+
+  function makeCacheKey(gid){ return `${CACHE_VER}:csv:${gid}`; }
+
+  /**
+   * getTab(name, gids, onFresh)
+   * - Returns the best-available data immediately (cache or network)
+   * - Then revalidates in the background if cache is stale or missing
+   * - If network data changes (hash diff), it updates cache and calls onFresh(newData)
+   */
+  async function getTab(name, gids, onFresh){
+    const gid = gids[name]; if (!gid) return { raw:null, matrix:[], from:'none' };
+    const url = buildCsvUrlFromGid(PUBHTML, gid);
+    const key = makeCacheKey(gid);
+    const policy = TAB_POLICY[name] || { ttl: 6*60*60*1000 }; // default 6h
+
+    const now = Date.now();
+    const cached = cacheStore.get(key);
+    let initial = null;
+
+    if (cached && cached.txt && (now - (cached.ts||0) < policy.ttl)){
+      initial = { raw: cached.txt, matrix: csvToMatrix(cached.txt), from:'cache' };
+    }
+
+    // If no fresh cache, fetch immediately (blocking)
+    if (!initial){
+      try{
+        const txt = await fetch(url + `&cb=${Date.now()}`).then(r=>r.text());
+        const rec = { ts: now, txt, hash: hashText(txt) };
+        cacheStore.set(key, rec);
+        const out = { raw: txt, matrix: csvToMatrix(txt), from:'network' };
+        // kick an async revalidate later just in case proxies mutate
+        setTimeout(()=> revalidate(), 50);
+        return out;
+      }catch(e){
+        console.error('[getTab initial fetch]', name, e);
+        // fall back to stale cache (even if expired)
+        if (cached && cached.txt){
+          return { raw: cached.txt, matrix: csvToMatrix(cached.txt), from:'stale-cache' };
+        }
+        return { raw:null, matrix:[], from:'error' };
+      }
+    }
+
+    // Return cached now, and revalidate in background
+    setTimeout(()=> revalidate(), 0);
+    return initial;
+
+    async function revalidate(){
+      try{
+        const fresh = await fetch(url + `&cb=${Date.now()}`).then(r=>r.text());
+        const freshHash = hashText(fresh);
+        if (!cached || freshHash !== (cached.hash||'')){
+          cacheStore.set(key, { ts: Date.now(), txt: fresh, hash: freshHash });
+          if (typeof onFresh === 'function'){
+            try{ onFresh({ raw:fresh, matrix: csvToMatrix(fresh) }); }catch(e){ console.error('[onFresh]', name, e); }
+          }
+        } else if ((now - (cached.ts||0)) >= policy.ttl){
+          // update timestamp even if unchanged to extend freshness
+          cacheStore.set(key, { ts: Date.now(), txt: cached.txt, hash: cached.hash });
+        }
+      }catch(e){ console.warn('[revalidate failed]', name, e); }
+    }
   }
 
   const rail = $('#bannerRail'); const scrollEl = $('#bannerScroll');
@@ -634,7 +712,7 @@
       {tag:'RIGS', body:'Technodolly/Graphlite/Spydercam/MILO profiles loaded'}
     ]);
 
-    // Testimonials placeholder
+    // Testimonials placeholder (replaced on sheet load)
     const tBox  = document.getElementById('testimonialsBox');
     const tList = document.getElementById('testimonialsList');
     const tTitle= document.getElementById('testimonialsTitle');
@@ -642,7 +720,8 @@
     const gag = (q,f)=>`<div class="testimonial"><span class="quote">“${q}”</span><span class="from">— ${f}</span></div>`;
     tList.innerHTML = [
       gag('Cross-referencing guild logs, call sheets, and lunch orders…','Mother // Unit 1824'),
-      gag('Decrypting production radio chatter: “He solved it on set.”','Cyberdyne Archive • Tape B-12')
+      gag('Decrypting production radio chatter: “He solved it on set.”','Cyberdyne Archive • Tape B-12'),
+      gag('“Fix it in post” only works if you FOLLOW THE PREVIS.','Mother // Unit 1824')
     ].join('');
     tBox.style.display = 'block';
   })();
@@ -652,292 +731,271 @@
       setStatus('Routing request to MOTHER…', sysStatus.href);
       const gids = await discoverGids(PUBHTML);
 
-      // Always-fresh CSV pulls (cache-busted)
-      async function pullCsv(name){
-        const gid = gids[name]; 
-        if(!gid) return {rows:[], raw:null, matrix:[]};
-        const url = buildCsvUrlFromGid(PUBHTML, gid) + `&cb=${Date.now()}`;
-        const txt = await fetch(url).then(r=>r.text());
-        return { rows: null, raw: txt, matrix: csvToMatrix(txt) };
-      }
-
-      // MAIN INFO (simple header on row 1)
-      const mainInfoPull = await pullCsv('Main site info');
-      const mainMatrix = mainInfoPull.matrix;
-      const mainRows = mainMatrix.slice(1).filter(r=>r && r.length>1);
-      const mainInfo = {};
-      mainRows.forEach(r=>{
-        const key = (r[0]||'').trim(); const val = (r[1]||'').trim();
-        if (key) mainInfo[key] = val;
+      // ===== Main site info (stale-while-revalidate) =====
+      const mainTab = await getTab('Main site info', gids, (fresh)=>{
+        applyMainInfo(fresh);
       });
+      applyMainInfo(mainTab);
 
-      // Labels/links
-      $('#siteTitle').textContent = mainInfo.site_title || 'Subject: ARI FEBLOWITZ';
-      const imdbUrl = fixImdb(mainInfo.imdb_url || 'https://www.imdb.me/ArielFeblowitz');
-      const subtitleTxt = mainInfo.site_subtitle || 'Techvis & Virtual Production Supervisor';
-      const subtitleEl = $('#siteSubtitle'); subtitleEl.textContent = subtitleTxt; subtitleEl.href = imdbUrl;
-      $('#about1').textContent = mainInfo.about_paragraph_1 || $('#about1').textContent;
-      $('#about2').textContent = mainInfo.about_paragraph_2 || $('#about2').textContent;
-      const linksHref = mainInfo.all_links_url || 'https://linktr.ee/admin/links';
-      $('#btnIMDb').href = imdbUrl;
-      $('#btnYouTube').href = mainInfo.youtube_url || $('#btnYouTube').href;
-      $('#btnLinks').href = linksHref;
-      const resumeURL = (mainInfo.resume_url && mainInfo.resume_url.trim()) || DEFAULT_RESUME;
-      $('#btnResume').href = resumeURL; $('#dockResume').href = resumeURL;
-
-      setStatus('Link established', linksHref);
+      // Pre-mark as ready
       const aboutStatus = $('#aboutStatus'); if (aboutStatus) aboutStatus.style.display = 'none';
       document.body.classList.add('ready');
       $('#reelHeader').textContent = 'Demo Reel';
       $('#aboutHeader').textContent = 'About';
       loaded.main = true;
 
-      const phone = (mainInfo.phone||DEFAULT_PHONE).trim();
-      const email = (mainInfo.email||DEFAULT_EMAIL).trim();
-      setTopContact(phone, email);
-      setContactSection(phone, email);
-      enhanceContactLinks();
-
-      // Dock copy button
-      document.getElementById('dockCopy')?.addEventListener('click', ()=>{
-        const e = (mainInfo.email || DEFAULT_EMAIL).trim();
-        navigator.clipboard?.writeText(e).then(()=> toast('Copied: '+e)).catch(()=> toast(e));
-      });
-
-      // HUD
-      $('#hudTitle').textContent = mainInfo.ASSESSMENT || mainInfo.assessment || 'THREAT ASSESSMENT // SKNET_0001';
-      const strengthsText = (mainInfo.Strengths || mainInfo.strengths || '').trim();
-      if (strengthsText){
-        const hudBody = $('#hudBody'); hudBody.innerHTML = '';
-        strengthsText.split(/\n+/).map(s=>s.trim()).filter(Boolean).forEach(s=>{
-          const m = s.match(/^([^:]+):\s*(.+)$/);
-          const tag = (m ? m[1] : 'Signal'), body = (m ? m[2] : s);
-          const row = document.createElement('div'); row.className='line';
-          row.innerHTML = `<span class="tag">${tag.toUpperCase()}</span><div class="body">${body}</div>`;
-          hudBody.appendChild(row);
-        });
-        document.getElementById('hudCard').style.display='block';
-      }
-
-      // Reel
-      (function loadReel(){
-        const reelInput = (mainInfo.reel_youtube_id||'').trim();
-        const reelFrame = $('#reelFrame');
-        const setIframe = src => { reelFrame.loading='lazy'; reelFrame.decoding='async'; reelFrame.fetchPriority='low'; reelFrame.src = src; };
-        if (/^\s*</i.test(reelInput)){
-          const tmp = document.createElement('div'); tmp.innerHTML = reelInput;
-          const ifr = tmp.querySelector('iframe');
-          if (ifr && ifr.src){ setIframe(ifr.src); loaded.reel=true; return; }
-        }
-        const vimeoM = reelInput.match(/vimeo\.com\/(?:video\/)?(\d+)/i);
-        if (vimeoM){ setIframe(`https://player.vimeo.com/video/${vimeoM[1]}?badge=0&autopause=0&title=0&byline=0`); loaded.reel=true; return; }
-        if (/^\d{7,}$/.test(reelInput)){ setIframe(`https://player.vimeo.com/video/${reelInput}?badge=0&autopause=0&title=0&byline=0`); loaded.reel=true; return; }
-        const ytM = reelInput.match(/[?&]v=([\w-]{6,})/) || reelInput.match(/youtu\.be\/([\w-]{6,})/);
-        if (ytM){ setIframe(`https://www.youtube.com/embed/${ytM[1]}?rel=0&modestbranding=1`); loaded.reel=true; return; }
-        if (/^[\w-]{6,}$/.test(reelInput)){ setIframe(`https://www.youtube.com/embed/${reelInput}?rel=0&modestbranding=1`); loaded.reel=true; return; }
-        loaded.reel=true;
-      })();
-
       const defer = window.requestIdleCallback || (fn=>setTimeout(fn, 0));
       defer(loadSections);
+
+      // Build banner a bit later (after sections set __tilesData)
       defer(()=> setTimeout(buildBannerDeferred, 400));
+
+      function applyMainInfo(tab){
+        const mainMatrix = tab.matrix;
+        const mainRows = mainMatrix.slice(1).filter(r=>r && r.length>1);
+        const mainInfo = {};
+        mainRows.forEach(r=>{
+          const key = (r[0]||'').trim(); const val = (r[1]||'').trim();
+          if (key) mainInfo[key] = val;
+        });
+
+        $('#siteTitle').textContent = mainInfo.site_title || 'Subject: ARI FEBLOWITZ';
+        const imdbUrl = fixImdb(mainInfo.imdb_url || 'https://www.imdb.me/ArielFeblowitz');
+        const subtitleTxt = mainInfo.site_subtitle || 'Techvis & Virtual Production Supervisor';
+        const subtitleEl = $('#siteSubtitle'); subtitleEl.textContent = subtitleTxt; subtitleEl.href = imdbUrl;
+
+        $('#about1').textContent = mainInfo.about_paragraph_1 || $('#about1').textContent;
+        $('#about2').textContent = mainInfo.about_paragraph_2 || $('#about2').textContent;
+
+        const linksHref = mainInfo.all_links_url || 'https://linktr.ee/admin/links';
+        $('#btnIMDb').href = imdbUrl;
+        $('#btnYouTube').href = mainInfo.youtube_url || $('#btnYouTube').href;
+        $('#btnLinks').href = linksHref;
+        const resumeURL = (mainInfo.resume_url && mainInfo.resume_url.trim()) || DEFAULT_RESUME;
+        $('#btnResume').href = resumeURL; $('#dockResume').href = resumeURL;
+        setStatus('Link established', linksHref);
+
+        const phone = (mainInfo.phone||DEFAULT_PHONE).trim();
+        const email = (mainInfo.email||DEFAULT_EMAIL).trim();
+        setTopContact(phone, email);
+        setContactSection(phone, email);
+        enhanceContactLinks();
+
+        // Dock copy button
+        const e = (mainInfo.email || DEFAULT_EMAIL).trim();
+        document.getElementById('dockCopy')?.addEventListener('click', ()=>{
+          navigator.clipboard?.writeText(e).then(()=> toast('Copied: '+e)).catch(()=> toast(e));
+        });
+
+        // HUD
+        $('#hudTitle').textContent = mainInfo.ASSESSMENT || mainInfo.assessment || 'THREAT ASSESSMENT // SKNET_0001';
+        const strengthsText = (mainInfo.Strengths || mainInfo.strengths || '').trim();
+        if (strengthsText){
+          const hudBody = $('#hudBody'); hudBody.innerHTML = '';
+          strengthsText.split(/\n+/).map(s=>s.trim()).filter(Boolean).forEach(s=>{
+            const m = s.match(/^([^:]+):\s*(.+)$/);
+            const tag = (m ? m[1] : 'Signal'), body = (m ? m[2] : s);
+            const row = document.createElement('div'); row.className='line';
+            row.innerHTML = `<span class="tag">${tag.toUpperCase()}</span><div class="body">${body}</div>`;
+            hudBody.appendChild(row);
+          });
+          document.getElementById('hudCard').style.display='block';
+        }
+
+        // Reel embed
+        (function loadReel(){
+          const reelInput = (mainInfo.reel_youtube_id||'').trim();
+          const reelFrame = $('#reelFrame');
+          const setIframe = src => { reelFrame.loading='lazy'; reelFrame.decoding='async'; reelFrame.fetchPriority='low'; reelFrame.src = src; };
+          if (/^\s*</i.test(reelInput)){
+            const tmp = document.createElement('div'); tmp.innerHTML = reelInput;
+            const ifr = tmp.querySelector('iframe');
+            if (ifr && ifr.src){ setIframe(ifr.src); loaded.reel=true; return; }
+          }
+          const vimeoM = reelInput.match(/vimeo\.com\/(?:video\/)?(\d+)/i);
+          if (vimeoM){ setIframe(`https://player.vimeo.com/video/${vimeoM[1]}?badge=0&autopause=0&title=0&byline=0`); loaded.reel=true; return; }
+          if (/^\d{7,}$/.test(reelInput)){ setIframe(`https://player.vimeo.com/video/${reelInput}?badge=0&autopause=0&title=0&byline=0`); loaded.reel=true; return; }
+          const ytM = reelInput.match(/[?&]v=([\w-]{6,})/) || reelInput.match(/youtu\.be\/([\w-]{6,})/);
+          if (ytM){ setIframe(`https://www.youtube.com/embed/${ytM[1]}?rel=0&modestbranding=1`); loaded.reel=true; return; }
+          if (/^[\w-]{6,}$/.test(reelInput)){ setIframe(`https://www.youtube.com/embed/${reelInput}?rel=0&modestbranding=1`); loaded.reel=true; return; }
+          loaded.reel=true;
+        })();
+      }
 
       async function loadSections(){
         try{
           if (loaded.sections) return; loaded.sections = true;
 
-          const personalPull = await pullCsv('Personal Youtube');
-          const proPull      = await pullCsv('Ariel_Feblowitz_Works');
-          const ridesPull    = await pullCsv('Rides');
-          const testiPull    = await pullCsv('Testimonials');
+          // Pull tabs with SWR; pass per-tab re-renderers to onFresh
+          const [personalTab, proTab, ridesTab, testiTab] = await Promise.all([
+            getTab('Personal Youtube', gids, fresh => applyPersonal(fresh)),
+            getTab('Ariel_Feblowitz_Works', gids, fresh => applyPro(fresh)),
+            getTab('Rides', gids, fresh => applyRides(fresh)),
+            getTab('Testimonials', gids, fresh => applyTestimonials(fresh))
+          ]);
 
-          // Personal videos/meta (simple header in row 1)
-          const pRows = personalPull.matrix;
-          const pHeaders = pRows[0]||[]; const pData = pRows.slice(1);
-          const meta = {}; const videos=[];
-          pData.forEach(r=>{
-            const row = {}; pHeaders.forEach((h,i)=> row[String(h||'').trim()] = (r[i]||'').toString().trim());
-            const type=(row.type||'').toLowerCase();
-            if (type==='meta'){ meta[(row.key||'').trim()] = (row.value||'').trim(); }
-            else if (type==='video'){
-              const videoId=row.video_id||'';
-              const url=row.youtube_url|| (videoId?`https://www.youtube.com/watch?v=${videoId}`:'');
-              const thumb=row.thumb_url|| (videoId? ytThumb(videoId) : '');
-              videos.push({ prio: +row.prio||0, includeInBanner: (String(row.include_in_banner||'').toLowerCase()==='true') || (+row.prio||0)>=5, featured: String(row.featured||'').toLowerCase()==='true', videoId, title:row.title||'', role:row.role||'', url, thumb, ytid: videoId });
-            }
-          });
+          applyPersonal(personalTab);
+          applyPro(proTab);
+          applyRides(ridesTab);
+          applyTestimonials(testiTab);
 
-          // Febz box
-          const febzId = (meta.febz_video_id || '').trim();
-          if (febzId){
-            $('#febzHeading').textContent = meta.febz_heading || "Also archiving my father's documentary work: FebzFoundFootage";
-            $('#febzBody').textContent = meta.febz_body || "A growing archive of Gary Feblowitz’s documentary footage and rare segments.";
-            $('#febzLink').href = `https://www.youtube.com/watch?v=${febzId}`;
-            $('#febzThumb').src = ytThumb(febzId);
-            $('#febzBox').style.display = 'block';
-          }
-          const showLatest = (String(meta.latest_mode||'').toLowerCase()==='auto');
-          if (showLatest && meta.latest_playlist_or_channel_id){
-            const channelId = meta.latest_playlist_or_channel_id;
-            if (channelId.startsWith('UC')){
-              const uploadsId = 'UU'+channelId.slice(2);
-              $('#latestFrame').src = `https://www.youtube.com/embed/videoseries?list=${uploadsId}&rel=0`;
-              $('#latestBox').style.display = 'block';
-            }
-          }
+          // Prepare tiles for banner
+          buildTilesForBanner();
 
-          // Pro grid
-          const proRows = proPull.matrix;
-          const proHdr  = proRows[0]||[];
-          const proData = proRows.slice(1).map(r=>{ const o={}; proHdr.forEach((h,i)=>o[h]=r[i]||''); return o; });
-          const proItems = proData.map(r=>({
-            title:(r['Name']||'').trim(), url:fixImdb((r['URL']||'').trim()),
-            role:(r['My Role']||'').trim(), prod:(r['Production Co.']||'').trim(),
-            onSet: /^(true|yes)$/i.test(r['On Set?']||''), prio:+(r['Prio?']||0),
-            posters:[(r['Primary image']||'').trim()].filter(Boolean)
-          })).filter(x=>x.title && x.prio>0)
-            .sort((a,b)=> (a.onSet!==b.onSet)? (a.onSet? -1:1) : (b.prio-a.prio) || a.title.localeCompare(b.title));
-
-          // Rides grid
-          const ridesRows = ridesPull.matrix;
-          const ridesHdr  = ridesRows[0]||[];
-          const ridesData = ridesRows.slice(1).map(r=>{ const o={}; ridesHdr.forEach((h,i)=>o[h]=r[i]||''); return o; });
-          const rideItems = ridesData.map(r=>({
-            title:(r['Ride Name']||'').trim(),
-            url:(r['Ride Link']||'').trim(),
-            role:(r['My Role']||'').trim(),
-            company:(r['Ride Company']||'').trim(),
-            desc:(r['Description']||'').trim(),
-            prio:+(r['Prio']||r['prio']||0),
-            posters:[(r['Ride Image']||r['Ride image']||'').trim()].filter(Boolean)
-          })).filter(x=>x.title && x.prio>0)
-            .sort((a,b)=> b.prio-a.prio || a.title.localeCompare(b.title));
-
-          renderPro(proItems); renderRides(rideItems); renderPersonal(videos, (meta.featured_video_id||'').trim());
-
-          // Banner tiles
-          window.__tilesData = {
-            pro: proItems.filter(p=>p.prio>=5).map(p=>({type:'pro', kind:'poster', title:p.title, img:p.posters[0]||'', url:p.url||'#'})),
-            ride: rideItems.filter(r=>r.prio===10).map(r=>({type:'ride', kind:'wide', title:r.title, img:r.posters[0]||'', url:r.url||'#'})),
-            per: videos.filter(v=>(v.prio||0)>=5 || v.includeInBanner).map(v=>({type:'personal', kind:'wide', title:v.title, img:v.thumb||'', url:v.url||'#', ytid:v.videoId||''}))
-          };
-
-          /* ============ TESTIMONIALS (STACK ONE CARD PER ROW) ============ */
-          const tBox  = document.getElementById('testimonialsBox');
-          const tList = document.getElementById('testimonialsList');
-          const tTitle= document.getElementById('testimonialsTitle');
-
-          const tMatrix = testiPull.matrix;
-
-          // Title from cell B1 if present
-          let tHeading = csvFirstRowSecondCol(testiPull.raw||'') || 'Testimonials';
-          tTitle.textContent = tHeading;
-
-          // Detect a header row anywhere that contains From + one of text columns
-          const looksLikeHeader = (cells)=>{
-            const low = cells.map(c=>String(c||'').toLowerCase());
-            const hasFrom = low.includes('from');
-            const txtCols = ['testimonial','testimonials','quote','text','body'];
-            const hasText = txtCols.some(k=> low.includes(k));
-            return hasFrom && hasText;
-          };
-          const tObjects = objectsFromDetectedHeader(tMatrix, looksLikeHeader);
-
-          const readText = (r)=>{
-            const keys = ['Testimonial','Testimonials','testimonial','testimonials','Quote','quote','Text','text','Body','body'];
-            for (const k of keys){ if (r[k] && String(r[k]).trim()) return String(r[k]).trim(); }
-            return '';
-          };
-          const readFrom = (r)=> String(r['From']||r['from']||'').trim();
-          const readLink = (r)=> String(r['Link']||r['link']||'').trim();
-          const readPrio = (r)=> normNum(r['Prio']||r['prio']||r['Priority']||r['priority']||'');
-
-          let items = tObjects.map(r=>({
-            from: readFrom(r),
-            link: readLink(r),
-            text: readText(r),
-            prio: readPrio(r)
-          })).filter(x=> x.from && x.text);
-
-          if (items.some(i=>i.prio>0)){
-            items = items.sort((a,b)=> b.prio - a.prio);
-          }
-
-          const smartQuote = s=>{
-            const t = s.trim();
-            const b = /^["“]/.test(t), e = /["”]$/.test(t);
-            return (b && e) ? t : `“${t.replace(/^["“'‘`]/,'').replace(/["”'‘`]$/,'')}”`;
-          };
-          const esc = s=> s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
-
-          if (items.length){
-            tList.innerHTML = '';
-            items.forEach(it=>{
-              const el = document.createElement('div'); el.className='testimonial';
-              const fromSpan = it.link ? `<a href="${esc(it.link)}" target="_blank" rel="noopener">${esc(it.from)}</a>` : esc(it.from);
-              el.innerHTML = `<span class="quote">${esc(smartQuote(it.text))}</span><span class="from">— ${fromSpan}</span>`;
-              tList.appendChild(el);
-            });
-            tBox.style.display = 'block';
-          } else {
-            tBox.style.display = 'none';
-          }
-          loaded.testimonials = true;
-          /* ========== END TESTIMONIALS ========== */
         }catch(err){ console.error('[loadSections]', err); }
       }
 
-      function renderPro(items){
-        const grid = $('#proGrid'); grid.innerHTML='';
-        if (!items.length){ grid.innerHTML = `<div class="muted">No items yet — add rows in the “Ariel_Feblowitz_Works” tab.</div>`; return; }
-        items.forEach(p=>{
-          const c=document.createElement('a'); c.className='proj card'; c.href=p.url||'#'; c.target='_blank'; c.rel='noopener';
-          const wrap=document.createElement('div'); wrap.className='thumb poster';
-          const img=new Image(); img.alt=''; img.loading='lazy'; img.decoding='async'; img.fetchPriority='low'; img.src = p.posters[0] || titlePlaceholderSVG(p.title); img.width=800; img.height=1200;
-          wrap.appendChild(img);
-          const meta=document.createElement('div'); meta.className='meta';
-          const info=[p.role, p.prod].filter(Boolean).join(' • ');
-          meta.innerHTML = `<div class="title">${p.title}</div><div class="role">${info}</div>`;
-          c.appendChild(wrap); c.appendChild(meta); grid.appendChild(c);
+      function applyPersonal(tab){
+        const pRows = tab.matrix;
+        if (!pRows.length) return;
+        const pHeaders = pRows[0]||[];
+        const pData = pRows.slice(1);
+        const meta = {}; const videos=[];
+        pData.forEach(r=>{
+          const row = {}; pHeaders.forEach((h,i)=> row[String(h||'').trim()] = (r[i]||'').toString().trim());
+          const type=(row.type||'').toLowerCase();
+          if (type==='meta'){ meta[(row.key||'').trim()] = (row.value||'').trim(); }
+          else if (type==='video'){
+            const videoId=row.video_id||'';
+            const url=row.youtube_url|| (videoId?`https://www.youtube.com/watch?v=${videoId}`:'');
+            const thumb=row.thumb_url|| (videoId? ytThumb(videoId) : '');
+            videos.push({ prio: +row.prio||0, includeInBanner: (String(row.include_in_banner||'').toLowerCase()==='true') || (+row.prio||0)>=5, featured: String(row.featured||'').toLowerCase()==='true', videoId, title:row.title||'', role:row.role||'', url, thumb, ytid: videoId });
+          }
         });
+
+        // Febz box
+        const febzId = (meta.febz_video_id || '').trim();
+        if (febzId){
+          $('#febzHeading').textContent = meta.febz_heading || "Also archiving my father's documentary work: FebzFoundFootage";
+          $('#febzBody').textContent = meta.febz_body || "A growing archive of Gary Feblowitz’s documentary footage and rare segments.";
+          $('#febzLink').href = `https://www.youtube.com/watch?v=${febzId}`;
+          $('#febzThumb').src = ytThumb(febzId);
+          $('#febzBox').style.display = 'block';
+        }
+
+        // Latest uploads embed (optional)
+        const showLatest = (String(meta.latest_mode||'').toLowerCase()==='auto');
+        if (showLatest && meta.latest_playlist_or_channel_id){
+          const channelId = meta.latest_playlist_or_channel_id;
+          if (channelId.startsWith('UC')){
+            const uploadsId = 'UU'+channelId.slice(2);
+            $('#latestFrame').src = `https://www.youtube.com/embed/videoseries?list=${uploadsId}&rel=0`;
+            $('#latestBox').style.display = 'block';
+          }
+        }
+
+        renderPersonal(videos, (meta.featured_video_id||'').trim());
+
+        // Update tiles source for banner
+        window.__tilesData = window.__tilesData || {};
+        window.__tilesData.per = videos.filter(v=>(v.prio||0)>=5 || v.includeInBanner)
+          .map(v=>({type:'personal', kind:'wide', title:v.title, img:v.thumb||'', url:v.url||'#', ytid:v.videoId||''}));
       }
-      function renderRides(items){
-        const grid = $('#ridesGrid'); grid.innerHTML='';
-        if (!items.length){ grid.innerHTML = `<div class="muted">No items yet — add rows in the “Rides” tab.</div>`; return; }
-        items.forEach(p=>{
-          const c=document.createElement('a'); c.className='proj card'; c.href=p.url||'#'; c.target='_blank'; c.rel='noopener';
-          const wrap=document.createElement('div'); wrap.className='thumb';
-          const img=new Image(); img.alt=''; img.loading='lazy'; img.decoding='async'; img.fetchPriority='low'; img.src = p.posters[0] || titlePlaceholderSVG(p.title); img.width=1280; img.height=720;
-          wrap.appendChild(img);
-          const meta=document.createElement('div'); meta.className='meta';
-          const info=[p.role, p.company].filter(Boolean).join(' • ');
-          let body=''; if (p.desc){ body = `<details class="summaryless" style="margin-top:.45em; font-size:.95em"><summary class="btn" style="display:inline-flex; margin:0; padding:.35em .6em;">Details</summary><div class="muted" style="margin-top:.6em">${p.desc}</div></details>`; }
-          meta.innerHTML = `<div class="title">${p.title}</div><div class="role">${info}</div>${body}`;
-          c.appendChild(wrap); c.appendChild(meta); grid.appendChild(c);
-        });
+
+      function applyPro(tab){
+        const proRows = tab.matrix;
+        if (!proRows.length) return;
+        const proHdr  = proRows[0]||[];
+        const proData = proRows.slice(1).map(r=>{ const o={}; proHdr.forEach((h,i)=>o[h]=r[i]||''); return o; });
+        const proItems = proData.map(r=>({
+          title:(r['Name']||'').trim(), url:fixImdb((r['URL']||'').trim()),
+          role:(r['My Role']||'').trim(), prod:(r['Production Co.']||'').trim(),
+          onSet: /^(true|yes)$/i.test(r['On Set?']||''), prio:+(r['Prio?']||0),
+          posters:[(r['Primary image']||'').trim()].filter(Boolean)
+        })).filter(x=>x.title && x.prio>0)
+          .sort((a,b)=> (a.onSet!==b.onSet)? (a.onSet? -1:1) : (b.prio-a.prio) || a.title.localeCompare(b.title));
+
+        renderPro(proItems);
+
+        window.__tilesData = window.__tilesData || {};
+        window.__tilesData.pro = proItems.filter(p=>p.prio>=5).map(p=>({type:'pro', kind:'poster', title:p.title, img:p.posters[0]||'', url:p.url||'#'}));
       }
-      function renderPersonal(videos, featuredId){
-        const grid = $('#personalGrid'); grid.innerHTML='';
-        if (!videos.length){ grid.innerHTML = `<div class="muted">No videos yet — add rows in the “Personal Youtube” tab.</div>`; return; }
-        const fIdx = videos.findIndex(v=>v.videoId===featuredId); if (fIdx>0){ const [f]=videos.splice(fIdx,1); videos.unshift(f); }
-        videos.forEach(v=>{
-          const c=document.createElement('a'); c.className='proj card'; c.href=v.url||'#'; c.target='_blank'; c.rel='noopener';
-          const wrap=document.createElement('div'); wrap.className='thumb';
-          const img=new Image(); img.alt=''; img.loading='lazy'; img.decoding='async'; img.fetchPriority='low'; img.src = v.thumb || (v.videoId? ytThumb(v.videoId) : titlePlaceholderSVG(v.title)); img.width=1280; img.height=720;
-          wrap.appendChild(img);
-          const meta=document.createElement('div'); meta.className='meta';
-          meta.innerHTML = `<div class="title">${v.title||''}</div><div class="role">${v.role||''}</div>`;
-          c.appendChild(wrap); c.appendChild(meta); grid.appendChild(c);
-        });
+
+      function applyRides(tab){
+        const ridesRows = tab.matrix;
+        if (!ridesRows.length) return;
+        const ridesHdr  = ridesRows[0]||[];
+        const ridesData = ridesRows.slice(1).map(r=>{ const o={}; ridesHdr.forEach((h,i)=>o[h]=r[i]||''); return o; });
+        const rideItems = ridesData.map(r=>({
+          title:(r['Ride Name']||'').trim(),
+          url:(r['Ride Link']||'').trim(),
+          role:(r['My Role']||'').trim(),
+          company:(r['Ride Company']||'').trim(),
+          desc:(r['Description']||'').trim(),
+          prio:+(r['Prio']||r['prio']||0),
+          posters:[(r['Ride Image']||r['Ride image']||'').trim()].filter(Boolean)
+        })).filter(x=>x.title && x.prio>0)
+          .sort((a,b)=> b.prio-a.prio || a.title.localeCompare(b.title));
+
+        renderRides(rideItems);
+
+        window.__tilesData = window.__tilesData || {};
+        window.__tilesData.ride = rideItems.filter(r=>r.prio===10).map(r=>({type:'ride', kind:'wide', title:r.title, img:r.posters[0]||'', url:r.url||'#'}));
+      }
+
+      function applyTestimonials(tab){
+        const tBox  = document.getElementById('testimonialsBox');
+        const tList = document.getElementById('testimonialsList');
+        const tTitle= document.getElementById('testimonialsTitle');
+
+        const tMatrix = tab.matrix;
+        if (!tMatrix.length){ tBox.style.display='none'; return; }
+
+        let tHeading = 'Testimonials';
+        const b1 = csvFirstRowSecondCol(tab.raw||''); if (b1) tHeading = b1;
+        tTitle.textContent = tHeading;
+
+        const looksLikeHeader = (cells)=>{
+          const low = cells.map(c=>String(c||'').toLowerCase());
+          const hasFrom = low.includes('from');
+          const txtCols = ['testimonial','testimonials','quote','text','body'];
+          const hasText = txtCols.some(k=> low.includes(k));
+          return hasFrom && hasText;
+        };
+        const tObjects = objectsFromDetectedHeader(tMatrix, looksLikeHeader);
+
+        const pickText = (r)=>{
+          const variants = ['Testimonial','Testimonials','testimonial','testimonials','Quote','quote','Text','text','Body','body'];
+          for (const k of variants){ if (r[k] && String(r[k]).trim()) return String(r[k]).trim(); }
+          return '';
+        };
+        const items = tObjects.map(r=>({ from: String(r['From']||r['from']||'').trim(), text: pickText(r) }))
+                              .filter(t=>t.from && t.text);
+
+        const smartQuote = s=>{
+          const t = s.trim();
+          const b = /^["“]/.test(t), e = /["”]$/.test(t);
+          return (b && e) ? t : `“${t.replace(/^["“'‘`]/,'').replace(/["”'‘`]$/,'')}”`;
+        };
+        const esc = s=> s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+
+        if (items.length){
+          tList.innerHTML = ''; // replace gag text
+          items.forEach(it=>{
+            const el = document.createElement('div'); el.className='testimonial';
+            el.innerHTML = `<span class="quote">${esc(smartQuote(it.text))}</span><span class="from">— ${esc(it.from)}</span>`;
+            tList.appendChild(el);
+          });
+          tBox.style.display = 'block';
+        } else {
+          tBox.style.display = 'none';
+        }
+      }
+
+      function buildTilesForBanner(){
+        if (!window.__tilesData) return;
+        const {pro=[], ride=[], per=[]} = window.__tilesData;
+        const interleaved=[]; const L=Math.max(pro.length, ride.length, per.length);
+        for(let i=0;i<L;i++){ if(pro[i]) interleaved.push(pro[i]); if(ride[i]) interleaved.push(ride[i]); if(per[i]) interleaved.push(per[i]); }
+        if (interleaved.length){
+          fillBanner(interleaved);
+          loaded.banner = true;
+        }
       }
 
       function buildBannerDeferred(){
         if (loaded.banner || !window.__tilesData) return;
-        loaded.banner = true;
-        const {pro, ride, per} = window.__tilesData;
-        const interleaved=[]; const L=Math.max(pro.length, ride.length, per.length);
-        for(let i=0;i<L;i++){ if(pro[i]) interleaved.push(pro[i]); if(ride[i]) interleaved.push(ride[i]); if(per[i]) interleaved.push(per[i]); }
-        fillBanner(interleaved);
+        buildTilesForBanner();
       }
 
     }catch(err){ console.error('[init]', err); }
