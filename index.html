@@ -41,7 +41,9 @@
     }
 
     /* Tech-Noir FX: starfield canvas + neon grid floor */
-    #fx-stars, #fx-grid { position:fixed; inset:0; pointer-events:none; z-index:0; }
+    #fx-stars, #fx-grid {
+      position:fixed; inset:0; pointer-events:none; z-index:0;
+    }
     #fx-stars { opacity:.55; }
     #fx-grid {
       --g:#0af0a3;
@@ -128,7 +130,7 @@
     .tab-btn{padding:.6em .9em; border-radius:12px; background:var(--panel); color:var(--txt); border:1px solid rgba(66,255,209,.32); cursor:pointer; font-weight:700}
     .tab-btn.active{outline:1px solid var(--accent); box-shadow:0 0 0 2px rgba(0,255,156,.12) inset}
 
-    /* === HERO LAYOUT === */
+    /* === HERO LAYOUT === (unchanged logic; new cosmetics below) */
     .hero{
       margin:clamp(12px,1.6vw,20px) 0;
       display:grid;
@@ -156,7 +158,7 @@
       .leftStack{ display:contents; }
     }
 
-    /* Card style + animated sweep */
+    /* Card style + animated “light sweep” */
     .card{
       position:relative;
       background:linear-gradient(180deg, rgba(10,18,16,.85), rgba(5,9,11,.9));
@@ -293,7 +295,7 @@
       <!-- HOME -->
       <section id="home" class="active" role="tabpanel">
         <div class="hero">
-          <!-- LEFT COLUMN: Reel + Testimonials stacked -->
+          <!-- LEFT COLUMN: Reel + Testimonials stacked with zero gap -->
           <div class="area-left leftStack">
             <!-- Reel -->
             <div class="card pad area-reel">
@@ -310,7 +312,7 @@
               </div>
             </div>
 
-            <!-- Testimonials -->
+            <!-- Testimonials (docks right under Reel on wide) -->
             <div class="card pad area-test" id="testimonialsBox" style="display:none">
               <h3 id="testimonialsTitle" class="crt-glow" style="margin:.2em 0 .6em">Testimonials</h3>
               <div class="tlist" id="testimonialsList"></div>
@@ -405,7 +407,7 @@
   <script>
   (function guard(){ const roots = document.querySelectorAll('#appRoot'); if (roots.length > 1){ roots.forEach((el, i)=>{ if(i>0) el.remove(); }); } if (window.__siteInitDone) { console.warn('Init already run; skipping.'); return; } window.__siteInitDone = true; })();
 
-  /* ====== STARFIELD FX ====== */
+  /* ====== STARFIELD FX (lightweight canvas) ====== */
   (function starfield(){
     const canvas = document.getElementById('fx-stars');
     const ctx = canvas.getContext('2d');
@@ -464,7 +466,7 @@
   const ytThumbHQ = id => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
   const fixImdb = url => (url||"").replace(/https?:\/\/pro\.imdb\.com/i,'https://www.imdb.com').replace(/\?ref_=pro.*$/,'');
 
-  /* ===== CSV helpers ===== */
+  // CSV helpers
   function csvToObjects(csvText){
     const rows = []; let field="", row=[], inQ=false;
     for (let c of String(csvText||"").replace(/\r/g,'')){
@@ -476,15 +478,7 @@
     if (field.length || row.length){ row.push(field.replace(/^("|“)|("|”)$/g,'').replace(/""/g,'"')); rows.push(row); }
     if (!rows.length) return [];
     const headers = rows[0].map(h=>h.trim());
-    return rows.slice(1).filter(r=>r.some(c=>String(c).trim().length)).map(r=>{
-      const o={}; headers.forEach((h,i)=>o[h]=r[i]!==undefined?r[i]:""); return o;
-    });
-  }
-  /* Special: sometimes row 1 is just the B1 title, so re-parse skipping it */
-  function csvObjectsSkippingFirstLine(csvText){
-    const idx = csvText.indexOf('\n');
-    const trimmed = idx>0 ? csvText.slice(idx+1) : csvText;
-    return csvToObjects(trimmed);
+    return rows.slice(1).filter(r=>r.length>1).map(r=>{ const o={}; headers.forEach((h,i)=>o[h]=r[i]!==undefined?r[i]:""); return o; });
   }
   function csvFirstRowSecondCol(csvText){
     let inQ=false, col=0, val="";
@@ -523,8 +517,7 @@
         else if (hdr.includes('ride image') && hdr.includes('ride name')) map['Rides']=gid;
         else if (hdr.includes('type') && hdr.includes('video_id')) map['Personal Youtube']=gid;
         else if (hdr.includes('key') && hdr.includes('value')) map['Main site info']=gid;
-        /* Accept singular or plural for testimonials */
-        else if (hdr.includes('from') && (hdr.includes('testimonial') || hdr.includes('testimonials'))) map['Testimonials']=gid;
+        else if (hdr.includes('from') && hdr.includes('testimonial')) map['Testimonials']=gid;
       }
     }catch(e){ console.error('[discoverGids]', e); }
     return { ...map, ...TAB_MAP };
@@ -618,7 +611,7 @@
 
   const loaded = { main:false, reel:false, sections:false, banner:false, testimonials:false };
 
-  /* --- PRELOAD PLACEHOLDERS --- */
+  // --- PRELOAD PLACEHOLDERS ---
   (function preloadFrames(){
     // HUD placeholder
     const hudCard = document.getElementById('hudCard');
@@ -644,7 +637,7 @@
       {tag:'RIGS', body:'Technodolly/Graphlite/Spydercam/MILO profiles loaded'}
     ]);
 
-    // Testimonials placeholder (gag shows first, then sheet overwrites)
+    // Testimonials placeholder
     const tBox  = document.getElementById('testimonialsBox');
     const tList = document.getElementById('testimonialsList');
     const tTitle= document.getElementById('testimonialsTitle');
@@ -666,7 +659,8 @@
         const gid = gids[name]; if(!gid) return {rows:[], raw:null};
         const key = `csv:${gid}`;
         let txt;
-        if (name === 'Main site info'){
+        // Fresh fetch for "Main site info" and "Testimonials"
+        if (name === 'Main site info' || name === 'Testimonials'){
           txt = await fetch(buildCsvUrlFromGid(PUBHTML, gid) + `&cb=${Date.now()}`).then(r=>r.text());
         } else {
           const cached = cache.get(key);
@@ -676,10 +670,11 @@
         return { rows: csvToObjects(txt), raw: txt };
       }
 
-      /* MAIN INFO */
+      // MAIN INFO
       const mainInfoPull = await pullTab('Main site info');
       const mainInfo = {}; (mainInfoPull.rows||[]).forEach(r=> mainInfo[(r.key||'').trim()] = (r.value||'').trim());
 
+      // Labels/links
       const defaultTitle = 'Subject: ARI FEBLOWITZ';
       $('#siteTitle').textContent = mainInfo.site_title || defaultTitle;
 
@@ -712,20 +707,23 @@
       setContactSection(phone, email);
       enhanceContactLinks();
 
+      // Dock copy button wires to current email text
       const dockCopy = document.getElementById('dockCopy');
       dockCopy?.addEventListener('click', ()=>{
         const e = (mainInfo.email || DEFAULT_EMAIL).trim();
         navigator.clipboard?.writeText(e).then(()=> toast('Copied: '+e)).catch(()=> toast(e));
       });
 
+      // HUD title
       const hudTitleEl = $('#hudTitle');
       const assessTitle = mainInfo.ASSESSMENT || mainInfo.assessment || 'THREAT ASSESSMENT // SKNET_0001';
       hudTitleEl.textContent = assessTitle;
 
-      /* HUD Strengths */
+      // HUD Strengths
       const strengthsText = (mainInfo.Strengths || mainInfo.strengths || '').trim();
       if (strengthsText){
-        const hudBody = $('#hudBody'); hudBody.innerHTML = '';
+        const hudBody = $('#hudBody');
+        hudBody.innerHTML = '';
         strengthsText.split(/\n+/).map(s=>s.trim()).filter(Boolean).forEach(s=>{
           const m = s.match(/^([^:]+):\s*(.+)$/);
           const tag = (m ? m[1] : 'Signal'), body = (m ? m[2] : s);
@@ -737,7 +735,7 @@
         document.getElementById('hudCard').style.display='block';
       }
 
-      /* Reel */
+      // Reel
       (function loadReel(){
         const reelInput = (mainInfo.reel_youtube_id||'').trim();
         const reelFrame = $('#reelFrame');
@@ -772,22 +770,10 @@
           const personalTab = personalPull.rows;
           const proRows     = proPull.rows;
           const ridesRows   = ridesPull.rows;
-          /** Testimonials: robust parsing **/
+          const testiRows   = testiPull.rows;
           const testiRaw    = testiPull.raw || '';
-          let   testiRows   = testiPull.rows || [];
 
-          // If headers weren't on the first CSV row (because B1 was a title row), retry skipping the first line:
-          const headerKeys = Object.keys(testiRows[0]||{}).map(k=>k.toLowerCase()).join('|');
-          const looksWrong = !(headerKeys.includes('from') && (headerKeys.includes('testimonial') || headerKeys.includes('testimonials')));
-          if (looksWrong && testiRaw){
-            const alt = csvObjectsSkippingFirstLine(testiRaw);
-            const altKeys = Object.keys(alt[0]||{}).map(k=>k.toLowerCase()).join('|');
-            if (altKeys.includes('from') && (altKeys.includes('testimonial') || altKeys.includes('testimonials'))){
-              testiRows = alt;
-            }
-          }
-
-          /* Personal meta + videos */
+          // Personal meta + videos
           const meta = {}; const videos=[];
           (personalTab||[]).forEach(r=>{
             const type=(r.type||'').toLowerCase();
@@ -800,7 +786,7 @@
             }
           });
 
-          /* Febz featured box */
+          // Febz featured box
           const febzId = (meta.febz_video_id || '').trim();
           if (febzId){
             const febzHeading = meta.febz_heading || "Also archiving my father's documentary work: FebzFoundFootage";
@@ -811,7 +797,7 @@
             $('#febzBox').style.display = 'block';
           }
 
-          /* Latest uploads embed (optional) */
+          // Latest uploads embed (optional)
           const showLatest = (String(meta.latest_mode||'').toLowerCase()==='auto') || false;
           if (showLatest && meta.latest_playlist_or_channel_id){
             const channelId = meta.latest_playlist_or_channel_id;
@@ -822,7 +808,7 @@
             }
           }
 
-          /* Pro */
+          // Pro
           const proItems = (proRows||[]).map(r=>({
             title:(r['Name']||'').trim(),
             url:fixImdb((r['URL']||'').trim()),
@@ -835,7 +821,7 @@
           .filter(x=>x.title && x.prio>0)
           .sort((a,b)=> (a.onSet!==b.onSet)? (a.onSet? -1:1) : (b.prio-a.prio) || a.title.localeCompare(b.title));
 
-          /* Rides */
+          // Rides
           const rideItems = (ridesRows||[]).map(r=>({
             title:(r['Ride Name']||'').trim(),
             url:(r['Ride Link']||'').trim(),
@@ -848,17 +834,17 @@
           .filter(x=>x.title && x.prio>0)
           .sort((a,b)=> b.prio-a.prio || a.title.localeCompare(b.title));
 
-          /* Render content grids */
+          // Render content grids
           renderPro(proItems); renderRides(rideItems); renderPersonal(videos, (meta.featured_video_id||'').trim());
 
-          /* Banner tiles */
+          // Banner tiles
           window.__tilesData = {
             pro: proItems.filter(p=>p.prio>=5).map(p=>({type:'pro', kind:'poster', title:p.title, img:p.posters[0]||'', url:p.url||'#'})),
             ride: rideItems.filter(r=>r.prio===10).map(r=>({type:'ride', kind:'wide', title:r.title, img:r.posters[0]||'', url:r.url||'#'})),
             per: videos.filter(v=>(v.prio||0)>=5 || v.includeInBanner).map(v=>({type:'personal', kind:'wide', title:v.title, img:v.thumb||'', url:v.url||'#', ytid:v.videoId||''}))
           };
 
-          /* === TESTIMONIALS: title from B1 + all rows (singular/plural safe) === */
+          // --- TESTIMONIALS: title from B1 + flexible columns
           const tBox  = document.getElementById('testimonialsBox');
           const tList = document.getElementById('testimonialsList');
           const tTitle= document.getElementById('testimonialsTitle');
@@ -867,23 +853,22 @@
           if (testiRaw){ try{ const b1 = csvFirstRowSecondCol(testiRaw); if (b1) tHeading = b1; }catch{} }
           tTitle.textContent = tHeading;
 
-          const rowsForItems = (testiRows||[]);
-          const items = rowsForItems
-            .map(r=>{
-              const from = (r['From']||r['from']||'').trim();
-              const text = (r['Testimonial']||r['Testimonials']||r['testimonial']||r['testimonials']||'').trim();
-              return { from, text };
-            })
-            .filter(t=>t.from && t.text);
+          // Detect header keys: "From" and "Testimonials" (plural) or close variants
+          const headers = testiRows && testiRows[0] ? Object.keys(testiRows[0]) : [];
+          const fromKey = headers.find(k => /^from$/i.test(k)) || 'From';
+          const textKey = headers.find(k => /^(testimonials?|quote|text)$/i.test(k)) || 'Testimonials';
 
-          const smartQuote = s=>{
-            const t = s.trim();
-            const b = /^["“]/.test(t), e = /["”]$/.test(t);
-            return (b && e) ? t : `“${t.replace(/^["“'‘`]/,'').replace(/["”'‘`]$/,'')}”`;
-          };
-          const esc = s=> s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+          const items = (testiRows||[]).map(r=>({
+            from:(r[fromKey]||'').trim(),
+            text:(r[textKey]||'').trim()
+          })).filter(t=>t.from && t.text);
 
           if (items.length){
+            const smartQuote = s=>{
+              const t = s.trim(); const b = /^["“]/.test(t); const e = /["”]$/.test(t);
+              return (b&&e)?t:`“${t.replace(/^\"|^“|^'|^‘|^`/, '').replace(/\"$|”$|'$|‘$|`$/, '')}”`;
+            };
+            const esc = s=> s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
             tList.innerHTML = '';
             items.forEach(it=>{
               const el = document.createElement('div'); el.className='testimonial';
@@ -974,7 +959,7 @@
     });
   }
 
-  /* sysDotEffects */
+  /* sysDotEffects preserved */
   (function sysDotEffects(){
     const dot = document.querySelector('.brand .dot');
     if (!dot) return;
