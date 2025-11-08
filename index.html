@@ -169,7 +169,7 @@
       content:""; position:absolute; top:-60%; left:-40%; width:60%; height:220%;
       background:linear-gradient(120deg, transparent 40%, rgba(255,255,255,.08), transparent 60%);
       transform:rotate(14deg); animation:sweep 8s linear infinite;
-      pointer-events:none; /* crucial to prevent double-click issue */
+      pointer-events:none; /* critical to avoid double-click issue */
     }
     @keyframes edgeSpin{to{transform:rotate(360deg)}}
     @keyframes sweep{0%{transform:translateX(-40%) rotate(14deg)} 100%{transform:translateX(200%) rotate(14deg)}}
@@ -394,7 +394,7 @@
       h = canvas.height= Math.floor(innerHeight*dpr);
       canvas.style.width = innerWidth+'px'; canvas.style.height = innerHeight+'px';
       if (!stars.length){
-        const count = Math.floor((innerWidth*innerHeight)/9600); // trimmed load
+        const count = Math.floor((innerWidth*innerHeight)/9600);
         stars = Array.from({length:count}, ()=>({ x: Math.random()*w, y: Math.random()*h, z: Math.random()*1.2 + .3, a: Math.random()*0.6 + 0.2 }));
       }
     }
@@ -415,11 +415,12 @@
 
   /* ====== Config ====== */
   const PUBHTML = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQxBxTbb-Ax7rpnnn5zWDUW6fGq1nUGIEPJb5qfaxifqKyZexNLK28gwpQLS5T5vpeuSvZicAEg69U1/pubhtml";
-  const TESTI_GID = "1171884514"; // Testimonials tab GID (explicit, per your link)
-
   const DEFAULT_PHONE = "(818)434-8013";
   const DEFAULT_EMAIL = "arifeblowitzvfx@gmail.com";
   const DEFAULT_RESUME = "https://docs.google.com/document/d/1NnKyzE8TtjMOe8WdTEBE7zNscM_RIHBMGF1CMjOn29s/export?format=pdf";
+
+  /* Testimonials: explicit GID per your tab */
+  const TESTI_GID = "1171884514";
 
   /* ====== Helpers ====== */
   const $ = (sel, el=document) => el.querySelector(sel);
@@ -442,25 +443,52 @@
   setContactSection(DEFAULT_PHONE, DEFAULT_EMAIL);
   (function(){ const r = document.getElementById('btnResume'); if (r) r.href = DEFAULT_RESUME; document.getElementById('dockResume').href = r ? r.href : DEFAULT_RESUME; })();
 
-  /* CSV parsing */
-  function csvToMatrix(csvText){
+  /* CSV utilities */
+  function csvToObjects(csvText){
     const rows = []; let field="", row=[], inQ=false;
     const s = String(csvText||"").replace(/\r/g,'');
     for (let i=0;i<s.length;i++){
       const c = s[i];
-      if (c==='"'){ inQ = !inQ; continue; }
-      if (!inQ && c===','){ row.push(field); field=""; continue; }
-      if (!inQ && c==='\n'){ row.push(field); rows.push(row.map(v=>String(v||'').replace(/""/g,'"'))); row=[]; field=""; continue; }
+      if (c==='"'){ inQ = !inQ; field+=c; continue; }
+      if (!inQ && c===','){ row.push(field.replace(/^("|“)|("|”)$/g,'').replace(/""/g,'"')); field=""; continue; }
+      if (!inQ && c==='\n'){ row.push(field.replace(/^("|“)|("|”)$/g,'').replace(/""/g,'"')); rows.push(row); row=[]; field=""; continue; }
       field+=c;
     }
-    if (field.length || row.length){ row.push(field); rows.push(row.map(v=>String(v||'').replace(/""/g,'"'))); }
-    return rows;
+    if (field.length || row.length){ row.push(field.replace(/^("|“)|("|”)$/g,'').replace(/""/g,'"')); rows.push(row); }
+    if (!rows.length) return [];
+    const headers = rows[0].map(h=>h.trim());
+    return rows.slice(1).filter(r=>r.some(v=>String(v||'').trim())).map(r=>{ const o={}; headers.forEach((h,i)=>o[h]=r[i]!==undefined?r[i]:""); return o; });
   }
-  const normBool = v => /^(true|yes|1)$/i.test(String(v||'').trim());
-  const normNum = v => { const n = Number(String(v||"").replace(/[^\d.-]/g,"")); return isNaN(n)?0:n; };
   function buildCsvUrlFromGid(pubhtml, gid){ return pubhtml.replace(/\/pubhtml.*/, '/pub') + `?gid=${gid}&single=true&output=csv`; }
 
-  /* ====== Banner, tabs, general UI ====== */
+  const normBool = v => /^(true|yes|1)$/i.test(String(v||'').trim());
+  const normNum = v => { const n = Number(String(v||"").replace(/[^\d.-]/g,"")); return isNaN(n)?0:n; };
+
+  const cache = { get(key){ try{ return JSON.parse(localStorage.getItem(key)||'null'); }catch{return null} }, set(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch{} } };
+
+  async function discoverGids(pubhtml){
+    const map = {};
+    try{
+      const html = await fetch(pubhtml, {mode:"cors"}).then(r=>r.text());
+      const uniqueGids = [...new Set([...html.matchAll(/gid=(\d+)/g)].map(m=>m[1]))];
+      for (const gid of uniqueGids){
+        const txt = await fetch(buildCsvUrlFromGid(pubhtml, gid)).then(r=>r.text()).catch(()=>null);
+        if (!txt) continue;
+        const rows = csvToObjects(txt);
+        const hdr = Object.keys(rows[0]||{}).join('|').toLowerCase();
+        if (hdr.includes('primary image') && hdr.includes('on set?')) map['Ariel_Feblowitz_Works']=gid;
+        else if (hdr.includes('ride image') && hdr.includes('ride name')) map['Rides']=gid;
+        else if (hdr.includes('type') && hdr.includes('video_id')) map['Personal Youtube']=gid;
+        else if (hdr.includes('key') && hdr.includes('value')) map['Main site info']=gid;
+        // Testimonials: we'll override with explicit GID anyway
+        else if (hdr.includes('from') && hdr.includes('testimonial')) map['Testimonials']=gid;
+      }
+    }catch(e){ console.error('[discoverGids]', e); }
+    // force testimonials GID
+    return { ...map, Testimonials: TESTI_GID };
+  }
+
+  /* Banner helpers */
   const rail = $('#bannerRail'); const scrollEl = $('#bannerScroll');
 
   const io = new IntersectionObserver((entries)=>{
@@ -473,6 +501,9 @@
     });
   }, { root: rail, rootMargin: '100% 40%', threshold: 0.01 });
 
+  const ytThumbHQ = id => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+  const ytThumbMax = id => `https://img.youtube.com/vi/${id}/maxresdefault.jpg`;
+
   function makeImgLazy({src, alt, kind, ytId}){
     const img = new Image();
     img.alt = alt || '';
@@ -480,7 +511,7 @@
     if (kind==='poster'){ img.width = 800; img.height = 1200; } else { img.width = 1280; img.height = 720; }
     let main = src;
     if (ytId){
-      const hq = ytThumbHQ(ytId); main = ytThumb(ytId);
+      const hq = ytThumbHQ(ytId); main = ytThumbMax(ytId);
       img.dataset.srcset = `${hq} 480w, ${main} 1280w`;
       img.sizes = kind==='poster' ? "(max-width: 900px) 35vw, 12vw" : "(max-width: 900px) 70vw, 24vw";
     } else {
@@ -488,11 +519,13 @@
     }
     img.dataset.src = main; io.observe(img); return img;
   }
+
   function titlePlaceholderSVG(title){
     const safe = (title||'Untitled').replace(/&/g,'&amp;').replace(/</g,'&lt;');
     const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 800'><rect width='100%' height='100%' fill='#000'/><text x='50%' y='50%' fill='#9fffcf' font-family='Inter, Segoe UI, Roboto, Arial, sans-serif' font-size='36' text-anchor='middle' dominant-baseline='middle'>${safe}</text></svg>`;
     return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
   }
+
   function makeTile(t){
     const a=document.createElement('a');
     a.className='tile ' + (t.type==='pro'?'poster':'wide');
@@ -503,19 +536,18 @@
     a.appendChild(img);
     return a;
   }
+
   function fillBanner(tiles){
     scrollEl.innerHTML='';
-    const seq = tiles.slice(0, 42);
+    const seq = tiles.slice(0,42);
     const doubled = [...seq, ...seq];
     doubled.forEach(t=> scrollEl.appendChild(makeTile(t)));
-
     const firstImgs = [...scrollEl.querySelectorAll('img')].slice(0,4);
     firstImgs.forEach(img=>{
       img.fetchPriority = 'high';
       if (img.dataset.src){ img.src = img.dataset.src; img.removeAttribute('data-src'); }
       if (img.dataset.srcset){ img.srcset = img.dataset.srcset; img.removeAttribute('data-srcset'); }
     });
-
     requestAnimationFrame(()=>{
       const totalW = scrollEl.scrollWidth / 2;
       const pxPerSec = 55;
@@ -523,6 +555,7 @@
       document.documentElement.style.setProperty('--marqueeDur', dur+'s');
     });
   }
+
   rail.addEventListener('mouseenter', ()=> rail.classList.add('paused'));
   rail.addEventListener('mouseleave', ()=> rail.classList.remove('paused'));
   $('#bnPrev').addEventListener('click', ()=>{ rail.scrollLeft -= 260; });
@@ -537,38 +570,16 @@
       window.scrollTo({ top: $('.wrap').offsetTop, behavior: 'smooth' });
     });
   });
+
   $('#year').textContent = new Date().getFullYear();
-
-  function toast(text, x, y){
-    const t=document.createElement('div'); t.className='toast'; t.textContent=text; document.body.appendChild(t);
-    const px = Math.min(window.innerWidth-160, Math.max(12, x|| (window.innerWidth-160)/2)); const py = Math.min(window.innerHeight-60, Math.max(8, y|| 18));
-    t.style.left = px+'px'; t.style.top = py+'px';
-    requestAnimationFrame(()=> t.classList.add('show'));
-    setTimeout(()=>{ t.classList.remove('show'); setTimeout(()=>t.remove(),180); }, 1100);
-  }
-
-  function enhanceContactLinks(){
-    const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-    const scope = [document.getElementById('topContact'), document.getElementById('contactInfo')].filter(Boolean);
-    scope.forEach(root=>{
-      root.querySelectorAll('a[href^="tel:"], a[href^="mailto:"]').forEach(a=>{
-        a.addEventListener('click', e=>{
-          if (isMobile) return;
-          e.preventDefault();
-          const text = a.textContent.trim();
-          navigator.clipboard?.writeText(text).then(()=>{ toast('Copied: '+text, e.clientX, e.clientY); }).catch(()=>{ toast(text, e.clientX, e.clientY); });
-        }, {passive:false});
-      });
-    });
-  }
-
-  /* ====== Page init ====== */
-  const loaded = { main:false, reel:false, sections:false, banner:false };
   const sysStatus = document.getElementById('sysStatus');
   function setStatus(msg, linkHref){ if (!sysStatus) return; sysStatus.textContent = msg; if (linkHref) { sysStatus.href = linkHref; } }
 
-  // Preload HUD + placeholder testimonials (gags)
+  const loaded = { main:false, reel:false, sections:false, banner:false };
+
+  // --- PRELOAD PLACEHOLDERS ---
   (function preloadFrames(){
+    // HUD placeholder
     const hudCard = document.getElementById('hudCard');
     const hudTitle = document.getElementById('hudTitle');
     const hudBody  = document.getElementById('hudBody');
@@ -591,7 +602,7 @@
       {tag:'RIGS', body:'Technodolly/Graphlite/Spydercam/MILO profiles loaded'}
     ]);
 
-    // Gag placeholders
+    // Testimonials placeholders (gags): will be REPLACED on successful fetch
     const tBox  = document.getElementById('testimonialsBox');
     const tList = document.getElementById('testimonialsList');
     const gag = (q,f)=>`<div class="testimonial"><span class="quote">“${q}”</span><span class="from">— ${f}</span></div>`;
@@ -606,114 +617,293 @@
   (async function init(){
     try{
       setStatus('Routing request to MOTHER…', sysStatus.href);
+      const gids = await discoverGids(PUBHTML);
 
-      // Main labels/links (kept as constants / defaults for this drop-in)
+      async function pullTab(name){
+        const gid = gids[name]; if(!gid) return {rows:[], raw:null};
+        const key = `csv:${gid}`;
+        let txt;
+        if (name === 'Main site info'){
+          // always fresh for main info
+          txt = await fetch(buildCsvUrlFromGid(PUBHTML, gid) + `&cb=${Date.now()}`).then(r=>r.text());
+        } else {
+          const cached = cache.get(key);
+          if (cached && cached.txt){ txt = cached.txt; }
+          else { txt = await fetch(buildCsvUrlFromGid(PUBHTML, gid)).then(r=>r.text()); cache.set(key, {ts:Date.now(), txt}); }
+        }
+        return { rows: csvToObjects(txt), raw: txt };
+      }
+
+      // MAIN INFO
+      const mainInfoPull = await pullTab('Main site info');
+      const mainInfo = {}; (mainInfoPull.rows||[]).forEach(r=> mainInfo[(r.key||'').trim()] = (r.value||'').trim());
+
+      $('#siteTitle').textContent = mainInfo.site_title || 'Subject: ARI FEBLOWITZ';
+      const imdbUrl = fixImdb(mainInfo.imdb_url || 'https://www.imdb.me/ArielFeblowitz');
+      const subtitleTxt = mainInfo.site_subtitle || 'Techvis & Virtual Production Supervisor';
+      const subtitleEl = $('#siteSubtitle'); subtitleEl.textContent = subtitleTxt; subtitleEl.href = imdbUrl;
+      $('#about1').textContent = mainInfo.about_paragraph_1 || $('#about1').textContent;
+      $('#about2').textContent = mainInfo.about_paragraph_2 || $('#about2').textContent;
+      const linksHref = mainInfo.all_links_url || 'https://linktr.ee/admin/links';
+      $('#btnIMDb').href = imdbUrl;
+      $('#btnYouTube').href = mainInfo.youtube_url || $('#btnYouTube').href;
+      $('#btnLinks').href = linksHref;
+      const resumeURL = (mainInfo.resume_url && mainInfo.resume_url.trim()) || DEFAULT_RESUME;
+      $('#btnResume').href = resumeURL; $('#dockResume').href = resumeURL;
+
+      setStatus('Link established', linksHref);
+      const aboutStatus = $('#aboutStatus'); if (aboutStatus) aboutStatus.style.display = 'none';
       document.body.classList.add('ready');
       $('#reelHeader').textContent = 'Demo Reel';
       $('#aboutHeader').textContent = 'About';
-      const phone = DEFAULT_PHONE.trim();
-      const email = DEFAULT_EMAIL.trim();
+      loaded.main = true;
+
+      const phone = (mainInfo.phone||DEFAULT_PHONE).trim();
+      const email = (mainInfo.email||DEFAULT_EMAIL).trim();
       setTopContact(phone, email);
       setContactSection(phone, email);
       enhanceContactLinks();
+
       document.getElementById('dockCopy')?.addEventListener('click', ()=>{
-        const e = DEFAULT_EMAIL.trim();
+        const e = (mainInfo.email || DEFAULT_EMAIL).trim();
         navigator.clipboard?.writeText(e).then(()=> toast('Copied: '+e)).catch(()=> toast(e));
       });
 
-      // Load sections lazily and banner slightly after
+      // HUD title + strengths
+      $('#hudTitle').textContent = mainInfo.ASSESSMENT || mainInfo.assessment || 'THREAT ASSESSMENT // SKNET_0001';
+      const strengthsText = (mainInfo.Strengths || mainInfo.strengths || '').trim();
+      if (strengthsText){
+        const hudBody = $('#hudBody'); hudBody.innerHTML = '';
+        strengthsText.split(/\n+/).map(s=>s.trim()).filter(Boolean).forEach(s=>{
+          const m = s.match(/^([^:]+):\s*(.+)$/);
+          const tag = (m ? m[1] : 'Signal'), body = (m ? m[2] : s);
+          const row = document.createElement('div'); row.className='line';
+          row.innerHTML = `<span class="tag">${tag.toUpperCase()}</span><div class="body">${body}</div>`;
+          hudBody.appendChild(row);
+        });
+        document.getElementById('hudCard').style.display='block';
+      }
+
+      // Reel
+      (function loadReel(){
+        const reelInput = (mainInfo.reel_youtube_id||'').trim();
+        const reelFrame = $('#reelFrame');
+        const setIframe = src => { reelFrame.loading='lazy'; reelFrame.decoding='async'; reelFrame.fetchPriority='low'; reelFrame.src = src; };
+        if (/^\s*</i.test(reelInput)){
+          const tmp = document.createElement('div'); tmp.innerHTML = reelInput;
+          const ifr = tmp.querySelector('iframe');
+          if (ifr && ifr.src){ setIframe(ifr.src); loaded.reel=true; return; }
+        }
+        const vimeoM = reelInput.match(/vimeo\.com\/(?:video\/)?(\d+)/i);
+        if (vimeoM){ setIframe(`https://player.vimeo.com/video/${vimeoM[1]}?badge=0&autopause=0&title=0&byline=0`); loaded.reel=true; return; }
+        if (/^\d{7,}$/.test(reelInput)){ setIframe(`https://player.vimeo.com/video/${reelInput}?badge=0&autopause=0&title=0&byline=0`); loaded.reel=true; return; }
+        const ytM = reelInput.match(/[?&]v=([\w-]{6,})/) || reelInput.match(/youtu\.be\/([\w-]{6,})/);
+        if (ytM){ setIframe(`https://www.youtube.com/embed/${ytM[1]}?rel=0&modestbranding=1`); loaded.reel=true; return; }
+        if (/^[\w-]{6,}$/.test(reelInput)){ setIframe(`https://www.youtube.com/embed/${reelInput}?rel=0&modestbranding=1`); loaded.reel=true; return; }
+        loaded.reel=true;
+      })();
+
+      // Defer heavy sections
       const defer = window.requestIdleCallback || (fn=>setTimeout(fn, 0));
       defer(loadSections);
       defer(()=> setTimeout(buildBannerDeferred, 400));
+
+      async function loadSections(){
+        try{
+          if (loaded.sections) return; loaded.sections = true;
+
+          const personalPull = await pullTab('Personal Youtube');
+          const proPull      = await pullTab('Ariel_Feblowitz_Works');
+          const ridesPull    = await pullTab('Rides');
+
+          /* Personal videos/meta */
+          const meta = {}; const videos=[];
+          (personalPull.rows||[]).forEach(r=>{
+            const type=(r.type||'').toLowerCase();
+            if (type==='meta'){ meta[(r.key||'').trim()] = (r.value||'').trim(); }
+            else if (type==='video'){
+              const videoId=(r.video_id||'').trim();
+              const url=(r.youtube_url||'').trim() || (videoId?`https://www.youtube.com/watch?v=${videoId}`:'');
+              const thumb=(r.thumb_url||'').trim() || (videoId? ytThumbMax(videoId) : '');
+              videos.push({ prio:normNum(r.prio), includeInBanner: normBool(r.include_in_banner) || normNum(r.prio)>=5, featured: normBool(r.featured), videoId, title:(r.title||'').trim(), role:(r.role||'').trim(), url, thumb, ytid: videoId });
+            }
+          });
+
+          // Febz box
+          const febzId = (meta.febz_video_id || '').trim();
+          if (febzId){
+            $('#febzHeading').textContent = meta.febz_heading || "Also archiving my father's documentary work: FebzFoundFootage";
+            $('#febzBody').textContent = meta.febz_body || "A growing archive of Gary Feblowitz’s documentary footage and rare segments.";
+            $('#febzLink').href = `https://www.youtube.com/watch?v=${febzId}`;
+            $('#febzThumb').src = ytThumbMax(febzId);
+            $('#febzBox').style.display = 'block';
+          }
+          const showLatest = (String(meta.latest_mode||'').toLowerCase()==='auto');
+          if (showLatest && meta.latest_playlist_or_channel_id){
+            const channelId = meta.latest_playlist_or_channel_id;
+            if (channelId.startsWith('UC')){
+              const uploadsId = 'UU'+channelId.slice(2);
+              $('#latestFrame').src = `https://www.youtube.com/embed/videoseries?list=${uploadsId}&rel=0`;
+              $('#latestBox').style.display = 'block';
+            }
+          }
+
+          /* Pro grid */
+          const proItems = (proPull.rows||[]).map(r=>({
+            title:(r['Name']||'').trim(),
+            url:fixImdb((r['URL']||'').trim()),
+            role:(r['My Role']||'').trim(),
+            prod:(r['Production Co.']||'').trim(),
+            onSet: normBool(r['On Set?']),
+            prio:normNum(r['Prio?']),
+            posters:[(r['Primary image']||'').trim()].filter(Boolean)
+          }))
+          .filter(x=>x.title && x.prio>0)
+          .sort((a,b)=> (a.onSet!==b.onSet)? (a.onSet? -1:1) : (b.prio-a.prio) || a.title.localeCompare(b.title));
+
+          /* Rides grid */
+          const rideItems = (ridesPull.rows||[]).map(r=>({
+            title:(r['Ride Name']||'').trim(),
+            url:(r['Ride Link']||'').trim(),
+            role:(r['My Role']||'').trim(),
+            company:(r['Ride Company']||'').trim(),
+            desc:(r['Description']||'').trim(),
+            prio:normNum(r['Prio']||r['prio']),
+            posters:[(r['Ride Image']||r['Ride image']||'').trim()].filter(Boolean)
+          }))
+          .filter(x=>x.title && x.prio>0)
+          .sort((a,b)=> b.prio-a.prio || a.title.localeCompare(b.title));
+
+          renderPro(proItems); renderRides(rideItems); renderPersonal(videos, (meta.featured_video_id||'').trim());
+
+          /* Banner tiles */
+          window.__tilesData = {
+            pro: proItems.filter(p=>p.prio>=5).map(p=>({type:'pro', kind:'poster', title:p.title, img:p.posters[0]||'', url:p.url||'#'})),
+            ride: rideItems.filter(r=>r.prio===10).map(r=>({type:'ride', kind:'wide', title:r.title, img:r.posters[0]||'', url:r.url||'#'})),
+            per: videos.filter(v=>(v.prio||0)>=5 || v.includeInBanner).map(v=>({type:'personal', kind:'wide', title:v.title, img:v.thumb||'', url:v.url||'#', ytid:v.videoId||''}))
+          };
+
+          /* Testimonials (explicit GID, strict headers From | Testimonials) */
+          await loadTestimonials();
+
+        }catch(err){ console.error('[loadSections]', err); }
+      }
+
+      function renderPro(items){
+        const grid = $('#proGrid'); grid.innerHTML='';
+        if (!items.length){ grid.innerHTML = `<div class="muted">No items yet — add rows in the “Ariel_Feblowitz_Works” tab.</div>`; return; }
+        items.forEach(p=>{
+          const c=document.createElement('a'); c.className='proj card'; c.href=p.url||'#'; c.target='_blank'; c.rel='noopener';
+          const wrap=document.createElement('div'); wrap.className='thumb poster';
+          const img=new Image(); img.alt=''; img.loading='lazy'; img.decoding='async'; img.fetchPriority='low'; img.src = p.posters[0] || titlePlaceholderSVG(p.title); img.width=800; img.height=1200;
+          wrap.appendChild(img);
+          const meta=document.createElement('div'); meta.className='meta';
+          const info=[p.role, p.prod].filter(Boolean).join(' • ');
+          meta.innerHTML = `<div class="title">${p.title}</div><div class="role">${info}</div>`;
+          c.appendChild(wrap); c.appendChild(meta); grid.appendChild(c);
+        });
+      }
+      function renderRides(items){
+        const grid = $('#ridesGrid'); grid.innerHTML='';
+        if (!items.length){ grid.innerHTML = `<div class="muted">No items yet — add rows in the “Rides” tab.</div>`; return; }
+        items.forEach(p=>{
+          const c=document.createElement('a'); c.className='proj card'; c.href=p.url||'#'; c.target='_blank'; c.rel='noopener';
+          const wrap=document.createElement('div'); wrap.className='thumb';
+          const img=new Image(); img.alt=''; img.loading='lazy'; img.decoding='async'; img.fetchPriority='low'; img.src = p.posters[0] || titlePlaceholderSVG(p.title); img.width=1280; img.height=720;
+          wrap.appendChild(img);
+          const meta=document.createElement('div'); meta.className='meta';
+          const info=[p.role, p.company].filter(Boolean).join(' • ');
+          let body=''; if (p.desc){ body = `<details class="summaryless" style="margin-top:.45em; font-size:.95em"><summary class="btn" style="display:inline-flex; margin:0; padding:.35em .6em;">Details</summary><div class="muted" style="margin-top:.6em">${p.desc}</div></details>`; }
+          meta.innerHTML = `<div class="title">${p.title}</div><div class="role">${info}</div>${body}`;
+          c.appendChild(wrap); c.appendChild(meta); grid.appendChild(c);
+        });
+      }
+      function renderPersonal(videos, featuredId){
+        const grid = $('#personalGrid'); grid.innerHTML='';
+        if (!videos.length){ grid.innerHTML = `<div class="muted">No videos yet — add rows in the “Personal Youtube” tab.</div>`; return; }
+        const fIdx = videos.findIndex(v=>v.videoId===featuredId); if (fIdx>0){ const [f]=videos.splice(fIdx,1); videos.unshift(f); }
+        videos.forEach(v=>{
+          const c=document.createElement('a'); c.className='proj card'; c.href=v.url||'#'; c.target='_blank'; c.rel='noopener';
+          const wrap=document.createElement('div'); wrap.className='thumb';
+          const img=new Image(); img.alt=''; img.loading='lazy'; img.decoding='async'; img.fetchPriority='low'; img.src = v.thumb || (v.videoId? ytThumbMax(v.videoId) : titlePlaceholderSVG(v.title)); img.width=1280; img.height=720;
+          wrap.appendChild(img);
+          const meta=document.createElement('div'); meta.className='meta';
+          meta.innerHTML = `<div class="title">${v.title||''}</div><div class="role">${v.role||''}</div>`;
+          c.appendChild(wrap); c.appendChild(meta); grid.appendChild(c);
+        });
+      }
+
+      async function loadTestimonials(){
+        try{
+          const csvUrl = buildCsvUrlFromGid(PUBHTML, TESTI_GID);
+          const text = await fetch(csvUrl, {mode:'cors'}).then(r=>r.text());
+          const rows = csvToObjects(text);
+          // Expect headers: From | Testimonials
+          const items = rows.map(r=>{
+            const from = String(r['From']||r['from']||'').trim();
+            const body = String(r['Testimonials']||r['Testimonial']||r['testimonials']||r['testimonial']||'').trim();
+            return {from, body};
+          }).filter(x=>x.from && x.body);
+
+          const tBox  = document.getElementById('testimonialsBox');
+          const tList = document.getElementById('testimonialsList');
+
+          if (!items.length){ tBox.style.display='none'; return; }
+
+          const smartQuote = s=>{
+            const t = s.trim();
+            const b = /^["“]/.test(t), e = /["”]$/.test(t);
+            return (b && e) ? t : `“${t.replace(/^["“'‘`]/,'').replace(/["”'‘`]$/,'')}”`;
+          };
+          const esc = s=> s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+
+          // REPLACE placeholders entirely
+          tList.innerHTML = '';
+          items.forEach(it=>{
+            const el = document.createElement('div'); el.className='testimonial';
+            el.innerHTML = `<span class="quote">${esc(smartQuote(it.body))}</span><span class="from">— ${esc(it.from)}</span>`;
+            tList.appendChild(el);
+          });
+          tBox.style.display = 'block';
+        }catch(e){
+          console.error('[testimonials] failed', e);
+          // leave placeholders if fetch fails
+        }
+      }
+
+      function buildBannerDeferred(){
+        if (loaded.banner || !window.__tilesData) return;
+        loaded.banner = true;
+        const {pro, ride, per} = window.__tilesData;
+        const interleaved=[]; const L=Math.max(pro.length, ride.length, per.length);
+        for(let i=0;i<L;i++){ if(pro[i]) interleaved.push(pro[i]); if(ride[i]) interleaved.push(ride[i]); if(per[i]) interleaved.push(per[i]); }
+        fillBanner(interleaved);
+      }
+
     }catch(err){ console.error('[init]', err); }
   })();
 
-  /* ====== Sections loader (kept lean here) ====== */
-  async function loadSections(){
-    if (loaded.sections) return; loaded.sections = true;
-    try{
-      // Build banner from static stubs for now (you can re-wire to your sheets again if needed)
-      window.__tilesData = { pro:[], ride:[], per:[] };
-
-      // TESTIMONIALS — rebuild from scratch, explicit tab, row 1 headers: From | Testimonials
-      await loadTestimonials();
-    } catch(e){ console.error('[loadSections]', e); }
+  function toast(text, x, y){
+    const t=document.createElement('div'); t.className='toast'; t.textContent=text; document.body.appendChild(t);
+    const px = Math.min(window.innerWidth-160, Math.max(12, x|| (window.innerWidth-160)/2)); const py = Math.min(window.innerHeight-60, Math.max(8, y|| 18));
+    t.style.left = px+'px'; t.style.top = py+'px';
+    requestAnimationFrame(()=> t.classList.add('show'));
+    setTimeout(()=>{ t.classList.remove('show'); setTimeout(()=>t.remove(),180); }, 1100);
   }
 
-  async function loadTestimonials(){
-    const csvUrl = buildCsvUrlFromGid(PUBHTML, TESTI_GID);
-    let text = '';
-    try{
-      text = await fetch(csvUrl, {mode:'cors'}).then(r=>r.text());
-    }catch(e){
-      console.error('[testimonials] fetch failed', e);
-      return; // leave gags in place
-    }
-    const rows = csvToMatrix(text);
-    if (!rows || rows.length < 2) return; // only header -> keep gags
-
-    // Expect exact headers in row 1
-    const headers = rows[0].map(h=>String(h||'').trim());
-    const idxFrom = headers.findIndex(h=>/^from$/i.test(h));
-    const idxText = headers.findIndex(h=>/^testimonials?$/i.test(h));
-    if (idxFrom === -1 || idxText === -1){
-      console.warn('[testimonials] header mismatch; got:', headers);
-      return; // keep gags visible so there’s something
-    }
-
-    const items = rows.slice(1)
-      .map(r=>{
-        const from = String(r[idxFrom]||'').trim();
-        const body = String(r[idxText]||'').trim();
-        return {from, body};
-      })
-      .filter(it=> it.from && it.body);
-
-    const tBox  = document.getElementById('testimonialsBox');
-    const tList = document.getElementById('testimonialsList');
-
-    if (!items.length){ tBox.style.display='none'; return; }
-
-    // Build DOM: real testimonials first, then a divider gag block
-    const frag = document.createDocumentFragment();
-
-    const smartQuote = s=>{
-      const t = s.trim();
-      const b = /^["“]/.test(t), e = /["”]$/.test(t);
-      return (b && e) ? t : `“${t.replace(/^["“'‘`]/,'').replace(/["”'‘`]$/,'')}”`;
-    };
-    const esc = s=> s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
-
-    items.forEach(it=>{
-      const el = document.createElement('div'); el.className='testimonial';
-      el.innerHTML = `<span class="quote">${esc(smartQuote(it.body))}</span><span class="from">— ${esc(it.from)}</span>`;
-      frag.appendChild(el);
+  function enhanceContactLinks(){
+    const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const scope = [document.getElementById('topContact'), document.getElementById('contactInfo')].filter(Boolean);
+    scope.forEach(root=>{
+      root.querySelectorAll('a[href^="tel:"], a[href^="mailto:"]').forEach(a=>{
+        a.addEventListener('click', e=>{
+          if (isMobile) return;
+          e.preventDefault();
+          const text = a.textContent.trim();
+          navigator.clipboard?.writeText(text).then(()=>{ toast('Copied: '+text, e.clientX, e.clientY); }).catch(()=>{ toast(text, e.clientX, e.clientY); });
+        }, {passive:false});
+      });
     });
-
-    // Keep the three gags appended at the end
-    const gags = [
-      {q:'Cross-referencing guild logs, call sheets, and lunch orders…', f:'Mother // Unit 1824'},
-      {q:'Decrypting production radio chatter: “He solved it on set.”', f:'Cyberdyne Archive • Tape B-12'},
-      {q:'Relax. We’ll “fix it in post” — or better yet, follow the previs and won’t need to.', f:'MOTHER, after coffee'}
-    ];
-    gags.forEach(g=>{
-      const el = document.createElement('div'); el.className='testimonial';
-      el.innerHTML = `<span class="quote">“${esc(g.q)}”</span><span class="from">— ${esc(g.f)}</span>`;
-      frag.appendChild(el);
-    });
-
-    tList.innerHTML = '';
-    tList.appendChild(frag);
-    tBox.style.display = 'block';
-  }
-
-  function buildBannerDeferred(){
-    if (loaded.banner || !window.__tilesData) return;
-    loaded.banner = true;
-    const {pro, ride, per} = window.__tilesData;
-    const interleaved=[]; const L=Math.max(pro.length, ride.length, per.length);
-    for(let i=0;i<L;i++){ if(pro[i]) interleaved.push(pro[i]); if(ride[i]) interleaved.push(ride[i]); if(per[i]) interleaved.push(per[i]); }
-    fillBanner(interleaved);
   }
 
   /* ====== Dot effects — 3s hover cooldown ====== */
