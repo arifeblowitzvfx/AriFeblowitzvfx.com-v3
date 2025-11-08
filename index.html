@@ -84,40 +84,41 @@
     .tab-btn{padding:.6em .9em; border-radius:12px; background:var(--panel); color:var(--txt); border:1px solid rgba(66,255,209,.32); cursor:pointer; font-weight:600}
     .tab-btn.active{outline:1px solid var(--accent); box-shadow:0 0 0 2px rgba(0,255,156,.12) inset}
 
-    /* HERO GRID (wide: Reel over Testimonials; HUD spans right) */
+    /* === HERO LAYOUT ===
+       Wide: two columns → Left stack (Reel + Testimonials, gap:0) and Right HUD
+       Narrow: dissolve left stack (display:contents) and order as Reel → HUD → Testimonials
+    */
     .hero{
       margin:clamp(12px,1.6vw,20px) 0;
       display:grid;
       grid-template-columns: minmax(0, 2.1fr) minmax(0, .9fr);
-      grid-template-areas:
-        "reel hud"
-        "test hud";
+      grid-template-areas: "left hud";
       column-gap: calc(var(--grid) + 18px);
-      row-gap: 0; /* butts Testimonials directly under Reel */
       align-items:start;
     }
-    .area-reel{ grid-area: reel; }
-    .area-hud { grid-area: hud; }
-    .area-test{ grid-area: test; }
+    .area-left{ grid-area:left; }
+    .area-hud{ grid-area:hud; }
+
+    /* Left column stack: guarantees Testimonials touches Reel */
+    .leftStack{ display:flex; flex-direction:column; gap:0; }
+    .leftStack > .card{ margin:0; } /* ensure no accidental gaps */
+
+    /* For grid-placed children (used on narrow layout) */
+    .area-reel{ grid-area:reel; }
+    .area-test{ grid-area:test; }
 
     @media (max-width:920px){
       .hero{
-        grid-template-columns: 1fr;
+        grid-template-columns:1fr;
         grid-template-areas:
           "reel"
           "hud"
-          "test"; /* testimonials now under HUD */
+          "test";
       }
+      /* Dissolve the left stack so children become direct grid items */
+      .leftStack{ display:contents; }
     }
-  /* Force Testimonials to touch the Reel on wide layouts */
-  .hero{ row-gap:0 }                /* already present, but reaffirmed */
-  .area-test{ margin-top:-1px; }    /* overlaps borders so there’s zero visual gap */
-  .area-reel{ margin-bottom:0; }    /* defensive: ensure no bottom margin */
-  
-  @media (max-width:920px){
-    /* When stacked under HUD on narrow screens, restore normal spacing */
-    .area-test{ margin-top:var(--grid); }
-  }
+
     .card{background:var(--panel); border:1px solid rgba(66,255,209,.34); border-radius:var(--radius); box-shadow:var(--shadow)}
     .pad{padding:clamp(14px,1.6vw,20px)}
 
@@ -220,22 +221,31 @@
       <!-- HOME -->
       <section id="home" class="active" role="tabpanel">
         <div class="hero">
-          <!-- Reel / left -->
-          <div class="card pad area-reel">
-            <h2 id="reelHeader" class="crt-glow" style="margin:0 0 .6em">Initializing video uplink…</h2>
-            <div class="reel" id="reelBox">
-              <iframe id="reelFrame" src="https://player.vimeo.com/video/1134518013?badge=0&autopause=0&title=0&byline=0" title="Ari Feblowitz — Demo Reel" frameborder="0" loading="lazy" decoding="async" fetchpriority="low" allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" allowfullscreen></iframe>
+          <!-- LEFT COLUMN: Reel + Testimonials stacked with zero gap -->
+          <div class="area-left leftStack">
+            <!-- Reel -->
+            <div class="card pad area-reel">
+              <h2 id="reelHeader" class="crt-glow" style="margin:0 0 .6em">Initializing video uplink…</h2>
+              <div class="reel" id="reelBox">
+                <iframe id="reelFrame" src="https://player.vimeo.com/video/1134518013?badge=0&autopause=0&title=0&byline=0" title="Ari Feblowitz — Demo Reel" frameborder="0" loading="lazy" decoding="async" fetchpriority="low" allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" allowfullscreen></iframe>
+              </div>
+              <div class="badges">
+                <a id="btnIMDb" class="btn" href="https://www.imdb.me/ArielFeblowitz" target="_blank" rel="noopener">IMDb</a>
+                <a id="btnYouTube" class="btn" href="https://www.youtube.com/@DirectorPsycho" target="_blank" rel="noopener">YouTube</a>
+                <a id="btnLinks" class="btn" href="https://linktr.ee/admin/links" target="_blank" rel="noopener">All My Links</a>
+                <a id="btnResume" class="btn primary" href="#" download>Download Résumé</a>
+                <a id="btnNews" class="btn" href="https://www.youtube.com/watch?v=gM5H6vsGIcs" target="_blank" rel="noopener">Ari in the News</a>
+              </div>
             </div>
-            <div class="badges">
-              <a id="btnIMDb" class="btn" href="https://www.imdb.me/ArielFeblowitz" target="_blank" rel="noopener">IMDb</a>
-              <a id="btnYouTube" class="btn" href="https://www.youtube.com/@DirectorPsycho" target="_blank" rel="noopener">YouTube</a>
-              <a id="btnLinks" class="btn" href="https://linktr.ee/admin/links" target="_blank" rel="noopener">All My Links</a>
-              <a id="btnResume" class="btn primary" href="#" download>Download Résumé</a>
-              <a id="btnNews" class="btn" href="https://www.youtube.com/watch?v=gM5H6vsGIcs" target="_blank" rel="noopener">Ari in the News</a>
+
+            <!-- Testimonials (docks right under Reel on wide) -->
+            <div class="card pad area-test" id="testimonialsBox" style="display:none">
+              <h3 id="testimonialsTitle" class="crt-glow" style="margin:.2em 0 .6em">Testimonials</h3>
+              <div class="tlist" id="testimonialsList"></div>
             </div>
           </div>
 
-          <!-- HUD / right spans rows -->
+          <!-- RIGHT COLUMN: HUD -->
           <div class="card pad area-hud">
             <h2 id="aboutHeader" class="crt-glow" style="margin:0 0 .6em">Subject dossier…</h2>
             <p class="muted crt-glow" id="aboutStatus" style="margin:.2em 0 .8em">Initializing: Weyland Yutani–Cyberdyne link…</p>
@@ -249,12 +259,6 @@
               <h3 id="hudTitle" class="crt-glow">THREAT ASSESSMENT // SKNET_0001</h3>
               <div class="grid2" id="hudBody"></div>
             </div>
-          </div>
-
-          <!-- Testimonials under Reel (wide) / under HUD (narrow) -->
-          <div class="card pad area-test" id="testimonialsBox" style="display:none">
-            <h3 id="testimonialsTitle" class="crt-glow" style="margin:.2em 0 .6em">Testimonials</h3>
-            <div class="tlist" id="testimonialsList"></div>
           </div>
         </div>
       </section>
@@ -336,7 +340,7 @@
 
   // CSV helpers
   function csvToObjects(csvText){ const rows = []; let field="", row=[], inQ=false; for (let c of String(csvText||"").replace(/\r/g,'')){ if (c==='"'){ inQ = !inQ; field+=c; } else if (c===',' && !inQ){ row.push(field.replace(/^("|“)|("|”)$/g,'').replace(/""/g,'"')); field=""; } else if (c==='\n' && !inQ){ row.push(field.replace(/^("|“)|("|”)$/g,'').replace(/""/g,'"')); rows.push(row); row=[]; field=""; } else field+=c; } if (field.length || row.length){ row.push(field.replace(/^("|“)|("|”)$/g,'').replace(/""/g,'"')); rows.push(row); } if (!rows.length) return []; const headers = rows[0].map(h=>h.trim()); return rows.slice(1).filter(r=>r.length>1).map(r=>{ const o={}; headers.forEach((h,i)=>o[h]=r[i]!==undefined?r[i]:""); return o; }); }
-  function csvFirstRowSecondCol(csvText){ // B1 extractor respecting quotes
+  function csvFirstRowSecondCol(csvText){
     let inQ=false, col=0, val="";
     for (let i=0;i<csvText.length;i++){
       const ch = csvText[i];
@@ -478,7 +482,7 @@
       {tag:'SKNET:SIG', body:'Skynet heuristic prefetch… nominal'},
       {tag:'IO/TIMEBASE', body:'Genlock sync… LTC/VITC stable'},
       {tag:'LENS DB', body:'FF/APS-C tables cached; distortion LUTs primed'},
-      {tag:'RIGS', body:'Technodolly/Graphlite/Spidercam/MILO profiles loaded'}
+      {tag:'RIGS', body:'Technodolly/Graphlite/Spydercam/MILO profiles loaded'}
     ]);
 
     // Testimonials placeholder
@@ -488,7 +492,6 @@
     tTitle.textContent = 'Satellite uplink awaiting interstellar comms to verify subject with known associates…';
     const gag = (q,f)=>`<div class="testimonial"><span class="quote">“${q}”</span><span class="from">— ${f}</span></div>`;
     tList.innerHTML = [
-      // keep the other two gags only (no duplicate of title gag)
       gag('Cross-referencing guild logs, call sheets, and lunch orders…','Mother // Unit 1824'),
       gag('Decrypting production radio chatter: “He solved it on set.”','Cyberdyne Archive • Tape B-12')
     ].join('');
@@ -680,12 +683,10 @@
           const tList = document.getElementById('testimonialsList');
           const tTitle= document.getElementById('testimonialsTitle');
 
-          // B1 is first row, second column
           let tHeading = 'Testimonials';
           if (testiRaw){ try{ const b1 = csvFirstRowSecondCol(testiRaw); if (b1) tHeading = b1; }catch{} }
           tTitle.textContent = tHeading;
 
-          // Replace placeholder list with real items
           const items = (testiRows||[]).map(r=>({ from:(r['From']||'').trim(), text:(r['Testimonial']||'').trim() })).filter(t=>t.from && t.text);
           if (items.length){
             const smartQuote = s=>{ const t = s.trim(); const b = /^["“]/.test(t); const e = /["”]$/.test(t); return (b&&e)?t:`“${t.replace(/^\"|^“|^'|^‘|^`/, '').replace(/\"$|”$|'$|‘$|`$/, '')}”`; };
