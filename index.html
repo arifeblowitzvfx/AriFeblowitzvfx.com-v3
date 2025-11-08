@@ -70,7 +70,7 @@
     .btn:hover{border-color:var(--accent); box-shadow:0 0 0 1px rgba(0,255,156,.22) inset}
     .btn.primary{background:linear-gradient(180deg, rgba(0,255,156,.34), rgba(0,255,156,.18)); color:#eafff6; text-shadow:0 1px 0 rgba(0,0,0,.6); font-weight:800}
 
-    /* Make the top contact buttons half-size and keep them under the name */
+    /* Top contact half-size */
     #topContact{ font-size:.5em; flex-basis:100%; display:flex; gap:8px; align-items:center; }
 
     /* Sticky tabs */
@@ -79,10 +79,33 @@
     .tab-btn{padding:.6em .9em; border-radius:12px; background:var(--panel); color:var(--txt); border:1px solid rgba(66,255,209,.32); cursor:pointer; font-weight:600}
     .tab-btn.active{outline:1px solid var(--accent); box-shadow:0 0 0 2px rgba(0,255,156,.12) inset}
 
-    /* Hero */
-    .hero{ margin:clamp(12px,1.6vw,20px) 0; display:grid; grid-template-columns: minmax(0, 2.1fr) minmax(0, .9fr); column-gap: calc(var(--grid) + 18px); align-items:start; }
-    @media (max-width:1200px){ .hero{grid-template-columns:1.5fr .9fr} }
-    @media (max-width:920px){ .hero{grid-template-columns:1fr} }
+    /* Hero Layout: left column (reel + testimonials), right column (assessment + about) */
+    .hero{
+      margin:clamp(12px,1.6vw,20px) 0;
+      display:grid;
+      grid-template-columns: minmax(0, 2.1fr) minmax(0, .9fr);
+      column-gap: calc(var(--grid) + 18px);
+      align-items:start;
+      grid-template-areas:
+        "left right";
+    }
+    .hero-left{ grid-area:left; display:grid; gap:var(--grid); }
+    .hero-right{ grid-area:right; display:grid; gap:var(--grid); }
+    @media (max-width:1200px){
+      .hero{ grid-template-columns:1.5fr .9fr; }
+    }
+    @media (max-width:920px){
+      .hero{
+        grid-template-columns:1fr;
+        grid-template-areas:
+          "left"
+          "right";
+      }
+      /* Mobile stacking: reel → assessment → about → testimonials */
+      .hero-left{ order:1; }
+      .hero-right{ order:2; }
+      #testimonialsBox{ order:4; }
+    }
 
     .card{background:var(--panel); border:1px solid rgba(66,255,209,.34); border-radius:var(--radius); box-shadow:var(--shadow)}
     .pad{padding:clamp(14px,1.6vw,20px)}
@@ -168,38 +191,62 @@
       <!-- HOME -->
       <section id="home" class="active" role="tabpanel">
         <div class="hero">
-          <div class="card pad">
-            <h2 id="reelHeader" class="crt-glow" style="margin:0 0 .6em">Initializing video uplink…</h2>
-            <div class="reel" id="reelBox">
-              <iframe id="reelFrame" src="https://player.vimeo.com/video/1134518013?badge=0&autopause=0&title=0&byline=0" title="Ari Feblowitz — Demo Reel" frameborder="0" loading="lazy" decoding="async" fetchpriority="low" allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" allowfullscreen></iframe>
+          <!-- LEFT: Reel + Testimonials -->
+          <div class="hero-left">
+            <div class="card pad">
+              <h2 id="reelHeader" class="crt-glow" style="margin:0 0 .6em">Initializing video uplink…</h2>
+              <div class="reel" id="reelBox">
+                <iframe id="reelFrame" src="https://player.vimeo.com/video/1134518013?badge=0&autopause=0&title=0&byline=0" title="Ari Feblowitz — Demo Reel" frameborder="0" loading="lazy" decoding="async" fetchpriority="low" allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" allowfullscreen></iframe>
+              </div>
+              <div class="badges">
+                <a id="btnIMDb" class="btn" href="https://www.imdb.me/ArielFeblowitz" target="_blank" rel="noopener">IMDb</a>
+                <a id="btnYouTube" class="btn" href="https://www.youtube.com/@DirectorPsycho" target="_blank" rel="noopener">YouTube</a>
+                <a id="btnLinks" class="btn" href="https://linktr.ee/admin/links" target="_blank" rel="noopener">All My Links</a>
+                <a id="btnResume" class="btn primary" href="#" download>Download Résumé</a>
+                <a id="btnNews" class="btn" href="https://www.youtube.com/watch?v=gM5H6vsGIcs" target="_blank" rel="noopener">Ari in the News</a>
+              </div>
             </div>
-            <div class="badges">
-              <a id="btnIMDb" class="btn" href="https://www.imdb.me/ArielFeblowitz" target="_blank" rel="noopener">IMDb</a>
-              <a id="btnYouTube" class="btn" href="https://www.youtube.com/@DirectorPsycho" target="_blank" rel="noopener">YouTube</a>
-              <a id="btnLinks" class="btn" href="https://linktr.ee/admin/links" target="_blank" rel="noopener">All My Links</a>
-              <a id="btnResume" class="btn primary" href="#" download>Download Résumé</a>
-              <a id="btnNews" class="btn" href="https://www.youtube.com/watch?v=gM5H6vsGIcs" target="_blank" rel="noopener">Ari in the News</a>
+
+            <!-- Testimonials live directly under reel (desktop); mobile stays lower naturally -->
+            <div class="card pad" id="testimonialsBox" style="display:none">
+              <h3 class="crt-glow" style="margin:.2em 0 .6em">Testimonials</h3>
+              <div class="tlist" id="testimonialsList"></div>
             </div>
           </div>
 
-          <!-- Assessment / Skills card -->
-          <div class="card pad">
-            <h2 id="assessmentHeader" class="crt-glow" style="margin:0 0 .6em">Skynet Analysis</h2>
-            <p class="muted crt-glow" id="aboutStatus" style="margin:.2em 0 .8em">Cyberdyne scanning for threat assessment…</p>
+          <!-- RIGHT: Assessment (skills) + About -->
+          <div class="hero-right">
+            <!-- New ASSESSMENT window (skills/attributes from sheet) -->
+            <div class="card pad" id="assessmentCard">
+              <h2 id="assessmentHeader" class="crt-glow" style="margin:0 0 .6em">Skynet Analysis</h2>
+              <p class="muted crt-glow" id="assessmentStatus" style="margin:.2em 0 .8em">Cyberdyne scanning for threat assessment…</p>
+              <div id="skillsRow1" class="badges"></div>
+              <div id="skillsRow2" class="badges"></div>
+            </div>
 
-            <!-- Optionally keep your brief about lines under the assessment header -->
-            <p id="about1">Bridging virtual and physical storytelling across techvis, previs/postvis, and virtual production. I translate complex sequences into precise, repeatable camera plans — trusted by directors, DPs, and VFX supervisors.</p>
-            <p id="about2" class="muted">Credits include Avatar: The Way of the Water, Avengers: Endgame, Ant-Man and the Wasp, Guardians of the Galaxy Vol. 3, and more.</p>
-
-            <!-- Skills pills -->
-            <div id="skillsRow1" class="badges"></div>
-            <div id="skillsRow2" class="badges"></div>
+            <!-- Separate About card (no skills pills here) -->
+            <div class="card pad" id="aboutCard">
+              <h2 id="aboutHeader" class="crt-glow" style="margin:0 0 .6em">Subject dossier…</h2>
+              <p id="about1">Bridging virtual and physical storytelling across techvis, previs/postvis, and virtual production. I translate complex sequences into precise, repeatable camera plans — trusted by directors, DPs, and VFX supervisors.</p>
+              <p id="about2" class="muted">Credits include Avatar: The Way of the Water, Avengers: Endgame, Ant-Man and the Wasp, Guardians of the Galaxy Vol. 3, and more.</p>
+            </div>
           </div>
         </div>
 
-        <div class="card pad" id="testimonialsBox" style="display:none">
-          <h3 class="crt-glow" style="margin:.2em 0 .6em">Testimonials</h3>
-          <div class="tlist" id="testimonialsList"></div>
+        <!-- Febz + Latest (unchanged placement below hero) -->
+        <div class="card pad" id="febzBox" style="display:none; margin-top:var(--grid);">
+          <h3 class="crt-glow" style="margin-top:0"><span id="febzHeading"></span> <a href="https://www.youtube.com/@FebzFoundFootage" target="_blank" rel="noopener">@FebzFoundFootage</a></h3>
+          <a id="febzLink" href="#" target="_blank" rel="noopener" class="thumb" style="display:block; aspect-ratio:16/9;">
+            <img id="febzThumb" alt="FebzFoundFootage — Featured" loading="lazy" decoding="async" fetchpriority="low" style="width:100%; height:100%; object-fit:cover; display:block; border-radius:14px; border:1px solid rgba(66,255,209,.26)" />
+          </a>
+          <small id="febzBody" class="muted"></small>
+        </div>
+
+        <div class="card pad" id="latestBox" style="display:none; margin-top:var(--grid);">
+          <h3 class="crt-glow" style="margin-top:0">Latest from YouTube</h3>
+          <div class="reel" style="aspect-ratio:16/9">
+            <iframe id="latestFrame" src="" title="YouTube uploads" frameborder="0" loading="lazy" decoding="async" fetchpriority="low" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+          </div>
         </div>
       </section>
 
@@ -233,21 +280,6 @@
             <small class="muted">Original shorts & experiments</small>
           </div>
           <div id="personalGrid" class="grid"></div>
-
-          <div class="card pad" id="febzBox" style="margin-top:var(--grid); display:none">
-            <h3 class="crt-glow" style="margin-top:0"><span id="febzHeading"></span> <a href="https://www.youtube.com/@FebzFoundFootage" target="_blank" rel="noopener">@FebzFoundFootage</a></h3>
-            <a id="febzLink" href="#" target="_blank" rel="noopener" class="thumb" style="display:block; aspect-ratio:16/9;">
-              <img id="febzThumb" alt="FebzFoundFootage — Featured" loading="lazy" decoding="async" fetchpriority="low" style="width:100%; height:100%; object-fit:cover; display:block; border-radius:14px; border:1px solid rgba(66,255,209,.26)" />
-            </a>
-            <small id="febzBody" class="muted"></small>
-          </div>
-
-          <div class="card pad" id="latestBox" style="margin-top:var(--grid); display:none">
-            <h3 class="crt-glow" style="margin-top:0">Latest from YouTube</h3>
-            <div class="reel" style="aspect-ratio:16/9">
-              <iframe id="latestFrame" src="" title="YouTube uploads" frameborder="0" loading="lazy" decoding="async" fetchpriority="low" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-            </div>
-          </div>
         </div>
       </section>
 
@@ -255,7 +287,7 @@
       <section id="contact" role="tabpanel">
         <div class="card pad">
           <h2 class="crt-glow" style="margin:0 0 .6em">Contact</h2>
-          <p id="contactIntro" class="muted" style="margin-top:0">For techvis/virtual production, previs/postvis, or themed entertainment.</p>
+        <p id="contactIntro" class="muted" style="margin-top:0">For techvis/virtual production, previs/postvis, or themed entertainment.</p>
           <div id="contactInfo" class="badges" style="gap:12px"></div>
         </div>
       </section>
@@ -410,7 +442,7 @@
         const gid = gids[name]; if(!gid) return [];
         const key = `csv:${gid}`;
         const cached = cache.get(key);
-        // Always pull fresh for Main site info so resume_url/labels update immediately
+        // Fresh pull for Main site info so resume/labels update immediately
         if (name === 'Main site info'){
           const txt = await fetch(buildCsvUrlFromGid(PUBHTML, gid) + `&cb=${Date.now()}`).then(r=>r.text());
           cache.set(key, {ts:Date.now(), txt});
@@ -434,16 +466,15 @@
       const subtitleTxt = mainInfo.site_subtitle || 'Techvis & Virtual Production Supervisor';
       const subtitleEl = $('#siteSubtitle'); subtitleEl.textContent = subtitleTxt; subtitleEl.href = imdbUrl;
 
-      // Assessment header label from sheet (key=ASSESSMENT)
+      // ASSESSMENT header + status
       const assessLabel = mainInfo.ASSESSMENT || 'Skynet Analysis';
       const assessHeader = $('#assessmentHeader');
       if (assessHeader) assessHeader.textContent = assessLabel;
+      const assessStatus = $('#assessmentStatus');
+      if (assessStatus) assessStatus.textContent = 'Cyberdyne scanning for threat assessment…';
 
-      // Preload line
-      const aboutStatus = $('#aboutStatus');
-      if (aboutStatus) aboutStatus.textContent = 'Cyberdyne scanning for threat assessment…';
-
-      // About copy (still displayed beneath assessment header)
+      // About copy (separate card, no pills)
+      $('#aboutHeader').textContent = 'Subject dossier…';
       $('#about1').textContent = mainInfo.about_paragraph_1 || $('#about1').textContent;
       $('#about2').textContent = mainInfo.about_paragraph_2 || $('#about2').textContent;
 
@@ -461,12 +492,11 @@
       setContactSection(phone, email);
       enhanceContactLinks();
 
-      // Render skills from pipe-separated list
+      // Render skills from pipe-separated list INTO THE NEW ASSESSMENT CARD
       renderSkills(mainInfo.skills || '');
 
       // Ready
       setStatus('Link established', linksHref);
-      if (aboutStatus) aboutStatus.style.display = 'none';
       document.body.classList.add('ready');
       $('#reelHeader').textContent = 'Demo Reel';
       loaded.main = true;
