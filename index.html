@@ -123,7 +123,11 @@
     .toast.show{ opacity:1; transform:translateY(0); }
 
     /* CLICK-ALERT: exact 1s yellow flicker on click */
-    .brand .dot.alert{ background:radial-gradient(circle at 30% 30%, #ffd24a, #6b5a1a 70%); box-shadow:0 0 22px #ffd24a, 0 0 36px rgba(255,210,74,.5); animation:alertFlick .125s linear 8; }
+    .brand .dot.alert{
+      background:radial-gradient(circle at 30% 30%, #ffd24a, #6b5a1a 70%);
+      box-shadow:0 0 22px #ffd24a, 0 0 36px rgba(255,210,74,.5);
+      animation:alertFlick .125s linear 8;
+    }
     @keyframes alertFlick{0%,100%{opacity:.45}50%{opacity:1}}
 
     #testimonialsBox .tlist{display:flex; flex-direction:column; gap:14px; margin-top:8px}
@@ -226,7 +230,7 @@
             <h2 class="crt-glow" style="margin:0">Personal Work</h2>
             <small class="muted">Original shorts & experiments</small>
           </div>
-          <div id="personalGrid" class="grid"></div>
+        <div id="personalGrid" class="grid"></div>
 
           <div class="card pad" id="febzBox" style="margin-top:var(--grid); display:none">
             <h3 class="crt-glow" style="margin-top:0"><span id="febzHeading"></span> <a href="https://www.youtube.com/@FebzFoundFootage" target="_blank" rel="noopener">@FebzFoundFootage</a></h3>
@@ -269,135 +273,33 @@
   function setContactSection(phone, email){ const wrap = document.getElementById('contactInfo'); if (!wrap) return; wrap.innerHTML=''; if (phone){ const a=document.createElement('a'); a.className='btn'; a.href='tel:' + phone.replace(/[^0-9+]/g,''); a.textContent=phone; wrap.appendChild(a); } if (email){ const a=document.createElement('a'); a.className='btn'; a.href='mailto:' + email; a.textContent=email; wrap.appendChild(a); } }
   setTopContact(DEFAULT_PHONE, DEFAULT_EMAIL); setContactSection(DEFAULT_PHONE, DEFAULT_EMAIL); (function(){ const r = document.getElementById('btnResume'); if (r) r.href = DEFAULT_RESUME; })();
 
-  const $ = (sel, el=document) => el.querySelector(sel); const $$ = (sel, el=document) => [...el.querySelectorAll(sel)];
-  const ytThumb = id => `https://img.youtube.com/vi/${id}/maxresdefault.jpg`;
-  const ytBest = src => (src||'').replace(/maxresdefault\.jpg/i,'sddefault.jpg'); // smaller first byte weight
-  const fixImdb = url => (url||"").replace(/https?:\/\/pro\.imdb\.com/i,'https://www.imdb.com').replace(/\?ref_=pro.*$/,'');
+  const $ = (sel, el=document) => el.querySelector(sel); const $$ = (sel, el=document) => [...el.querySelectorAll(sel)]; const ytThumb = id => `https://img.youtube.com/vi/${id}/maxresdefault.jpg`; const fixImdb = url => (url||"").replace(/https?:\/\/pro\.imdb\.com/i,'https://www.imdb.com').replace(/\?ref_=pro.*$/,'');
 
-  /* --- CSV helpers --- */
-  function csvToObjects(csvText){
-    const rows = []; let field="", row=[], inQ=false;
-    for (let c of String(csvText||"").replace(/\r/g,'')){
-      if (c==='"'){ inQ = !inQ; field+=c; }
-      else if (c===',' && !inQ){ row.push(field.replace(/^("|“)|("|”)$/g,'').replace(/""/g,'"')); field=""; }
-      else if (c==='\n' && !inQ){ row.push(field.replace(/^("|“)|("|”)$/g,'').replace(/""/g,'"')); rows.push(row); row=[]; field=""; }
-      else field+=c;
-    }
-    if (field.length || row.length){ row.push(field.replace(/^("|“)|("|”)$/g,'').replace(/""/g,'"')); rows.push(row); }
-    if (!rows.length) return [];
-    const headers = rows[0].map(h=>h.trim());
-    return rows.slice(1).filter(r=>r.length>1).map(r=>{ const o={}; headers.forEach((h,i)=>o[h]=r[i]!==undefined?r[i]:""); return o; });
-  }
+  function csvToObjects(csvText){ const rows = []; let field="", row=[], inQ=false; for (let c of String(csvText||"").replace(/\r/g,'')){ if (c==='"'){ inQ = !inQ; field+=c; } else if (c===',' && !inQ){ row.push(field.replace(/^("|“)|("|”)$/g,'').replace(/""/g,'"')); field=""; } else if (c==='\n' && !inQ){ row.push(field.replace(/^("|“)|("|”)$/g,'').replace(/""/g,'"')); rows.push(row); row=[]; field=""; } else field+=c; } if (field.length || row.length){ row.push(field.replace(/^("|“)|("|”)$/g,'').replace(/""/g,'"')); rows.push(row); } if (!rows.length) return []; const headers = rows[0].map(h=>h.trim()); return rows.slice(1).filter(r=>r.length>1).map(r=>{ const o={}; headers.forEach((h,i)=>o[h]=r[i]!==undefined?r[i]:""); return o; }); }
 
   const normBool = v => String(v||"").trim().toLowerCase()==='true' || String(v||"").trim().toLowerCase()==='yes';
-  const normNum  = v => { const n = Number(String(v||"").replace(/[^\d.-]/g,"")); return isNaN(n)?0:n; };
+  const normNum = v => { const n = Number(String(v||"").replace(/[^\d.-]/g,"")); return isNaN(n)?0:n; };
   function buildCsvUrlFromGid(pubhtml, gid){ return pubhtml.replace(/\/pubhtml.*/, '/pub') + `?gid=${gid}&single=true&output=csv`; }
 
   const cache = { get(key){ try{ return JSON.parse(localStorage.getItem(key)||'null'); }catch{return null} }, set(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch{} } };
 
-  /* --- ultra-light lazy image loader --- */
-  const __imgIO = new IntersectionObserver((ents, obs)=>{
-    for (const ent of ents){
-      if (!ent.isIntersecting) continue;
-      const img = ent.target;
-      const src = img.getAttribute('data-src');
-      if (src){ img.src = src; img.removeAttribute('data-src'); }
-      obs.unobserve(img);
-    }
-  }, {rootMargin: '400px'}); // prefetch a bit ahead
+  async function discoverGids(pubhtml){ const map = {}; try{ const html = await fetch(pubhtml, {mode:"cors"}).then(r=>r.text()); const uniqueGids = [...new Set([...html.matchAll(/gid=(\d+)/g)].map(m=>m[1]))]; for (const gid of uniqueGids){ const txt = await fetch(buildCsvUrlFromGid(pubhtml, gid)).then(r=>r.text()).catch(()=>null); if (!txt) continue; const rows = csvToObjects(txt); const hdr = Object.keys(rows[0]||{}).join('|').toLowerCase(); if (hdr.includes('primary image') && hdr.includes('on set?')) map['Ariel_Feblowitz_Works']=gid; else if (hdr.includes('ride image') && hdr.includes('ride name')) map['Rides']=gid; else if (hdr.includes('type') && hdr.includes('video_id')) map['Personal Youtube']=gid; else if (hdr.includes('key') && hdr.includes('value')) map['Main site info']=gid; else if (hdr.includes('from') && hdr.includes('testimonial')) map['Testimonials']=gid; } }catch(e){ console.error('[discoverGids]', e); } return { ...map, ...TAB_MAP }; }
 
-  function makeLazyImg(src, alt){
-    const img = new Image();
-    img.alt = alt || '';
-    img.loading = 'lazy';
-    img.decoding = 'async';
-    img.fetchPriority = 'low';
-    img.setAttribute('data-src', src); // network deferred
-    img.src = 'data:image/gif;base64,R0lGODlhAQABAAAAACw='; // 1x1 transparent
-    __imgIO.observe(img);
-    return img;
-  }
+  const rail = $('#bannerRail'); const scrollEl = $('#bannerScroll'); let autoRAF=null, paused=false, lastT=0; function makeImg(src, alt){ const img = new Image(); img.alt = alt || ''; img.loading = 'lazy'; img.decoding = 'async'; img.fetchPriority = 'low'; img.src = src; return img; } function makeTile(t){ const a=document.createElement('a'); a.className='tile ' + (t.type==='pro'?'poster':'wide'); a.href=t.url||'#'; a.target='_blank'; a.rel='noopener'; a.setAttribute('data-title', t.title||''); a.appendChild(makeImg(t.img || titlePlaceholderSVG(t.title), t.title||'')); return a; } function fillBanner(tiles){ scrollEl.innerHTML=''; const seq=[...tiles]; [...seq, ...seq].forEach(t=> scrollEl.appendChild(makeTile(t))); startAuto(); }
+  function step(ts){ if (paused) { autoRAF=requestAnimationFrame(step); return; } if (!lastT) lastT=ts; const dt=(ts-lastT)/1000; lastT=ts; const pxPerSec = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--speed')) || 55; rail.scrollLeft += pxPerSec * dt; const half = scrollEl.scrollWidth/2; if (rail.scrollLeft >= half) rail.scrollLeft -= half; autoRAF=requestAnimationFrame(step); }
+  function startAuto(){ cancelAnimationFrame(autoRAF); lastT=0; autoRAF=requestAnimationFrame(step); } function pauseAuto(p=true){ paused=p; } rail.addEventListener('mouseenter', ()=>pauseAuto(true)); rail.addEventListener('mouseleave', ()=>pauseAuto(false)); $('#bnPrev').addEventListener('click', ()=>{ rail.scrollLeft -= 260; }); $('#bnNext').addEventListener('click', ()=>{ rail.scrollLeft += 260; });
 
-  async function discoverGids(pubhtml){
-    const map = {};
-    try{
-      const html = await fetch(pubhtml, {mode:"cors"}).then(r=>r.text());
-      const uniqueGids = [...new Set([...html.matchAll(/gid=(\d+)/g)].map(m=>m[1]))];
-      for (const gid of uniqueGids){
-        const txt = await fetch(buildCsvUrlFromGid(pubhtml, gid)).then(r=>r.text()).catch(()=>null);
-        if (!txt) continue;
-        const rows = csvToObjects(txt);
-        const hdr = Object.keys(rows[0]||{}).join('|').toLowerCase();
-        if (hdr.includes('primary image') && hdr.includes('on set?')) map['Ariel_Feblowitz_Works']=gid;
-        else if (hdr.includes('ride image') && hdr.includes('ride name')) map['Rides']=gid;
-        else if (hdr.includes('type') && hdr.includes('video_id')) map['Personal Youtube']=gid;
-        else if (hdr.includes('key') && hdr.includes('value')) map['Main site info']=gid;
-        else if (hdr.includes('from') && hdr.includes('testimonial')) map['Testimonials']=gid;
-      }
-    }catch(e){ console.error('[discoverGids]', e); }
-    return { ...map, ...TAB_MAP };
-  }
-
-  const rail = $('#bannerRail');
-  const scrollEl = $('#bannerScroll');
-  let autoRAF=null, paused=false, lastT=0;
-
-  /* makeTile now lazy-loads */
-  function makeTile(t){
-    const a=document.createElement('a');
-    a.className='tile ' + (t.type==='pro'?'poster':'wide');
-    a.href=t.url||'#';
-    a.target='_blank';
-    a.rel='noopener';
-    a.setAttribute('data-title', t.title||'');
-    const src = t.img || titlePlaceholderSVG(t.title);
-    a.appendChild(makeLazyImg(src, t.title||''));
-    return a;
-  }
-
-  function startAuto(){ cancelAnimationFrame(autoRAF); lastT=0; autoRAF=requestAnimationFrame(step); }
-  function pauseAuto(p=true){ paused=p; if (!p) startAuto(); }
-  function step(ts){
-    if (paused) { autoRAF=requestAnimationFrame(step); return; }
-    if (!lastT) lastT=ts;
-    const dt=(ts-lastT)/1000; lastT=ts;
-    const pxPerSec = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--speed')) || 55;
-    rail.scrollLeft += pxPerSec * dt;
-    const half = scrollEl.scrollWidth/2;
-    if (rail.scrollLeft >= half) rail.scrollLeft -= half;
-    autoRAF=requestAnimationFrame(step);
-  }
-
-  $('#bnPrev').addEventListener('click', ()=>{ rail.scrollLeft -= 260; });
-  $('#bnNext').addEventListener('click', ()=>{ rail.scrollLeft += 260; });
-  rail.addEventListener('mouseenter', ()=>pauseAuto(true));
-  rail.addEventListener('mouseleave', ()=>pauseAuto(false));
-
-  $$('.tab-btn').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      $$('.tab-btn').forEach(b=>{ b.classList.toggle('active', b===btn); b.setAttribute('aria-selected', b===btn) });
-      const name = btn.dataset.tab;
-      $$('section').forEach(s=>s.classList.toggle('active', s.id===name));
-      if (!loaded.sections) { loadSections(); }
-      window.scrollTo({ top: $('.wrap').offsetTop, behavior: 'smooth' });
-    });
-  });
-  $('#year').textContent = new Date().getFullYear();
-  const sysStatus = document.getElementById('sysStatus');
-  function setStatus(msg, linkHref){ if (!sysStatus) return; sysStatus.textContent = msg; if (linkHref) { sysStatus.href = linkHref; } }
+  $$('.tab-btn').forEach(btn=>{ btn.addEventListener('click', ()=>{ $$('.tab-btn').forEach(b=>{ b.classList.toggle('active', b===btn); b.setAttribute('aria-selected', b===btn) }); const name = btn.dataset.tab; $$('section').forEach(s=>s.classList.toggle('active', s.id===name)); if (!loaded.sections) { loadSections(); } window.scrollTo({ top: $('.wrap').offsetTop, behavior: 'smooth' }); }); });
+  $('#year').textContent = new Date().getFullYear(); const sysStatus = document.getElementById('sysStatus'); function setStatus(msg, linkHref){ if (!sysStatus) return; sysStatus.textContent = msg; if (linkHref) { sysStatus.href = linkHref; } }
 
   const loaded = { main:false, reel:false, sections:false, banner:false, testimonials:false };
 
-  (async function init(){
-    try{
-      setStatus('Routing request to MOTHER…', sysStatus.href);
-      const gids = await discoverGids(PUBHTML);
-
+  (async function init(){ try{ setStatus('Routing request to MOTHER…', sysStatus.href); const gids = await discoverGids(PUBHTML);
       async function pullTab(name){
         const gid = gids[name]; if(!gid) return [];
         const key = `csv:${gid}`;
         const cached = cache.get(key);
-        // Bypass cache for Main site info so resume_url updates immediately
+        // >>> CHANGE #1: bypass cache for Main site info so resume_url updates immediately
         if (name === 'Main site info'){
           const txt = await fetch(buildCsvUrlFromGid(PUBHTML, gid) + `&cb=${Date.now()}`).then(r=>r.text());
           cache.set(key, {ts:Date.now(), txt});
@@ -407,299 +309,85 @@
         const txt = await fetch(buildCsvUrlFromGid(PUBHTML, gid)).then(r=>r.text());
         cache.set(key, {ts:Date.now(), txt}); return csvToObjects(txt);
       }
-
-      const mainInfoRows = await pullTab('Main site info');
-      const mainInfo = {}; (mainInfoRows||[]).forEach(r=> mainInfo[(r.key||'').trim()] = (r.value||'').trim());
-
-      $('#siteTitle').textContent = mainInfo.site_title || 'Ariel (Ari) Feblowitz';
-      const imdbUrl   = fixImdb(mainInfo.imdb_url || 'https://www.imdb.me/ArielFeblowitz');
-      const subtitleTxt = mainInfo.site_subtitle || 'Techvis & Virtual Production Supervisor';
-      const subtitleEl = $('#siteSubtitle'); subtitleEl.textContent = subtitleTxt; subtitleEl.href = imdbUrl;
-
-      $('#about1').textContent = mainInfo.about_paragraph_1 || $('#about1').textContent;
-      $('#about2').textContent = mainInfo.about_paragraph_2 || $('#about2').textContent;
-
-      const linksHref = mainInfo.all_links_url || 'https://linktr.ee/admin/links';
-      $('#btnIMDb').href = imdbUrl;
-      $('#btnYouTube').href = mainInfo.youtube_url || $('#btnYouTube').href;
-      $('#btnLinks').href = linksHref;
-      $('#btnResume').href = (mainInfo.resume_url && mainInfo.resume_url.trim()) || DEFAULT_RESUME; // fresh sheet value
-      setStatus('Link established', linksHref);
-
-      const aboutStatus = $('#aboutStatus'); if (aboutStatus) aboutStatus.style.display = 'none';
-      document.body.classList.add('ready');
-      $('#reelHeader').textContent = 'Demo Reel';
-      $('#aboutHeader').textContent = 'About';
-      loaded.main = true;
-
-      const phone = (mainInfo.phone||DEFAULT_PHONE).trim();
-      const email = (mainInfo.email||DEFAULT_EMAIL).trim();
-      setTopContact(phone, email);
-      setContactSection(phone, email);
-      enhanceContactLinks();
-
+      const mainInfoRows = await pullTab('Main site info'); const mainInfo = {}; (mainInfoRows||[]).forEach(r=> mainInfo[(r.key||'').trim()] = (r.value||'').trim());
+      $('#siteTitle').textContent = mainInfo.site_title || 'Ariel (Ari) Feblowitz'; const imdbUrl = fixImdb(mainInfo.imdb_url || 'https://www.imdb.me/ArielFeblowitz'); const subtitleTxt = mainInfo.site_subtitle || 'Techvis & Virtual Production Supervisor'; const subtitleEl = $('#siteSubtitle'); subtitleEl.textContent = subtitleTxt; subtitleEl.href = imdbUrl;
+      $('#about1').textContent = mainInfo.about_paragraph_1 || $('#about1').textContent; $('#about2').textContent = mainInfo.about_paragraph_2 || $('#about2').textContent;
+      const linksHref = mainInfo.all_links_url || 'https://linktr.ee/admin/links'; $('#btnIMDb').href = imdbUrl; $('#btnYouTube').href = mainInfo.youtube_url || $('#btnYouTube').href; $('#btnLinks').href = linksHref; $('#btnResume').href = (mainInfo.resume_url && mainInfo.resume_url.trim()) || DEFAULT_RESUME; // uses fresh sheet value
+      setStatus('Link established', linksHref); const aboutStatus = $('#aboutStatus'); if (aboutStatus) aboutStatus.style.display = 'none'; document.body.classList.add('ready'); $('#reelHeader').textContent = 'Demo Reel'; $('#aboutHeader').textContent = 'About'; loaded.main = true;
+      const phone = (mainInfo.phone||DEFAULT_PHONE).trim(); const email = (mainInfo.email||DEFAULT_EMAIL).trim(); setTopContact(phone, email); setContactSection(phone, email); enhanceContactLinks();
       loadTestimonials();
+      (function loadReel(){ const reelInput = (mainInfo.reel_youtube_id||'').trim(); const reelFrame = $('#reelFrame'); const setIframe = src => { reelFrame.loading='lazy'; reelFrame.decoding='async'; reelFrame.fetchPriority='low'; reelFrame.src = src; }; if (/^\s*</i.test(reelInput)){ const tmp = document.createElement('div'); tmp.innerHTML = reelInput; const ifr = tmp.querySelector('iframe'); if (ifr && ifr.src){ setIframe(ifr.src); loaded.reel=true; return; } } const vimeoM = reelInput.match(/vimeo\.com\/(?:video\/)?(\d+)/i); if (vimeoM){ setIframe(`https://player.vimeo.com/video/${vimeoM[1]}?badge=0&autopause=0&title=0&byline=0`); loaded.reel=true; return; } if (/^\d{7,}$/.test(reelInput)){ setIframe(`https://player.vimeo.com/video/${reelInput}?badge=0&autopause=0&title=0&byline=0`); loaded.reel=true; return; } const ytM = reelInput.match(/[?&]v=([\w-]{6,})/) || reelInput.match(/youtu\.be\/([\w-]{6,})/); if (ytM){ setIframe(`https://www.youtube.com/embed/${ytM[1]}?rel=0&modestbranding=1`); loaded.reel=true; return; } if (/^[\w-]{6,}$/.test(reelInput)){ setIframe(`https://www.youtube.com/embed/${reelInput}?rel=0&modestbranding=1`); loaded.reel=true; return; } loaded.reel=true; })();
+      const defer = window.requestIdleCallback || (fn=>setTimeout(fn, 0)); defer(loadSections); defer(()=> setTimeout(buildBannerDeferred, 400));
+      async function loadSections(){ try{ if (loaded.sections) return; loaded.sections = true; const [personalTab, proRows, ridesRows] = await Promise.all([ pullTab('Personal Youtube'), pullTab('Ariel_Feblowitz_Works'), pullTab('Rides') ]);
+          const meta = {}; const videos=[]; (personalTab||[]).forEach(r=>{ const type=(r.type||'').toLowerCase(); if (type==='meta'){ meta[(r.key||'').trim()] = (r.value||'').trim(); } else if (type==='video'){ const videoId=(r.video_id||'').trim(); const url=(r.youtube_url||'').trim() || (videoId?`https://www.youtube.com/watch?v=${videoId}`:''); const thumb=(r.thumb_url||'').trim() || (videoId? ytThumb(videoId) : ''); videos.push({ prio:normNum(r.prio), includeInBanner: normBool(r.include_in_banner) || normNum(r.prio)>=5, featured: normBool(r.featured), videoId, title:(r.title||'').trim(), role:(r.role||'').trim(), url, thumb }); } });
+          const febzId = (meta.febz_video_id || '').trim(); if (febzId){ const febzHeading = meta.febz_heading || "Also archiving my father's documentary work: FebzFoundFootage"; const febzBody = meta.febz_body || "A growing archive of Gary Feblowitz’s documentary footage and rare segments."; $('#febzHeading').textContent = febzHeading; $('#febzBody').textContent = febzBody; $('#febzLink').href = `https://www.youtube.com/watch?v=${febzId}`; $('#febzThumb').src = ytThumb(febzId); $('#febzBox').style.display = 'block'; }
+          const showLatest = (String(meta.latest_mode||'').toLowerCase()==='auto') || false; if (showLatest && meta.latest_playlist_or_channel_id){ const channelId = meta.latest_playlist_or_channel_id; if (channelId.startsWith('UC')){ const uploadsId = 'UU'+channelId.slice(2); $('#latestFrame').src = `https://www.youtube.com/embed/videoseries?list=${uploadsId}&rel=0`; $('#latestBox').style.display = 'block'; } }
+          const proItems = (proRows||[]).map(r=>({ title:(r['Name']||'').trim(), url:fixImdb((r['URL']||'').trim()), role:(r['My Role']||'').trim(), prod:(r['Production Co.']||'').trim(), onSet: normBool(r['On Set?']), prio:normNum(r['Prio?']), posters:[(r['Primary image']||'').trim()].filter(Boolean) })).filter(x=>x.title && x.prio>0).sort((a,b)=> (a.onSet!==b.onSet)? (a.onSet? -1:1) : (b.prio-a.prio) || a.title.localeCompare(b.title));
+          const rideItems = (ridesRows||[]).map(r=>({ title:(r['Ride Name']||'').trim(), url:(r['Ride Link']||'').trim(), role:(r['My Role']||'').trim(), company:(r['Ride Company']||'').trim(), desc:(r['Description']||'').trim(), prio:normNum(r['Prio']), posters:[(r['Ride Image']||'').trim()].filter(Boolean) })).filter(x=>x.title && x.prio>0).sort((a,b)=> b.prio-a.prio || a.title.localeCompare(b.title));
+          renderPro(proItems); renderRides(rideItems); renderPersonal(videos, (meta.featured_video_id||'').trim());
+          window.__tilesData = { pro: proItems.filter(p=>p.prio>=5).map(p=>({type:'pro', title:p.title, img:p.posters[0]||'', url:p.url||'#'})), ride: rideItems.filter(r=>r.prio===10).map(r=>({type:'ride', title:r.title, img:r.posters[0]||'', url:r.url||'#'})), per: videos.filter(v=>(v.prio||0)>=5 || v.includeInBanner).map(v=>({type:'personal', title:v.title, img:v.thumb||'', url:v.url||'#'})) };
+        }catch(err){ console.error('[loadSections]', err); } }
 
-      (function loadReel(){
-        const reelInput = (mainInfo.reel_youtube_id||'').trim();
-        const reelFrame = $('#reelFrame');
-        const setIframe = src => { reelFrame.loading='lazy'; reelFrame.decoding='async'; reelFrame.fetchPriority='low'; reelFrame.src = src; };
-        if (/^\s*</i.test(reelInput)){
-          const tmp = document.createElement('div'); tmp.innerHTML = reelInput;
-          const ifr = tmp.querySelector('iframe'); if (ifr && ifr.src){ setIframe(ifr.src); loaded.reel=true; return; }
-        }
-        const vimeoM = reelInput.match(/vimeo\.com\/(?:video\/)?(\d+)/i);
-        if (vimeoM){ setIframe(`https://player.vimeo.com/video/${vimeoM[1]}?badge=0&autopause=0&title=0&byline=0`); loaded.reel=true; return; }
-        if (/^\d{7,}$/.test(reelInput)){ setIframe(`https://player.vimeo.com/video/${reelInput}?badge=0&autopause=0&title=0&byline=0`); loaded.reel=true; return; }
-        const ytM = reelInput.match(/[?&]v=([\w-]{6,})/) || reelInput.match(/youtu\.be\/([\w-]{6,})/);
-        if (ytM){ setIframe(`https://www.youtube.com/embed/${ytM[1]}?rel=0&modestbranding=1`); loaded.reel=true; return; }
-        if (/^[\w-]{6,}$/.test(reelInput)){ setIframe(`https://www.youtube.com/embed/${reelInput}?rel=0&modestbranding=1`); loaded.reel=true; return; }
-        loaded.reel=true;
-      })();
+      function renderPro(items){ const grid = $('#proGrid'); grid.innerHTML=''; if (!items.length){ grid.innerHTML = `<div class="muted">No items yet — add rows in the “Ariel_Feblowitz_Works” tab.</div>`; return; } items.forEach(p=>{ const c=document.createElement('a'); c.className='proj card'; c.href=p.url||'#'; c.target='_blank'; c.rel='noopener'; const wrap=document.createElement('div'); wrap.className='thumb poster'; const img=new Image(); img.alt=''; img.loading='lazy'; img.decoding='async'; img.fetchPriority='low'; img.src = p.posters[0] || titlePlaceholderSVG(p.title); wrap.appendChild(img); const meta=document.createElement('div'); meta.className='meta'; const info=[p.role, p.prod].filter(Boolean).join(' • '); meta.innerHTML = `<div class="title">${p.title}</div><div class="role">${info}</div>`; c.appendChild(wrap); c.appendChild(meta); grid.appendChild(c); }); }
+      function renderRides(items){ const grid = $('#ridesGrid'); grid.innerHTML=''; if (!items.length){ grid.innerHTML = `<div class="muted">No items yet — add rows in the “Rides” tab.</div>`; return; } items.forEach(p=>{ const c=document.createElement('a'); c.className='proj card'; c.href=p.url||'#'; c.target='_blank'; c.rel='noopener'; const wrap=document.createElement('div'); wrap.className='thumb'; const img=new Image(); img.alt=''; img.loading='lazy'; img.decoding='async'; img.fetchPriority='low'; img.src = p.posters[0] || titlePlaceholderSVG(p.title); wrap.appendChild(img); const meta=document.createElement('div'); meta.className='meta'; const info=[p.role, p.company].filter(Boolean).join(' • '); let body=''; if (p.desc){ body = `<details class="summaryless" style="margin-top:.45em; font-size:.95em"><summary class="btn" style="display:inline-flex; margin:0; padding:.35em .6em;">Details</summary><div class="muted" style="margin-top:.6em">${p.desc}</div></details>`; } meta.innerHTML = `<div class="title">${p.title}</div><div class="role">${info}</div>${body}`; c.appendChild(wrap); c.appendChild(meta); grid.appendChild(c); }); }
+      function renderPersonal(videos, featuredId){ const grid = $('#personalGrid'); grid.innerHTML=''; if (!videos.length){ grid.innerHTML = `<div class="muted">No videos yet — add rows in the “Personal Youtube” tab.</div>`; return; } const fIdx = videos.findIndex(v=>v.videoId===featuredId); if (fIdx>0){ const [f]=videos.splice(fIdx,1); videos.unshift(f); } videos.forEach(v=>{ const c=document.createElement('a'); c.className='proj card'; c.href=v.url||'#'; c.target='_blank'; c.rel='noopener'; const wrap=document.createElement('div'); wrap.className='thumb'; const img=new Image(); img.alt=''; img.loading='lazy'; img.decoding='async'; img.fetchPriority='low'; img.src = v.thumb || (v.videoId? ytThumb(v.videoId) : titlePlaceholderSVG(v.title)); wrap.appendChild(img); const meta=document.createElement('div'); meta.className='meta'; meta.innerHTML = `<div class="title">${v.title||''}</div><div class="role">${v.role||''}</div>`; c.appendChild(wrap); c.appendChild(meta); grid.appendChild(c); }); }
+      function buildBannerDeferred(){ if (loaded.banner || !window.__tilesData) return; loaded.banner = true; const {pro, ride, per} = window.__tilesData; const interleaved=[]; const L=Math.max(pro.length, ride.length, per.length); for(let i=0;i<L;i++){ if(pro[i]) interleaved.push(pro[i]); if(ride[i]) interleaved.push(ride[i]); if(per[i]) interleaved.push(per[i]); } fillBanner(interleaved); }
+      async function loadTestimonials(){ if (loaded.testimonials) return; loaded.testimonials = true; try{ const rows = await pullTab('Testimonials'); const items = (rows||[]).map(r=>({ from:(r['From']||'').trim(), text:(r['Testimonial']||'').trim() })).filter(t=>t.from && t.text); if (!items.length) return; const box = document.getElementById('testimonialsBox'); const list = document.getElementById('testimonialsList'); list.innerHTML=''; const smartQuote = s=>{ const t = s.trim(); const begins = /^["“]/.test(t); const ends = /["”]$/.test(t); if (begins && ends) return t; return `“${t.replace(/^\"|^“|^'|^‘|^`/, '').replace(/\"$|”$|'$|‘$|`$/, '')}”`; }; const esc = s=> s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); items.forEach(it=>{ const el = document.createElement('div'); el.className='testimonial'; el.innerHTML = `<span class="quote">${esc(smartQuote(it.text))}</span><span class="from">— ${esc(it.from)}</span>`; list.appendChild(el); }); box.style.display = 'block'; }catch(e){ console.error('[testimonials]', e); } }
+    }catch(err){ console.error('[init]', err); } })();
 
-      const defer = window.requestIdleCallback || (fn=>setTimeout(fn, 0));
-      defer(loadSections); // section grids still load after idle
+  function titlePlaceholderSVG(title){ const safe = (title||'Untitled').replace(/&/g,'&amp;').replace(/</g,'&lt;'); const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 800'><rect width='100%' height='100%' fill='#000'/><text x='50%' y='50%' fill='#9fffcf' font-family='Inter, Segoe UI, Roboto, Arial, sans-serif' font-size='36' text-anchor='middle' dominant-baseline='middle'>${safe}</text></svg>`; return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg); }
 
-      // Banner: build only when visible
-      const bannerWatch = new IntersectionObserver((ents, obs)=>{
-        if (ents.some(e=>e.isIntersecting)){
-          buildBannerDeferred();
-          obs.disconnect();
-        }
-      }, {rootMargin: '0px 0px 200px 0px'});
-      bannerWatch.observe(rail);
+  function enhanceContactLinks(){ const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent); const scope = [document.getElementById('topContact'), document.getElementById('contactInfo')].filter(Boolean); const showToast = (text, x, y)=>{ const t=document.createElement('div'); t.className='toast'; t.textContent=text; document.body.appendChild(t); const px = Math.min(window.innerWidth-160, Math.max(12, x|| (window.innerWidth-160)/2)); const py = Math.min(window.innerHeight-60, Math.max(8, y|| 18)); t.style.left = px+'px'; t.style.top = py+'px'; requestAnimationFrame(()=> t.classList.add('show')); setTimeout(()=>{ t.classList.remove('show'); setTimeout(()=>t.remove(),180); }, 1100); }; scope.forEach(root=>{ root.querySelectorAll('a[href^="tel:"], a[href^="mailto:"]').forEach(a=>{ a.addEventListener('click', e=>{ if (isMobile) return; e.preventDefault(); const text = a.textContent.trim(); navigator.clipboard?.writeText(text).then(()=>{ showToast('Copied: '+text, e.clientX, e.clientY); }).catch(()=>{ showToast(text, e.clientX, e.clientY); }); }, {passive:false}); }); }); }
 
-      // Pause RAF when tab hidden
-      document.addEventListener('visibilitychange', ()=>{ pauseAuto(document.hidden); });
-
-      // Pause RAF when banner off-screen
-      const railWatch = new IntersectionObserver((ents)=>{
-        const inView = ents.some(e=>e.isIntersecting);
-        pauseAuto(!inView);
-      }, {root: null, rootMargin: '0px', threshold: 0});
-      railWatch.observe(rail);
-
-      async function loadSections(){
-        try{
-          if (loaded.sections) return;
-          loaded.sections = true;
-          const [personalTab, proRows, ridesRows] = await Promise.all([
-            pullTab('Personal Youtube'), pullTab('Ariel_Feblowitz_Works'), pullTab('Rides')
-          ]);
-
-          const meta = {}; const videos=[];
-          (personalTab||[]).forEach(r=>{
-            const type=(r.type||'').toLowerCase();
-            if (type==='meta'){
-              meta[(r.key||'').trim()] = (r.value||'').trim();
-            } else if (type==='video'){
-              const videoId=(r.video_id||'').trim();
-              const url=(r.youtube_url||'').trim() || (videoId?`https://www.youtube.com/watch?v=${videoId}`:'');
-              const rawThumb=(r.thumb_url||'').trim() || (videoId? ytThumb(videoId) : '');
-              const thumb = ytBest(rawThumb);
-              videos.push({ prio:normNum(r.prio), includeInBanner: normBool(r.include_in_banner) || normNum(r.prio)>=5, featured: normBool(r.featured), videoId, title:(r.title||'').trim(), role:(r.role||'').trim(), url, thumb });
-            }
-          });
-
-          const febzId = (meta.febz_video_id || '').trim();
-          if (febzId){
-            const febzHeading = meta.febz_heading || "Also archiving my father's documentary work: FebzFoundFootage";
-            const febzBody = meta.febz_body || "A growing archive of Gary Feblowitz’s documentary footage and rare segments.";
-            $('#febzHeading').textContent = febzHeading; $('#febzBody').textContent = febzBody;
-            $('#febzLink').href = `https://www.youtube.com/watch?v=${febzId}`;
-            $('#febzThumb').src = ytBest(ytThumb(febzId));
-            $('#febzBox').style.display = 'block';
-          }
-
-          const showLatest = (String(meta.latest_mode||'').toLowerCase()==='auto') || false;
-          if (showLatest && meta.latest_playlist_or_channel_id){
-            const channelId = meta.latest_playlist_or_channel_id;
-            if (channelId.startsWith('UC')){
-              const uploadsId = 'UU'+channelId.slice(2);
-              $('#latestFrame').src = `https://www.youtube.com/embed/videoseries?list=${uploadsId}&rel=0`;
-              $('#latestBox').style.display = 'block';
-            }
-          }
-
-          const proItems = (proRows||[]).map(r=>({
-            title:(r['Name']||'').trim(),
-            url:fixImdb((r['URL']||'').trim()),
-            role:(r['My Role']||'').trim(),
-            prod:(r['Production Co.']||'').trim(),
-            onSet: normBool(r['On Set?']),
-            prio:normNum(r['Prio?']),
-            posters:[(r['Primary image']||'').trim()].filter(Boolean)
-          })).filter(x=>x.title && x.prio>0).sort((a,b)=> (a.onSet!==b.onSet)? (a.onSet? -1:1) : (b.prio-a.prio) || a.title.localeCompare(b.title));
-
-          const rideItems = (ridesRows||[]).map(r=>({
-            title:(r['Ride Name']||'').trim(),
-            url:(r['Ride Link']||'').trim(),
-            role:(r['My Role']||'').trim(),
-            company:(r['Ride Company']||'').trim(),
-            desc:(r['Description']||'').trim(),
-            prio:normNum(r['Prio']),
-            posters:[(r['Ride Image']||'').trim()].filter(Boolean)
-          })).filter(x=>x.title && x.prio>0).sort((a,b)=> b.prio-a.prio || a.title.localeCompare(b.title));
-
-          renderPro(proItems);
-          renderRides(rideItems);
-          renderPersonal(videos, (meta.featured_video_id||'').trim());
-
-          window.__tilesData = {
-            pro:  proItems.filter(p=>p.prio>=5).map(p=>({type:'pro',     title:p.title, img:p.posters[0]||'', url:p.url||'#'})),
-            ride: rideItems.filter(r=>r.prio===10).map(r=>({type:'ride',  title:r.title, img:r.posters[0]||'', url:r.url||'#'})),
-            per:  videos.filter(v=>(v.prio||0)>=5 || v.includeInBanner).map(v=>({type:'personal', title:v.title, img:v.thumb||'', url:v.url||'#'}))
-          };
-        }catch(err){ console.error('[loadSections]', err); }
-      }
-
-      /* Renders use lazy images */
-      function renderPro(items){
-        const grid = $('#proGrid'); grid.innerHTML='';
-        if (!items.length){ grid.innerHTML = `<div class="muted">No items yet — add rows in the “Ariel_Feblowitz_Works” tab.</div>`; return; }
-        items.forEach(p=>{
-          const c=document.createElement('a'); c.className='proj card'; c.href=p.url||'#'; c.target='_blank'; c.rel='noopener';
-          const wrap=document.createElement('div'); wrap.className='thumb poster';
-          const img = makeLazyImg(p.posters[0] || titlePlaceholderSVG(p.title), '');
-          wrap.appendChild(img);
-          const meta=document.createElement('div'); meta.className='meta';
-          const info=[p.role, p.prod].filter(Boolean).join(' • ');
-          meta.innerHTML = `<div class="title">${p.title}</div><div class="role">${info}</div>`;
-          c.appendChild(wrap); c.appendChild(meta); grid.appendChild(c);
-        });
-      }
-
-      function renderRides(items){
-        const grid = $('#ridesGrid'); grid.innerHTML='';
-        if (!items.length){ grid.innerHTML = `<div class="muted">No items yet — add rows in the “Rides” tab.</div>`; return; }
-        items.forEach(p=>{
-          const c=document.createElement('a'); c.className='proj card'; c.href=p.url||'#'; c.target='_blank'; c.rel='noopener';
-          const wrap=document.createElement('div'); wrap.className='thumb';
-          const img = makeLazyImg(p.posters[0] || titlePlaceholderSVG(p.title), '');
-          wrap.appendChild(img);
-          const meta=document.createElement('div'); meta.className='meta';
-          const info=[p.role, p.company].filter(Boolean).join(' • ');
-          let body='';
-          if (p.desc){
-            body = `<details class="summaryless" style="margin-top:.45em; font-size:.95em"><summary class="btn" style="display:inline-flex; margin:0; padding:.35em .6em;">Details</summary><div class="muted" style="margin-top:.6em">${p.desc}</div></details>`;
-          }
-          meta.innerHTML = `<div class="title">${p.title}</div><div class="role">${info}</div>${body}`;
-          c.appendChild(wrap); c.appendChild(meta); grid.appendChild(c);
-        });
-      }
-
-      function renderPersonal(videos, featuredId){
-        const grid = $('#personalGrid'); grid.innerHTML='';
-        if (!videos.length){ grid.innerHTML = `<div class="muted">No videos yet — add rows in the “Personal Youtube” tab.</div>`; return; }
-        const fIdx = videos.findIndex(v=>v.videoId===featuredId);
-        if (fIdx>0){ const [f]=videos.splice(fIdx,1); videos.unshift(f); }
-        videos.forEach(v=>{
-          const c=document.createElement('a'); c.className='proj card'; c.href=v.url||'#'; c.target='_blank'; c.rel='noopener';
-          const wrap=document.createElement('div'); wrap.className='thumb';
-          const img = makeLazyImg(v.thumb || (v.videoId? ytBest(ytThumb(v.videoId)) : titlePlaceholderSVG(v.title)), '');
-          wrap.appendChild(img);
-          const meta=document.createElement('div'); meta.className='meta';
-          meta.innerHTML = `<div class="title">${v.title||''}</div><div class="role">${v.role||''}</div>`;
-          c.appendChild(wrap); c.appendChild(meta); grid.appendChild(c);
-        });
-      }
-
-      /* Build banner with a minimal DOM footprint */
-      function fillBanner(tiles){
-        scrollEl.innerHTML='';
-        if (!tiles || !tiles.length) return;
-
-        const approxTileWidth = 200; // conservative average width buffer
-        const need = Math.max(tiles.length, Math.ceil((rail.clientWidth * 1.8) / approxTileWidth) + 6);
-
-        for (let i=0; i<need; i++){
-          const t = tiles[i % tiles.length];
-          scrollEl.appendChild(makeTile(t));
-        }
-        startAuto();
-      }
-
-      function buildBannerDeferred(){
-        if (loaded.banner || !window.__tilesData) return;
-        loaded.banner = true;
-        const {pro, ride, per} = window.__tilesData;
-        const interleaved=[];
-        const L=Math.max(pro.length, ride.length, per.length);
-        for(let i=0;i<L;i++){ if(pro[i]) interleaved.push(pro[i]); if(ride[i]) interleaved.push(ride[i]); if(per[i]) interleaved.push(per[i]); }
-        fillBanner(interleaved);
-      }
-
-      async function loadTestimonials(){
-        if (loaded.testimonials) return; loaded.testimonials = true;
-        try{
-          const rows = await pullTab('Testimonials');
-          const items = (rows||[]).map(r=>({ from:(r['From']||'').trim(), text:(r['Testimonial']||'').trim() })).filter(t=>t.from && t.text);
-          if (!items.length) return;
-          const box = document.getElementById('testimonialsBox');
-          const list = document.getElementById('testimonialsList');
-          list.innerHTML='';
-          const smartQuote = s=>{ const t = s.trim(); const begins = /^["“]/.test(t); const ends = /["”]$/.test(t); if (begins && ends) return t; return `“${t.replace(/^\"|^“|^'|^‘|^`/, '').replace(/\"$|”$|'$|‘$|`$/, '')}”`; };
-          const esc = s=> s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
-          items.forEach(it=>{
-            const el = document.createElement('div');
-            el.className='testimonial';
-            el.innerHTML = `<span class="quote">${esc(smartQuote(it.text))}</span><span class="from">— ${esc(it.from)}</span>`;
-            list.appendChild(el);
-          });
-          box.style.display = 'block';
-        }catch(e){ console.error('[testimonials]', e); }
-      }
-    }catch(err){ console.error('[init]', err); }
-  })();
-
-  function titlePlaceholderSVG(title){
-    const safe = (title||'Untitled').replace(/&/g,'&amp;').replace(/</g,'&lt;');
-    const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 800'><rect width='100%' height='100%' fill='#000'/><text x='50%' y='50%' fill='#9fffcf' font-family='Inter, Segoe UI, Roboto, Arial, sans-serif' font-size='36' text-anchor='middle' dominant-baseline='middle'>${safe}</text></svg>`;
-    return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
-  }
-
-  function enhanceContactLinks(){
-    const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-    const scope = [document.getElementById('topContact'), document.getElementById('contactInfo')].filter(Boolean);
-    const showToast = (text, x, y)=>{
-      const t=document.createElement('div'); t.className='toast'; t.textContent=text; document.body.appendChild(t);
-      const px = Math.min(window.innerWidth-160, Math.max(12, x|| (window.innerWidth-160)/2));
-      const py = Math.min(window.innerHeight-60, Math.max(8, y|| 18));
-      t.style.left = px+'px'; t.style.top = py+'px';
-      requestAnimationFrame(()=> t.classList.add('show'));
-      setTimeout(()=>{ t.classList.remove('show'); setTimeout(()=>t.remove(),180); }, 1100);
-    };
-    scope.forEach(root=>{
-      root.querySelectorAll('a[href^="tel:"], a[href^="mailto:"]').forEach(a=>{
-        a.addEventListener('click', e=>{
-          if (isMobile) return;
-          e.preventDefault();
-          const text = a.textContent.trim();
-          navigator.clipboard?.writeText(text).then(()=>{ showToast('Copied: '+text, e.clientX, e.clientY); })
-            .catch(()=>{ showToast(text, e.clientX, e.clientY); });
-        }, {passive:false});
-      });
-    });
-  }
-
-  /* Yellow click flicker (kept intact) + inject “extras” */
+  /* >>> REPLACED sysDotEffects WITH YOUR STRONGER VERSION <<< */
   (function sysDotEffects(){
-    const dot = document.querySelector('.brand .dot'); if (!dot) return;
-    function playAnim(name, ms){ dot.style.animation = 'none'; void dot.offsetWidth; dot.style.animation = `${name} ${ms}ms linear 1`; }
+    const dot = document.querySelector('.brand .dot');
+    if (!dot) return;
+
+    // Replay any keyframe reliably
+    function replay(name, ms){
+      dot.style.animation = 'none';
+      void dot.offsetWidth;            // reflow to restart animation
+      dot.style.animation = `${name} ${ms}ms linear 1`;
+    }
+
     const isInteractive = el => el && el.closest && el.closest('a, button, .tab-btn, .tile, .btn');
-    function onHover(){ playAnim('dotFlick', 950); }
+
+    // Hover: keep your subtle green flicker
+    function onHover(){ replay('dotFlick', 950); }
     document.addEventListener('mouseover', e=>{ if (isInteractive(e.target)) onHover(); }, {passive:true});
     document.addEventListener('focusin',   e=>{ if (isInteractive(e.target)) onHover(); });
 
+    // Click: force 1s yellow, then restore green
     function onClick(){
       if (!document.body.classList.contains('ready')) return;
+
+      // save current inline styles so we can restore cleanly
+      const prevBG   = dot.style.background;
+      const prevBox  = dot.style.boxShadow;
+      const prevAnim = dot.style.animation;
+
+      // apply yellow state with high priority so it always wins
       dot.classList.add('alert');
-      playAnim('alertFlick', 1000);
-      setTimeout(()=>{ dot.classList.remove('alert'); dot.style.animation=''; }, 1000);
+      dot.style.setProperty('background','radial-gradient(circle at 30% 30%, #ffd24a, #6b5a1a 70%)','important');
+      dot.style.setProperty('box-shadow','0 0 22px #ffd24a, 0 0 36px rgba(255,210,74,.5)','important');
+
+      // play flicker ~1s
+      replay('alertFlick', 1000);
+
+      // restore original state after 1s
+      setTimeout(()=>{
+        dot.classList.remove('alert');
+        dot.style.background = prevBG;
+        dot.style.boxShadow  = prevBox;
+        dot.style.animation  = prevAnim || '';
+      }, 1000);
     }
+
     document.addEventListener('pointerdown', e=>{ if (isInteractive(e.target)) onClick(); }, {passive:true});
     document.addEventListener('keydown', e=>{ if ((e.key==='Enter'||e.key===' ') && isInteractive(e.target)) onClick(); });
 
+    // Leave your contact “extras” injector intact
     function tryInject(){
       const wrap = document.getElementById('contactInfo');
       const links = document.getElementById('btnLinks');
