@@ -659,8 +659,7 @@
         const gid = gids[name]; if(!gid) return {rows:[], raw:null};
         const key = `csv:${gid}`;
         let txt;
-        // Fresh fetch for "Main site info" and "Testimonials"
-        if (name === 'Main site info' || name === 'Testimonials'){
+        if (name === 'Main site info'){
           txt = await fetch(buildCsvUrlFromGid(PUBHTML, gid) + `&cb=${Date.now()}`).then(r=>r.text());
         } else {
           const cached = cache.get(key);
@@ -714,7 +713,7 @@
         navigator.clipboard?.writeText(e).then(()=> toast('Copied: '+e)).catch(()=> toast(e));
       });
 
-      // HUD title
+      // HUD title from ASSESSMENT (still supported; sheet can override)
       const hudTitleEl = $('#hudTitle');
       const assessTitle = mainInfo.ASSESSMENT || mainInfo.assessment || 'THREAT ASSESSMENT // SKNET_0001';
       hudTitleEl.textContent = assessTitle;
@@ -844,7 +843,7 @@
             per: videos.filter(v=>(v.prio||0)>=5 || v.includeInBanner).map(v=>({type:'personal', kind:'wide', title:v.title, img:v.thumb||'', url:v.url||'#', ytid:v.videoId||''}))
           };
 
-          // --- TESTIMONIALS: title from B1 + flexible columns
+          // --- TESTIMONIALS: title from B1 + real rows
           const tBox  = document.getElementById('testimonialsBox');
           const tList = document.getElementById('testimonialsList');
           const tTitle= document.getElementById('testimonialsTitle');
@@ -853,21 +852,9 @@
           if (testiRaw){ try{ const b1 = csvFirstRowSecondCol(testiRaw); if (b1) tHeading = b1; }catch{} }
           tTitle.textContent = tHeading;
 
-          // Detect header keys: "From" and "Testimonials" (plural) or close variants
-          const headers = testiRows && testiRows[0] ? Object.keys(testiRows[0]) : [];
-          const fromKey = headers.find(k => /^from$/i.test(k)) || 'From';
-          const textKey = headers.find(k => /^(testimonials?|quote|text)$/i.test(k)) || 'Testimonials';
-
-          const items = (testiRows||[]).map(r=>({
-            from:(r[fromKey]||'').trim(),
-            text:(r[textKey]||'').trim()
-          })).filter(t=>t.from && t.text);
-
+          const items = (testiRows||[]).map(r=>({ from:(r['From']||'').trim(), text:(r['Testimonial']||'').trim() })).filter(t=>t.from && t.text);
           if (items.length){
-            const smartQuote = s=>{
-              const t = s.trim(); const b = /^["“]/.test(t); const e = /["”]$/.test(t);
-              return (b&&e)?t:`“${t.replace(/^\"|^“|^'|^‘|^`/, '').replace(/\"$|”$|'$|‘$|`$/, '')}”`;
-            };
+            const smartQuote = s=>{ const t = s.trim(); const b = /^["“]/.test(t); const e = /["”]$/.test(t); return (b&&e)?t:`“${t.replace(/^\"|^“|^'|^‘|^`/, '').replace(/\"$|”$|'$|‘$|`$/, '')}”`; };
             const esc = s=> s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
             tList.innerHTML = '';
             items.forEach(it=>{
