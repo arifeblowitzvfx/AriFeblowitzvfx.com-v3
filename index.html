@@ -109,7 +109,15 @@
           "test"; /* testimonials now under HUD */
       }
     }
-
+  /* Force Testimonials to touch the Reel on wide layouts */
+  .hero{ row-gap:0 }                /* already present, but reaffirmed */
+  .area-test{ margin-top:-1px; }    /* overlaps borders so there’s zero visual gap */
+  .area-reel{ margin-bottom:0; }    /* defensive: ensure no bottom margin */
+  
+  @media (max-width:920px){
+    /* When stacked under HUD on narrow screens, restore normal spacing */
+    .area-test{ margin-top:var(--grid); }
+  }
     .card{background:var(--panel); border:1px solid rgba(66,255,209,.34); border-radius:var(--radius); box-shadow:var(--shadow)}
     .pad{padding:clamp(14px,1.6vw,20px)}
 
