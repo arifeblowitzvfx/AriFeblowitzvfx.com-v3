@@ -18,7 +18,7 @@
   <link rel="preconnect" href="https://www.youtube.com" crossorigin>
   <link rel="preconnect" href="https://player.vimeo.com" crossorigin>
 
-  <!-- Orbitron for 80s UI headings -->
+  <!-- Orbitron for headings -->
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
 
   <style>
@@ -39,7 +39,7 @@
       overflow-y:overlay; letter-spacing:.15px; min-height:100svh;
     }
 
-    /* FX layers */
+    /* FX layers (non-interactive) */
     #fx-stars, #fx-grid { position:fixed; inset:0; pointer-events:none; z-index:0; }
     #fx-stars { opacity:.55; }
     #fx-grid {
@@ -54,7 +54,7 @@
       opacity:.45;
     }
 
-    /* CRT scan + glow (non-interactive) */
+    /* CRT scan + glow */
     body::after{
       content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
       background-image: repeating-linear-gradient(to bottom, rgba(0,255,156,.24), rgba(0,255,156,.24) 2px, rgba(0,0,0,0) 3px, rgba(0,0,0,0) 7px);
@@ -99,7 +99,7 @@
     .nav{display:flex; gap:clamp(8px,1vw,12px); align-items:center; justify-content:space-between; flex-wrap:wrap; margin:clamp(6px,.8vw,10px) 0}
     .brand{display:flex; gap:clamp(10px,1.2vw,14px); align-items:center; flex-wrap:wrap}
 
-    /* Status dot (hover throttled, click burst) */
+    /* Status dot (hover throttled 3s) */
     .brand .dot{ width:clamp(12px,1.2vw,16px); height:clamp(12px,1.2vw,16px); border-radius:50%;
       background:radial-gradient(circle at 30% 30%, #ffd24a, #6b5a1a 70%); box-shadow:0 0 22px #ffd24a, 0 0 36px rgba(255,210,74,.5); animation:blinkFast 1.1s infinite; position:relative; }
     body.ready .brand .dot{ background:radial-gradient(circle at 30% 30%, var(--accent), #0f4630 70%); box-shadow:0 0 22px var(--accent); animation:blinkSlow 3.6s infinite; }
@@ -117,7 +117,6 @@
     .btn:hover{border-color:var(--accent); box-shadow:0 0 0 1px rgba(0,255,156,.22) inset}
     .btn.primary{background:linear-gradient(180deg, rgba(0,255,156,.3), rgba(0,255,156,.15)); color:#eafff6; text-shadow:0 1px 0 rgba(0,0,0,.6);}
 
-    /* Top contact: half-size */
     #topContact{ font-size:.5em; flex-basis:100%; display:flex; gap:8px; align-items:center; }
 
     /* Sticky tabs */
@@ -126,7 +125,7 @@
     .tab-btn{padding:.6em .9em; border-radius:12px; background:var(--panel); color:var(--txt); border:1px solid rgba(66,255,209,.32); cursor:pointer; font-weight:700}
     .tab-btn.active{outline:1px solid var(--accent); box-shadow:0 0 0 2px rgba(0,255,156,.12) inset}
 
-    /* === HERO LAYOUT === */
+    /* HERO */
     .hero{
       margin:clamp(12px,1.6vw,20px) 0;
       display:grid;
@@ -139,7 +138,6 @@
     .area-hud{ grid-area:hud; }
     .leftStack{ display:flex; flex-direction:column; gap:0; }
     .leftStack > .card{ margin:0; }
-
     .area-reel{ grid-area:reel; }
     .area-test{ grid-area:test; }
 
@@ -154,7 +152,7 @@
       .leftStack{ display:contents; }
     }
 
-    /* Card + light sweep (now non-interactive) */
+    /* Card (sweep overlay made non-interactive) */
     .card{
       position:relative;
       background:linear-gradient(180deg, rgba(10,18,16,.85), rgba(5,9,11,.9));
@@ -171,25 +169,21 @@
       content:""; position:absolute; top:-60%; left:-40%; width:60%; height:220%;
       background:linear-gradient(120deg, transparent 40%, rgba(255,255,255,.08), transparent 60%);
       transform:rotate(14deg); animation:sweep 8s linear infinite;
-      pointer-events:none; /* <<< FIX: do not eat clicks over buttons/links */
+      pointer-events:none; /* crucial to prevent double-click issue */
     }
     @keyframes edgeSpin{to{transform:rotate(360deg)}}
     @keyframes sweep{0%{transform:translateX(-40%) rotate(14deg)} 100%{transform:translateX(200%) rotate(14deg)}}
 
     .pad{padding:clamp(14px,1.6vw,20px)}
-
-    /* Reel frame */
     .reel{ position:relative; aspect-ratio:16/9; width:100%; border-radius:14px; overflow:hidden; background:#000;
       border:1px solid rgba(0,255,156,.34); outline:1px solid rgba(0,255,156,.2);
       box-shadow:0 0 20px rgba(0,255,156,.12) inset, 0 0 18px rgba(0,0,0,.6); contain:layout paint; isolation:isolate; }
     .reel > iframe{position:absolute; inset:0; width:100%; height:100%; border:0; display:block; box-sizing:border-box}
 
     .badges{display:flex; flex-wrap:wrap; gap:clamp(8px,1vw,12px); margin-top:clamp(8px,1vw,12px)}
-
     section{display:none; content-visibility:auto; contain-intrinsic-size: 1px 1000px}
     section.active{display:block}
 
-    /* Grids */
     .grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:var(--grid); content-visibility:auto}
     @media (max-width:1000px){ .grid{grid-template-columns:repeat(2, 1fr)} }
     @media (max-width:620px){ .grid{grid-template-columns:1fr} }
@@ -208,14 +202,6 @@
 
     .toast{ position:fixed; z-index:9999; padding:.5em .75em; border-radius:10px; background:#0b1414; color:#caffec; border:1px solid rgba(66,255,209,.4); box-shadow:var(--shadow); font-size:.9em; opacity:0; transform:translateY(-6px); transition:opacity .15s ease, transform .15s ease; }
     .toast.show{ opacity:1; transform:translateY(0); }
-
-    /* CLICK-ALERT */
-    .brand .dot.alert{
-      background:radial-gradient(circle at 30% 30%, #ffd24a, #6b5a1a 70%);
-      box-shadow:0 0 22px #ffd24a, 0 0 36px rgba(255,210,74,.5);
-      animation:alertFlick .125s linear 8;
-    }
-    @keyframes alertFlick{0%,100%{opacity:.45}50%{opacity:1}}
 
     /* Testimonials */
     #testimonialsBox .tlist{display:flex; flex-direction:column; gap:14px; margin-top:8px}
@@ -305,7 +291,7 @@
 
             <!-- Testimonials -->
             <div class="card pad area-test" id="testimonialsBox" style="display:none">
-              <h3 id="testimonialsTitle" class="crt-glow" style="margin:.2em 0 .6em">Testimonials</h3>
+              <h3 class="crt-glow" style="margin:.2em 0 .6em">Testimonials</h3>
               <div class="tlist" id="testimonialsList"></div>
             </div>
           </div>
@@ -356,22 +342,22 @@
             <h2 class="crt-glow" style="margin:0">Personal Work</h2>
             <small class="muted">Original shorts & experiments</small>
           </div>
-        <div id="personalGrid" class="grid"></div>
+          <div id="personalGrid" class="grid"></div>
 
-        <div class="card pad" id="febzBox" style="margin-top:var(--grid); display:none">
-          <h3 class="crt-glow" style="margin-top:0"><span id="febzHeading"></span> <a href="https://www.youtube.com/@FebzFoundFootage" target="_blank" rel="noopener">@FebzFoundFootage</a></h3>
-          <a id="febzLink" href="#" target="_blank" rel="noopener" class="thumb" style="display:block; aspect-ratio:16/9;">
-            <img id="febzThumb" alt="FebzFoundFootage — Featured" loading="lazy" decoding="async" fetchpriority="low" style="width:100%; height:100%; object-fit:cover; display:block; border-radius:14px; border:1px solid rgba(66,255,209,.26)" />
-          </a>
-          <small id="febzBody" class="muted"></small>
-        </div>
-
-        <div class="card pad" id="latestBox" style="margin-top:var(--grid); display:none">
-          <h3 class="crt-glow" style="margin-top:0">Latest from YouTube</h3>
-          <div class="reel" style="aspect-ratio:16/9">
-            <iframe id="latestFrame" src="" title="YouTube uploads" frameborder="0" loading="lazy" decoding="async" fetchpriority="low" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+          <div class="card pad" id="febzBox" style="margin-top:var(--grid); display:none">
+            <h3 class="crt-glow" style="margin-top:0"><span id="febzHeading"></span> <a href="https://www.youtube.com/@FebzFoundFootage" target="_blank" rel="noopener">@FebzFoundFootage</a></h3>
+            <a id="febzLink" href="#" target="_blank" rel="noopener" class="thumb" style="display:block; aspect-ratio:16/9;">
+              <img id="febzThumb" alt="FebzFoundFootage — Featured" loading="lazy" decoding="async" fetchpriority="low" style="width:100%; height:100%; object-fit:cover; display:block; border-radius:14px; border:1px solid rgba(66,255,209,.26)" />
+            </a>
+            <small id="febzBody" class="muted"></small>
           </div>
-        </div>
+
+          <div class="card pad" id="latestBox" style="margin-top:var(--grid); display:none">
+            <h3 class="crt-glow" style="margin-top:0">Latest from YouTube</h3>
+            <div class="reel" style="aspect-ratio:16/9">
+              <iframe id="latestFrame" src="" title="YouTube uploads" frameborder="0" loading="lazy" decoding="async" fetchpriority="low" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -397,7 +383,7 @@
   <script>
   (function guard(){ const roots = document.querySelectorAll('#appRoot'); if (roots.length > 1){ roots.forEach((el, i)=>{ if(i>0) el.remove(); }); } if (window.__siteInitDone) { console.warn('Init already run; skipping.'); return; } window.__siteInitDone = true; })();
 
-  /* ====== STARFIELD (lighter) ====== */
+  /* ====== Lightweight starfield ====== */
   (function starfield(){
     const canvas = document.getElementById('fx-stars');
     const ctx = canvas.getContext('2d');
@@ -408,7 +394,7 @@
       h = canvas.height= Math.floor(innerHeight*dpr);
       canvas.style.width = innerWidth+'px'; canvas.style.height = innerHeight+'px';
       if (!stars.length){
-        const count = Math.floor((innerWidth*innerHeight)/9600); // ~50% fewer
+        const count = Math.floor((innerWidth*innerHeight)/9600); // trimmed load
         stars = Array.from({length:count}, ()=>({ x: Math.random()*w, y: Math.random()*h, z: Math.random()*1.2 + .3, a: Math.random()*0.6 + 0.2 }));
       }
     }
@@ -427,12 +413,20 @@
     resize(); tick();
   })();
 
+  /* ====== Config ====== */
   const PUBHTML = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQxBxTbb-Ax7rpnnn5zWDUW6fGq1nUGIEPJb5qfaxifqKyZexNLK28gwpQLS5T5vpeuSvZicAEg69U1/pubhtml";
-  const TAB_MAP = {};
+  const TESTI_GID = "1171884514"; // Testimonials tab GID (explicit, per your link)
 
   const DEFAULT_PHONE = "(818)434-8013";
   const DEFAULT_EMAIL = "arifeblowitzvfx@gmail.com";
   const DEFAULT_RESUME = "https://docs.google.com/document/d/1NnKyzE8TtjMOe8WdTEBE7zNscM_RIHBMGF1CMjOn29s/export?format=pdf";
+
+  /* ====== Helpers ====== */
+  const $ = (sel, el=document) => el.querySelector(sel);
+  const $$ = (sel, el=document) => [...el.querySelectorAll(sel)];
+  const ytThumb = id => `https://img.youtube.com/vi/${id}/maxresdefault.jpg`;
+  const ytThumbHQ = id => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+  const fixImdb = url => (url||"").replace(/https?:\/\/pro\.imdb\.com/i,'https://www.imdb.com').replace(/\?ref_=pro.*$/,'');
 
   function setTopContact(phone, email){
     const top = document.getElementById('topContact'); if (!top) return; top.innerHTML = '';
@@ -448,82 +442,32 @@
   setContactSection(DEFAULT_PHONE, DEFAULT_EMAIL);
   (function(){ const r = document.getElementById('btnResume'); if (r) r.href = DEFAULT_RESUME; document.getElementById('dockResume').href = r ? r.href : DEFAULT_RESUME; })();
 
-  const $ = (sel, el=document) => el.querySelector(sel);
-  const $$ = (sel, el=document) => [...el.querySelectorAll(sel)];
-  const ytThumb = id => `https://img.youtube.com/vi/${id}/maxresdefault.jpg`;
-  const ytThumbHQ = id => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
-  const fixImdb = url => (url||"").replace(/https?:\/\/pro\.imdb\.com/i,'https://www.imdb.com').replace(/\?ref_=pro.*$/,'');
-
-  /* ---------- CSV utilities ---------- */
+  /* CSV parsing */
   function csvToMatrix(csvText){
     const rows = []; let field="", row=[], inQ=false;
     const s = String(csvText||"").replace(/\r/g,'');
     for (let i=0;i<s.length;i++){
       const c = s[i];
-      if (c==='"'){ inQ = !inQ; field+=c; continue; }
-      if (!inQ && c===','){ row.push(field.replace(/^("|“)|("|”)$/g,'').replace(/""/g,'"')); field=""; continue; }
-      if (!inQ && c==='\n'){ row.push(field.replace(/^("|“)|("|”)$/g,'').replace(/""/g,'"')); rows.push(row); row=[]; field=""; continue; }
+      if (c==='"'){ inQ = !inQ; continue; }
+      if (!inQ && c===','){ row.push(field); field=""; continue; }
+      if (!inQ && c==='\n'){ row.push(field); rows.push(row.map(v=>String(v||'').replace(/""/g,'"'))); row=[]; field=""; continue; }
       field+=c;
     }
-    if (field.length || row.length){ row.push(field.replace(/^("|“)|("|”)$/g,'').replace(/""/g,'"')); rows.push(row); }
+    if (field.length || row.length){ row.push(field); rows.push(row.map(v=>String(v||'').replace(/""/g,'"'))); }
     return rows;
   }
-  function csvFirstRowSecondCol(csvText){
-    const rows = csvToMatrix(csvText);
-    return rows[0] && rows[0][1] ? String(rows[0][1]).trim() : "";
-  }
-  function objectsFromDetectedHeader(rows, headerPredicate){
-    if (!rows || !rows.length) return [];
-    // Find the first row that looks like the header
-    let hIdx = rows.findIndex(r => headerPredicate(r.map(x=>String(x||'').trim())));
-    if (hIdx === -1) hIdx = 0;
-    const headers = rows[hIdx].map(h=>String(h||'').trim());
-    const out = [];
-    for (let i=hIdx+1;i<rows.length;i++){
-      const r = rows[i];
-      if (!r || r.every(x=>!String(x||'').trim())) continue; // skip blank lines
-      const obj = {};
-      headers.forEach((h,idx)=> obj[h] = r[idx]!==undefined ? r[idx] : "");
-      out.push(obj);
-    }
-    return out;
-  }
-
-  const normBool = v => String(v||"").trim().toLowerCase()==='true' || String(v||"").trim().toLowerCase()==='yes';
+  const normBool = v => /^(true|yes|1)$/i.test(String(v||'').trim());
   const normNum = v => { const n = Number(String(v||"").replace(/[^\d.-]/g,"")); return isNaN(n)?0:n; };
   function buildCsvUrlFromGid(pubhtml, gid){ return pubhtml.replace(/\/pubhtml.*/, '/pub') + `?gid=${gid}&single=true&output=csv`; }
 
-  const cache = { get(key){ try{ return JSON.parse(localStorage.getItem(key)||'null'); }catch{return null} }, set(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch{} } };
-
-  async function discoverGids(pubhtml){
-    const map = {};
-    try{
-      const html = await fetch(pubhtml, {mode:"cors"}).then(r=>r.text());
-      const uniqueGids = [...new Set([...html.matchAll(/gid=(\d+)/g)].map(m=>m[1]))];
-      for (const gid of uniqueGids){
-        const txt = await fetch(buildCsvUrlFromGid(pubhtml, gid)).then(r=>r.text()).catch(()=>null);
-        if (!txt) continue;
-        const rows = csvToMatrix(txt);
-        const headerRow = rows[0] ? rows[0].join('|').toLowerCase() : '';
-        if (headerRow.includes('primary image') && headerRow.includes('on set?')) map['Ariel_Feblowitz_Works']=gid;
-        else if (headerRow.includes('ride image') && headerRow.includes('ride name')) map['Rides']=gid;
-        else if (headerRow.includes('type') && headerRow.includes('video_id')) map['Personal Youtube']=gid;
-        else if (headerRow.includes('key') && headerRow.includes('value')) map['Main site info']=gid;
-        else if (headerRow.includes('from') && (headerRow.includes('testimonial') || headerRow.includes('testimonials') || headerRow.includes('quote') || headerRow.includes('text') || headerRow.includes('body'))) map['Testimonials']=gid;
-      }
-    }catch(e){ console.error('[discoverGids]', e); }
-    return { ...map, ...TAB_MAP };
-  }
-
+  /* ====== Banner, tabs, general UI ====== */
   const rail = $('#bannerRail'); const scrollEl = $('#bannerScroll');
 
-  /* --- IMG LAZY LOADER --- */
   const io = new IntersectionObserver((entries)=>{
     entries.forEach(({isIntersecting, target})=>{
       if (!isIntersecting) return;
       const img = target;
-      const src = img.dataset.src;
-      if (src){ img.src = src; img.removeAttribute('data-src'); }
+      if (img.dataset.src){ img.src = img.dataset.src; img.removeAttribute('data-src'); }
       if (img.dataset.srcset){ img.srcset = img.dataset.srcset; img.removeAttribute('data-srcset'); }
       io.unobserve(img);
     });
@@ -544,13 +488,11 @@
     }
     img.dataset.src = main; io.observe(img); return img;
   }
-
   function titlePlaceholderSVG(title){
     const safe = (title||'Untitled').replace(/&/g,'&amp;').replace(/</g,'&lt;');
     const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 800'><rect width='100%' height='100%' fill='#000'/><text x='50%' y='50%' fill='#9fffcf' font-family='Inter, Segoe UI, Roboto, Arial, sans-serif' font-size='36' text-anchor='middle' dominant-baseline='middle'>${safe}</text></svg>`;
     return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
   }
-
   function makeTile(t){
     const a=document.createElement('a');
     a.className='tile ' + (t.type==='pro'?'poster':'wide');
@@ -561,7 +503,6 @@
     a.appendChild(img);
     return a;
   }
-
   function fillBanner(tiles){
     scrollEl.innerHTML='';
     const seq = tiles.slice(0, 42);
@@ -582,7 +523,6 @@
       document.documentElement.style.setProperty('--marqueeDur', dur+'s');
     });
   }
-
   rail.addEventListener('mouseenter', ()=> rail.classList.add('paused'));
   rail.addEventListener('mouseleave', ()=> rail.classList.remove('paused'));
   $('#bnPrev').addEventListener('click', ()=>{ rail.scrollLeft -= 260; });
@@ -598,337 +538,6 @@
     });
   });
   $('#year').textContent = new Date().getFullYear();
-  const sysStatus = document.getElementById('sysStatus');
-  function setStatus(msg, linkHref){ if (!sysStatus) return; sysStatus.textContent = msg; if (linkHref) { sysStatus.href = linkHref; } }
-
-  const loaded = { main:false, reel:false, sections:false, banner:false, testimonials:false };
-
-  // --- PRELOAD PLACEHOLDERS ---
-  (function preloadFrames(){
-    // HUD placeholder
-    const hudCard = document.getElementById('hudCard');
-    const hudTitle = document.getElementById('hudTitle');
-    const hudBody  = document.getElementById('hudBody');
-    function renderHUD(lines){
-      hudBody.innerHTML='';
-      lines.forEach(l=>{
-        const row = document.createElement('div'); row.className='line';
-        const tag = document.createElement('span'); tag.className='tag'; tag.textContent = String(l.tag||'').toUpperCase();
-        const body = document.createElement('div'); body.className='body'; body.textContent = l.body||'';
-        row.appendChild(tag); row.appendChild(body); hudBody.appendChild(row);
-      });
-      hudCard.style.display='block';
-    }
-    hudTitle.textContent = 'Scanning Subject Attributes…';
-    renderHUD([
-      {tag:'WY:LINK', body:'Handshake with Weyland Yutani mainframe… OK'},
-      {tag:'CYBD:PROC', body:'Cyberdyne predictive model warm-up… OK'},
-      {tag:'SKNET:SIG', body:'Skynet heuristic prefetch… nominal'},
-      {tag:'IO/TIMEBASE', body:'Genlock sync… LTC/VITC stable'},
-      {tag:'LENS DB', body:'FF/APS-C tables cached; distortion LUTs primed'},
-      {tag:'RIGS', body:'Technodolly/Graphlite/Spydercam/MILO profiles loaded'}
-    ]);
-
-    // Testimonials placeholder
-    const tBox  = document.getElementById('testimonialsBox');
-    const tList = document.getElementById('testimonialsList');
-    const tTitle= document.getElementById('testimonialsTitle');
-    tTitle.textContent = 'Satellite uplink awaiting interstellar comms to verify subject with known associates…';
-    const gag = (q,f)=>`<div class="testimonial"><span class="quote">“${q}”</span><span class="from">— ${f}</span></div>`;
-    tList.innerHTML = [
-      gag('Cross-referencing guild logs, call sheets, and lunch orders…','Mother // Unit 1824'),
-      gag('Decrypting production radio chatter: “He solved it on set.”','Cyberdyne Archive • Tape B-12')
-    ].join('');
-    tBox.style.display = 'block';
-  })();
-
-  (async function init(){
-    try{
-      setStatus('Routing request to MOTHER…', sysStatus.href);
-      const gids = await discoverGids(PUBHTML);
-
-      async function pullCsv(name){
-        const gid = gids[name]; if(!gid) return {rows:[], raw:null, matrix:[]};
-        const key = `csv:${gid}`;
-        let txt;
-        if (name === 'Main site info'){
-          txt = await fetch(buildCsvUrlFromGid(PUBHTML, gid) + `&cb=${Date.now()}`).then(r=>r.text());
-        } else {
-          const cached = cache.get(key);
-          if (cached && cached.txt){ txt = cached.txt; }
-          else { txt = await fetch(buildCsvUrlFromGid(PUBHTML, gid)).then(r=>r.text()); cache.set(key, {ts:Date.now(), txt}); }
-        }
-        return { rows: null, raw: txt, matrix: csvToMatrix(txt) };
-      }
-
-      // MAIN INFO (simple header on row 1)
-      const mainInfoPull = await pullCsv('Main site info');
-      const mainMatrix = mainInfoPull.matrix;
-      const mainHeaders = mainMatrix[0]||[];
-      const mainRows = mainMatrix.slice(1).filter(r=>r && r.length>1);
-      const mainInfo = {};
-      mainRows.forEach(r=>{
-        const key = (r[0]||'').trim(); const val = (r[1]||'').trim();
-        if (key) mainInfo[key] = val;
-      });
-
-      // Labels/links
-      $('#siteTitle').textContent = mainInfo.site_title || 'Subject: ARI FEBLOWITZ';
-      const imdbUrl = fixImdb(mainInfo.imdb_url || 'https://www.imdb.me/ArielFeblowitz');
-      const subtitleTxt = mainInfo.site_subtitle || 'Techvis & Virtual Production Supervisor';
-      const subtitleEl = $('#siteSubtitle'); subtitleEl.textContent = subtitleTxt; subtitleEl.href = imdbUrl;
-      $('#about1').textContent = mainInfo.about_paragraph_1 || $('#about1').textContent;
-      $('#about2').textContent = mainInfo.about_paragraph_2 || $('#about2').textContent;
-      const linksHref = mainInfo.all_links_url || 'https://linktr.ee/admin/links';
-      $('#btnIMDb').href = imdbUrl;
-      $('#btnYouTube').href = mainInfo.youtube_url || $('#btnYouTube').href;
-      $('#btnLinks').href = linksHref;
-      const resumeURL = (mainInfo.resume_url && mainInfo.resume_url.trim()) || DEFAULT_RESUME;
-      $('#btnResume').href = resumeURL; $('#dockResume').href = resumeURL;
-
-      setStatus('Link established', linksHref);
-      const aboutStatus = $('#aboutStatus'); if (aboutStatus) aboutStatus.style.display = 'none';
-      document.body.classList.add('ready');
-      $('#reelHeader').textContent = 'Demo Reel';
-      $('#aboutHeader').textContent = 'About';
-      loaded.main = true;
-
-      const phone = (mainInfo.phone||DEFAULT_PHONE).trim();
-      const email = (mainInfo.email||DEFAULT_EMAIL).trim();
-      setTopContact(phone, email);
-      setContactSection(phone, email);
-      enhanceContactLinks();
-
-      // Dock copy button
-      document.getElementById('dockCopy')?.addEventListener('click', ()=>{
-        const e = (mainInfo.email || DEFAULT_EMAIL).trim();
-        navigator.clipboard?.writeText(e).then(()=> toast('Copied: '+e)).catch(()=> toast(e));
-      });
-
-      // HUD
-      $('#hudTitle').textContent = mainInfo.ASSESSMENT || mainInfo.assessment || 'THREAT ASSESSMENT // SKNET_0001';
-      const strengthsText = (mainInfo.Strengths || mainInfo.strengths || '').trim();
-      if (strengthsText){
-        const hudBody = $('#hudBody'); hudBody.innerHTML = '';
-        strengthsText.split(/\n+/).map(s=>s.trim()).filter(Boolean).forEach(s=>{
-          const m = s.match(/^([^:]+):\s*(.+)$/);
-          const tag = (m ? m[1] : 'Signal'), body = (m ? m[2] : s);
-          const row = document.createElement('div'); row.className='line';
-          row.innerHTML = `<span class="tag">${tag.toUpperCase()}</span><div class="body">${body}</div>`;
-          hudBody.appendChild(row);
-        });
-        document.getElementById('hudCard').style.display='block';
-      }
-
-      // Reel
-      (function loadReel(){
-        const reelInput = (mainInfo.reel_youtube_id||'').trim();
-        const reelFrame = $('#reelFrame');
-        const setIframe = src => { reelFrame.loading='lazy'; reelFrame.decoding='async'; reelFrame.fetchPriority='low'; reelFrame.src = src; };
-        if (/^\s*</i.test(reelInput)){
-          const tmp = document.createElement('div'); tmp.innerHTML = reelInput;
-          const ifr = tmp.querySelector('iframe');
-          if (ifr && ifr.src){ setIframe(ifr.src); loaded.reel=true; return; }
-        }
-        const vimeoM = reelInput.match(/vimeo\.com\/(?:video\/)?(\d+)/i);
-        if (vimeoM){ setIframe(`https://player.vimeo.com/video/${vimeoM[1]}?badge=0&autopause=0&title=0&byline=0`); loaded.reel=true; return; }
-        if (/^\d{7,}$/.test(reelInput)){ setIframe(`https://player.vimeo.com/video/${reelInput}?badge=0&autopause=0&title=0&byline=0`); loaded.reel=true; return; }
-        const ytM = reelInput.match(/[?&]v=([\w-]{6,})/) || reelInput.match(/youtu\.be\/([\w-]{6,})/);
-        if (ytM){ setIframe(`https://www.youtube.com/embed/${ytM[1]}?rel=0&modestbranding=1`); loaded.reel=true; return; }
-        if (/^[\w-]{6,}$/.test(reelInput)){ setIframe(`https://www.youtube.com/embed/${reelInput}?rel=0&modestbranding=1`); loaded.reel=true; return; }
-        loaded.reel=true;
-      })();
-
-      const defer = window.requestIdleCallback || (fn=>setTimeout(fn, 0));
-      defer(loadSections);
-      defer(()=> setTimeout(buildBannerDeferred, 400));
-
-      async function loadSections(){
-        try{
-          if (loaded.sections) return; loaded.sections = true;
-
-          const personalPull = await pullCsv('Personal Youtube');
-          const proPull      = await pullCsv('Ariel_Feblowitz_Works');
-          const ridesPull    = await pullCsv('Rides');
-          const testiPull    = await pullCsv('Testimonials');
-
-          // Personal videos/meta (simple header in row 1)
-          const pRows = personalPull.matrix;
-          const pHeaders = pRows[0]||[];
-          const pData = pRows.slice(1);
-          const meta = {}; const videos=[];
-          pData.forEach(r=>{
-            const row = {}; pHeaders.forEach((h,i)=> row[String(h||'').trim()] = (r[i]||'').toString().trim());
-            const type=(row.type||'').toLowerCase();
-            if (type==='meta'){ meta[(row.key||'').trim()] = (row.value||'').trim(); }
-            else if (type==='video'){
-              const videoId=row.video_id||'';
-              const url=row.youtube_url|| (videoId?`https://www.youtube.com/watch?v=${videoId}`:'');
-              const thumb=row.thumb_url|| (videoId? ytThumb(videoId) : '');
-              videos.push({ prio: +row.prio||0, includeInBanner: (String(row.include_in_banner||'').toLowerCase()==='true') || (+row.prio||0)>=5, featured: String(row.featured||'').toLowerCase()==='true', videoId, title:row.title||'', role:row.role||'', url, thumb, ytid: videoId });
-            }
-          });
-
-          // Febz box
-          const febzId = (meta.febz_video_id || '').trim();
-          if (febzId){
-            $('#febzHeading').textContent = meta.febz_heading || "Also archiving my father's documentary work: FebzFoundFootage";
-            $('#febzBody').textContent = meta.febz_body || "A growing archive of Gary Feblowitz’s documentary footage and rare segments.";
-            $('#febzLink').href = `https://www.youtube.com/watch?v=${febzId}`;
-            $('#febzThumb').src = ytThumb(febzId);
-            $('#febzBox').style.display = 'block';
-          }
-          const showLatest = (String(meta.latest_mode||'').toLowerCase()==='auto');
-          if (showLatest && meta.latest_playlist_or_channel_id){
-            const channelId = meta.latest_playlist_or_channel_id;
-            if (channelId.startsWith('UC')){
-              const uploadsId = 'UU'+channelId.slice(2);
-              $('#latestFrame').src = `https://www.youtube.com/embed/videoseries?list=${uploadsId}&rel=0`;
-              $('#latestBox').style.display = 'block';
-            }
-          }
-
-          // Pro grid
-          const proRows = proPull.matrix;
-          const proHdr  = proRows[0]||[];
-          const proData = proRows.slice(1).map(r=>{ const o={}; proHdr.forEach((h,i)=>o[h]=r[i]||''); return o; });
-          const proItems = proData.map(r=>({
-            title:(r['Name']||'').trim(), url:fixImdb((r['URL']||'').trim()),
-            role:(r['My Role']||'').trim(), prod:(r['Production Co.']||'').trim(),
-            onSet: /^(true|yes)$/i.test(r['On Set?']||''), prio:+(r['Prio?']||0),
-            posters:[(r['Primary image']||'').trim()].filter(Boolean)
-          })).filter(x=>x.title && x.prio>0)
-            .sort((a,b)=> (a.onSet!==b.onSet)? (a.onSet? -1:1) : (b.prio-a.prio) || a.title.localeCompare(b.title));
-
-          // Rides grid
-          const ridesRows = ridesPull.matrix;
-          const ridesHdr  = ridesRows[0]||[];
-          const ridesData = ridesRows.slice(1).map(r=>{ const o={}; ridesHdr.forEach((h,i)=>o[h]=r[i]||''); return o; });
-          const rideItems = ridesData.map(r=>({
-            title:(r['Ride Name']||'').trim(),
-            url:(r['Ride Link']||'').trim(),
-            role:(r['My Role']||'').trim(),
-            company:(r['Ride Company']||'').trim(),
-            desc:(r['Description']||'').trim(),
-            prio:+(r['Prio']||r['prio']||0),
-            posters:[(r['Ride Image']||r['Ride image']||'').trim()].filter(Boolean)
-          })).filter(x=>x.title && x.prio>0)
-            .sort((a,b)=> b.prio-a.prio || a.title.localeCompare(b.title));
-
-          renderPro(proItems); renderRides(rideItems); renderPersonal(videos, (meta.featured_video_id||'').trim());
-
-          // Banner tiles
-          window.__tilesData = {
-            pro: proItems.filter(p=>p.prio>=5).map(p=>({type:'pro', kind:'poster', title:p.title, img:p.posters[0]||'', url:p.url||'#'})),
-            ride: rideItems.filter(r=>r.prio===10).map(r=>({type:'ride', kind:'wide', title:r.title, img:r.posters[0]||'', url:r.url||'#'})),
-            per: videos.filter(v=>(v.prio||0)>=5 || v.includeInBanner).map(v=>({type:'personal', kind:'wide', title:v.title, img:v.thumb||'', url:v.url||'#', ytid:v.videoId||''}))
-          };
-
-          /* ============ TESTIMONIALS (header auto-detect) ============ */
-          const tBox  = document.getElementById('testimonialsBox');
-          const tList = document.getElementById('testimonialsList');
-          const tTitle= document.getElementById('testimonialsTitle');
-
-          const tMatrix = testiPull.matrix;
-          let tHeading = 'Testimonials';
-          const b1 = csvFirstRowSecondCol(testiPull.raw||''); if (b1) tHeading = b1;
-          tTitle.textContent = tHeading;
-
-          const looksLikeHeader = (cells)=>{
-            const low = cells.map(c=>c.toLowerCase());
-            const hasFrom = low.includes('from');
-            const txtCols = ['testimonial','testimonials','quote','text','body'];
-            const hasText = txtCols.some(k=> low.includes(k));
-            return hasFrom && hasText;
-          };
-          const tObjects = objectsFromDetectedHeader(tMatrix, looksLikeHeader);
-
-          const pickText = (r)=>{
-            // check multiple possible keys
-            const variants = ['Testimonial','Testimonials','testimonial','testimonials','Quote','quote','Text','text','Body','body'];
-            for (const k of variants){ if (r[k] && String(r[k]).trim()) return String(r[k]).trim(); }
-            return '';
-          };
-
-          const items = tObjects.map(r=>({ from: String(r['From']||r['from']||'').trim(), text: pickText(r) }))
-                                .filter(t=>t.from && t.text);
-
-          const smartQuote = s=>{
-            const t = s.trim();
-            const b = /^["“]/.test(t), e = /["”]$/.test(t);
-            return (b && e) ? t : `“${t.replace(/^["“'‘`]/,'').replace(/["”'‘`]$/,'')}”`;
-          };
-          const esc = s=> s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
-
-          if (items.length){
-            tList.innerHTML = '';
-            items.forEach(it=>{
-              const el = document.createElement('div'); el.className='testimonial';
-              el.innerHTML = `<span class="quote">${esc(smartQuote(it.text))}</span><span class="from">— ${esc(it.from)}</span>`;
-              tList.appendChild(el);
-            });
-            tBox.style.display = 'block';
-          } else {
-            tBox.style.display = 'none';
-          }
-        }catch(err){ console.error('[loadSections]', err); }
-      }
-
-      function renderPro(items){
-        const grid = $('#proGrid'); grid.innerHTML='';
-        if (!items.length){ grid.innerHTML = `<div class="muted">No items yet — add rows in the “Ariel_Feblowitz_Works” tab.</div>`; return; }
-        items.forEach(p=>{
-          const c=document.createElement('a'); c.className='proj card'; c.href=p.url||'#'; c.target='_blank'; c.rel='noopener';
-          const wrap=document.createElement('div'); wrap.className='thumb poster';
-          const img=new Image(); img.alt=''; img.loading='lazy'; img.decoding='async'; img.fetchPriority='low'; img.src = p.posters[0] || titlePlaceholderSVG(p.title); img.width=800; img.height=1200;
-          wrap.appendChild(img);
-          const meta=document.createElement('div'); meta.className='meta';
-          const info=[p.role, p.prod].filter(Boolean).join(' • ');
-          meta.innerHTML = `<div class="title">${p.title}</div><div class="role">${info}</div>`;
-          c.appendChild(wrap); c.appendChild(meta); grid.appendChild(c);
-        });
-      }
-      function renderRides(items){
-        const grid = $('#ridesGrid'); grid.innerHTML='';
-        if (!items.length){ grid.innerHTML = `<div class="muted">No items yet — add rows in the “Rides” tab.</div>`; return; }
-        items.forEach(p=>{
-          const c=document.createElement('a'); c.className='proj card'; c.href=p.url||'#'; c.target='_blank'; c.rel='noopener';
-          const wrap=document.createElement('div'); wrap.className='thumb';
-          const img=new Image(); img.alt=''; img.loading='lazy'; img.decoding='async'; img.fetchPriority='low'; img.src = p.posters[0] || titlePlaceholderSVG(p.title); img.width=1280; img.height=720;
-          wrap.appendChild(img);
-          const meta=document.createElement('div'); meta.className='meta';
-          const info=[p.role, p.company].filter(Boolean).join(' • ');
-          let body=''; if (p.desc){ body = `<details class="summaryless" style="margin-top:.45em; font-size:.95em"><summary class="btn" style="display:inline-flex; margin:0; padding:.35em .6em;">Details</summary><div class="muted" style="margin-top:.6em">${p.desc}</div></details>`; }
-          meta.innerHTML = `<div class="title">${p.title}</div><div class="role">${info}</div>${body}`;
-          c.appendChild(wrap); c.appendChild(meta); grid.appendChild(c);
-        });
-      }
-      function renderPersonal(videos, featuredId){
-        const grid = $('#personalGrid'); grid.innerHTML='';
-        if (!videos.length){ grid.innerHTML = `<div class="muted">No videos yet — add rows in the “Personal Youtube” tab.</div>`; return; }
-        const fIdx = videos.findIndex(v=>v.videoId===featuredId); if (fIdx>0){ const [f]=videos.splice(fIdx,1); videos.unshift(f); }
-        videos.forEach(v=>{
-          const c=document.createElement('a'); c.className='proj card'; c.href=v.url||'#'; c.target='_blank'; c.rel='noopener';
-          const wrap=document.createElement('div'); wrap.className='thumb';
-          const img=new Image(); img.alt=''; img.loading='lazy'; img.decoding='async'; img.fetchPriority='low'; img.src = v.thumb || (v.videoId? ytThumb(v.videoId) : titlePlaceholderSVG(v.title)); img.width=1280; img.height=720;
-          wrap.appendChild(img);
-          const meta=document.createElement('div'); meta.className='meta';
-          meta.innerHTML = `<div class="title">${v.title||''}</div><div class="role">${v.role||''}</div>`;
-          c.appendChild(wrap); c.appendChild(meta); grid.appendChild(c);
-        });
-      }
-
-      function buildBannerDeferred(){
-        if (loaded.banner || !window.__tilesData) return;
-        loaded.banner = true;
-        const {pro, ride, per} = window.__tilesData;
-        const interleaved=[]; const L=Math.max(pro.length, ride.length, per.length);
-        for(let i=0;i<L;i++){ if(pro[i]) interleaved.push(pro[i]); if(ride[i]) interleaved.push(ride[i]); if(per[i]) interleaved.push(per[i]); }
-        fillBanner(interleaved);
-      }
-
-    }catch(err){ console.error('[init]', err); }
-  })();
 
   function toast(text, x, y){
     const t=document.createElement('div'); t.className='toast'; t.textContent=text; document.body.appendChild(t);
@@ -953,7 +562,161 @@
     });
   }
 
-  /* sysDotEffects — hover throttled to 3s to avoid jank */
+  /* ====== Page init ====== */
+  const loaded = { main:false, reel:false, sections:false, banner:false };
+  const sysStatus = document.getElementById('sysStatus');
+  function setStatus(msg, linkHref){ if (!sysStatus) return; sysStatus.textContent = msg; if (linkHref) { sysStatus.href = linkHref; } }
+
+  // Preload HUD + placeholder testimonials (gags)
+  (function preloadFrames(){
+    const hudCard = document.getElementById('hudCard');
+    const hudTitle = document.getElementById('hudTitle');
+    const hudBody  = document.getElementById('hudBody');
+    function renderHUD(lines){
+      hudBody.innerHTML='';
+      lines.forEach(l=>{
+        const row = document.createElement('div'); row.className='line';
+        row.innerHTML = `<span class="tag">${String(l.tag||'').toUpperCase()}</span><div class="body">${l.body||''}</div>`;
+        hudBody.appendChild(row);
+      });
+      hudCard.style.display='block';
+    }
+    hudTitle.textContent = 'Scanning Subject Attributes…';
+    renderHUD([
+      {tag:'WY:LINK', body:'Handshake with Weyland Yutani mainframe… OK'},
+      {tag:'CYBD:PROC', body:'Cyberdyne predictive model warm-up… OK'},
+      {tag:'SKNET:SIG', body:'Skynet heuristic prefetch… nominal'},
+      {tag:'IO/TIMEBASE', body:'Genlock sync… LTC/VITC stable'},
+      {tag:'LENS DB', body:'FF/APS-C tables cached; distortion LUTs primed'},
+      {tag:'RIGS', body:'Technodolly/Graphlite/Spydercam/MILO profiles loaded'}
+    ]);
+
+    // Gag placeholders
+    const tBox  = document.getElementById('testimonialsBox');
+    const tList = document.getElementById('testimonialsList');
+    const gag = (q,f)=>`<div class="testimonial"><span class="quote">“${q}”</span><span class="from">— ${f}</span></div>`;
+    tList.innerHTML = [
+      gag('Cross-referencing guild logs, call sheets, and lunch orders…','Mother // Unit 1824'),
+      gag('Decrypting production radio chatter: “He solved it on set.”','Cyberdyne Archive • Tape B-12'),
+      gag('Relax. We’ll “fix it in post” — or better yet, follow the previs and won’t need to.','MOTHER, after coffee')
+    ].join('');
+    tBox.style.display = 'block';
+  })();
+
+  (async function init(){
+    try{
+      setStatus('Routing request to MOTHER…', sysStatus.href);
+
+      // Main labels/links (kept as constants / defaults for this drop-in)
+      document.body.classList.add('ready');
+      $('#reelHeader').textContent = 'Demo Reel';
+      $('#aboutHeader').textContent = 'About';
+      const phone = DEFAULT_PHONE.trim();
+      const email = DEFAULT_EMAIL.trim();
+      setTopContact(phone, email);
+      setContactSection(phone, email);
+      enhanceContactLinks();
+      document.getElementById('dockCopy')?.addEventListener('click', ()=>{
+        const e = DEFAULT_EMAIL.trim();
+        navigator.clipboard?.writeText(e).then(()=> toast('Copied: '+e)).catch(()=> toast(e));
+      });
+
+      // Load sections lazily and banner slightly after
+      const defer = window.requestIdleCallback || (fn=>setTimeout(fn, 0));
+      defer(loadSections);
+      defer(()=> setTimeout(buildBannerDeferred, 400));
+    }catch(err){ console.error('[init]', err); }
+  })();
+
+  /* ====== Sections loader (kept lean here) ====== */
+  async function loadSections(){
+    if (loaded.sections) return; loaded.sections = true;
+    try{
+      // Build banner from static stubs for now (you can re-wire to your sheets again if needed)
+      window.__tilesData = { pro:[], ride:[], per:[] };
+
+      // TESTIMONIALS — rebuild from scratch, explicit tab, row 1 headers: From | Testimonials
+      await loadTestimonials();
+    } catch(e){ console.error('[loadSections]', e); }
+  }
+
+  async function loadTestimonials(){
+    const csvUrl = buildCsvUrlFromGid(PUBHTML, TESTI_GID);
+    let text = '';
+    try{
+      text = await fetch(csvUrl, {mode:'cors'}).then(r=>r.text());
+    }catch(e){
+      console.error('[testimonials] fetch failed', e);
+      return; // leave gags in place
+    }
+    const rows = csvToMatrix(text);
+    if (!rows || rows.length < 2) return; // only header -> keep gags
+
+    // Expect exact headers in row 1
+    const headers = rows[0].map(h=>String(h||'').trim());
+    const idxFrom = headers.findIndex(h=>/^from$/i.test(h));
+    const idxText = headers.findIndex(h=>/^testimonials?$/i.test(h));
+    if (idxFrom === -1 || idxText === -1){
+      console.warn('[testimonials] header mismatch; got:', headers);
+      return; // keep gags visible so there’s something
+    }
+
+    const items = rows.slice(1)
+      .map(r=>{
+        const from = String(r[idxFrom]||'').trim();
+        const body = String(r[idxText]||'').trim();
+        return {from, body};
+      })
+      .filter(it=> it.from && it.body);
+
+    const tBox  = document.getElementById('testimonialsBox');
+    const tList = document.getElementById('testimonialsList');
+
+    if (!items.length){ tBox.style.display='none'; return; }
+
+    // Build DOM: real testimonials first, then a divider gag block
+    const frag = document.createDocumentFragment();
+
+    const smartQuote = s=>{
+      const t = s.trim();
+      const b = /^["“]/.test(t), e = /["”]$/.test(t);
+      return (b && e) ? t : `“${t.replace(/^["“'‘`]/,'').replace(/["”'‘`]$/,'')}”`;
+    };
+    const esc = s=> s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+
+    items.forEach(it=>{
+      const el = document.createElement('div'); el.className='testimonial';
+      el.innerHTML = `<span class="quote">${esc(smartQuote(it.body))}</span><span class="from">— ${esc(it.from)}</span>`;
+      frag.appendChild(el);
+    });
+
+    // Keep the three gags appended at the end
+    const gags = [
+      {q:'Cross-referencing guild logs, call sheets, and lunch orders…', f:'Mother // Unit 1824'},
+      {q:'Decrypting production radio chatter: “He solved it on set.”', f:'Cyberdyne Archive • Tape B-12'},
+      {q:'Relax. We’ll “fix it in post” — or better yet, follow the previs and won’t need to.', f:'MOTHER, after coffee'}
+    ];
+    gags.forEach(g=>{
+      const el = document.createElement('div'); el.className='testimonial';
+      el.innerHTML = `<span class="quote">“${esc(g.q)}”</span><span class="from">— ${esc(g.f)}</span>`;
+      frag.appendChild(el);
+    });
+
+    tList.innerHTML = '';
+    tList.appendChild(frag);
+    tBox.style.display = 'block';
+  }
+
+  function buildBannerDeferred(){
+    if (loaded.banner || !window.__tilesData) return;
+    loaded.banner = true;
+    const {pro, ride, per} = window.__tilesData;
+    const interleaved=[]; const L=Math.max(pro.length, ride.length, per.length);
+    for(let i=0;i<L;i++){ if(pro[i]) interleaved.push(pro[i]); if(ride[i]) interleaved.push(ride[i]); if(per[i]) interleaved.push(per[i]); }
+    fillBanner(interleaved);
+  }
+
+  /* ====== Dot effects — 3s hover cooldown ====== */
   (function sysDotEffects(){
     const dot = document.querySelector('.brand .dot');
     if (!dot) return;
@@ -992,7 +755,7 @@
     document.addEventListener('pointerdown', e=>{ if (isInteractive(e.target)) onClick(); }, {passive:true});
     document.addEventListener('keydown', e=>{ if ((e.key==='Enter'||e.key===' ') && isInteractive(e.target)) onClick(); });
 
-    // inject extra contact CTAs after initial render
+    // Inject extra CTAs after initial render
     function tryInject(){
       const wrap = document.getElementById('contactInfo');
       const links = document.getElementById('btnLinks');
