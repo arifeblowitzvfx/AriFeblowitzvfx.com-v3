@@ -352,6 +352,9 @@
       const mainInfoRows = await pullTab('Main site info');
       const mainInfo = {};
       (mainInfoRows||[]).forEach(r=> mainInfo[(r.key||'').trim()] = (r.value||'').trim());
+      window.mainInfo = mainInfo; // <-- add this
+
+
 
       // Title / subtitle
       $('#siteTitle').textContent = mainInfo.site_title || 'Ariel (Ari) Feblowitz';
@@ -362,6 +365,27 @@
       // About
       $('#about1').textContent = mainInfo.about_paragraph_1 || $('#about1').textContent;
       $('#about2').textContent = mainInfo.about_paragraph_2 || $('#about2').textContent;
+
+      // --- PATCH: restore skills rendering from "Main site info" (skills pipe-separated) ---
+      (function renderSkills(){
+        try{
+          const skillsStr = ( (window.mainInfo && window.mainInfo.skills) || '' ).trim();
+          const skills = skillsStr ? skillsStr.split('|').map(s=>s.trim()).filter(Boolean) : [];
+          const row1 = document.getElementById('skillsRow1');
+          const row2 = document.getElementById('skillsRow2');
+          if (!row1 || !row2) return;
+      
+          row1.innerHTML = '';
+          row2.innerHTML = '';
+          const half = Math.ceil(skills.length/2);
+          const pill = (t)=>{ const s=document.createElement('span'); s.className='pill'; s.textContent=t; return s; };
+      
+          skills.slice(0, half).forEach(s=> row1.appendChild(pill(s)));
+          skills.slice(half).forEach(s=> row2.appendChild(pill(s)));
+        }catch(e){ console.error('[renderSkills]', e); }
+      })();
+
+
 
       // Assessment label from sheet (key = ASSESSMENT)
       const assess = (mainInfo.ASSESSMENT || mainInfo.assessment || '').trim();
