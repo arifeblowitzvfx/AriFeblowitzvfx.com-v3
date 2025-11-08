@@ -1,6 +1,3 @@
-Here’s your full v11 single-file HTML with the Testimonials section fixed to (1) detect the “Testimonials” tab even if the header uses **Testimonial** *or* **Testimonials**, and (2) overwrite the gag with real rows from the sheet once loaded. I didn’t change anything else.
-
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -131,7 +128,7 @@ Here’s your full v11 single-file HTML with the Testimonials section fixed to (
     .tab-btn{padding:.6em .9em; border-radius:12px; background:var(--panel); color:var(--txt); border:1px solid rgba(66,255,209,.32); cursor:pointer; font-weight:700}
     .tab-btn.active{outline:1px solid var(--accent); box-shadow:0 0 0 2px rgba(0,255,156,.12) inset}
 
-    /* === HERO LAYOUT === (unchanged logic; new cosmetics below) */
+    /* === HERO LAYOUT === */
     .hero{
       margin:clamp(12px,1.6vw,20px) 0;
       display:grid;
@@ -159,7 +156,7 @@ Here’s your full v11 single-file HTML with the Testimonials section fixed to (
       .leftStack{ display:contents; }
     }
 
-    /* Card style + animated “light sweep” */
+    /* Card style + animated sweep */
     .card{
       position:relative;
       background:linear-gradient(180deg, rgba(10,18,16,.85), rgba(5,9,11,.9));
@@ -296,7 +293,7 @@ Here’s your full v11 single-file HTML with the Testimonials section fixed to (
       <!-- HOME -->
       <section id="home" class="active" role="tabpanel">
         <div class="hero">
-          <!-- LEFT COLUMN: Reel + Testimonials stacked with zero gap -->
+          <!-- LEFT COLUMN: Reel + Testimonials stacked -->
           <div class="area-left leftStack">
             <!-- Reel -->
             <div class="card pad area-reel">
@@ -313,7 +310,7 @@ Here’s your full v11 single-file HTML with the Testimonials section fixed to (
               </div>
             </div>
 
-            <!-- Testimonials (docks right under Reel on wide) -->
+            <!-- Testimonials -->
             <div class="card pad area-test" id="testimonialsBox" style="display:none">
               <h3 id="testimonialsTitle" class="crt-glow" style="margin:.2em 0 .6em">Testimonials</h3>
               <div class="tlist" id="testimonialsList"></div>
@@ -408,7 +405,7 @@ Here’s your full v11 single-file HTML with the Testimonials section fixed to (
   <script>
   (function guard(){ const roots = document.querySelectorAll('#appRoot'); if (roots.length > 1){ roots.forEach((el, i)=>{ if(i>0) el.remove(); }); } if (window.__siteInitDone) { console.warn('Init already run; skipping.'); return; } window.__siteInitDone = true; })();
 
-  /* ====== STARFIELD FX (lightweight canvas) ====== */
+  /* ====== STARFIELD FX ====== */
   (function starfield(){
     const canvas = document.getElementById('fx-stars');
     const ctx = canvas.getContext('2d');
@@ -467,7 +464,7 @@ Here’s your full v11 single-file HTML with the Testimonials section fixed to (
   const ytThumbHQ = id => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
   const fixImdb = url => (url||"").replace(/https?:\/\/pro\.imdb\.com/i,'https://www.imdb.com').replace(/\?ref_=pro.*$/,'');
 
-  // CSV helpers
+  /* ===== CSV helpers ===== */
   function csvToObjects(csvText){
     const rows = []; let field="", row=[], inQ=false;
     for (let c of String(csvText||"").replace(/\r/g,'')){
@@ -479,7 +476,15 @@ Here’s your full v11 single-file HTML with the Testimonials section fixed to (
     if (field.length || row.length){ row.push(field.replace(/^("|“)|("|”)$/g,'').replace(/""/g,'"')); rows.push(row); }
     if (!rows.length) return [];
     const headers = rows[0].map(h=>h.trim());
-    return rows.slice(1).filter(r=>r.length>1).map(r=>{ const o={}; headers.forEach((h,i)=>o[h]=r[i]!==undefined?r[i]:""); return o; });
+    return rows.slice(1).filter(r=>r.some(c=>String(c).trim().length)).map(r=>{
+      const o={}; headers.forEach((h,i)=>o[h]=r[i]!==undefined?r[i]:""); return o;
+    });
+  }
+  /* Special: sometimes row 1 is just the B1 title, so re-parse skipping it */
+  function csvObjectsSkippingFirstLine(csvText){
+    const idx = csvText.indexOf('\n');
+    const trimmed = idx>0 ? csvText.slice(idx+1) : csvText;
+    return csvToObjects(trimmed);
   }
   function csvFirstRowSecondCol(csvText){
     let inQ=false, col=0, val="";
@@ -518,7 +523,7 @@ Here’s your full v11 single-file HTML with the Testimonials section fixed to (
         else if (hdr.includes('ride image') && hdr.includes('ride name')) map['Rides']=gid;
         else if (hdr.includes('type') && hdr.includes('video_id')) map['Personal Youtube']=gid;
         else if (hdr.includes('key') && hdr.includes('value')) map['Main site info']=gid;
-        /* FIX: accept "testimonial" OR "testimonials" */
+        /* Accept singular or plural for testimonials */
         else if (hdr.includes('from') && (hdr.includes('testimonial') || hdr.includes('testimonials'))) map['Testimonials']=gid;
       }
     }catch(e){ console.error('[discoverGids]', e); }
@@ -613,7 +618,7 @@ Here’s your full v11 single-file HTML with the Testimonials section fixed to (
 
   const loaded = { main:false, reel:false, sections:false, banner:false, testimonials:false };
 
-  // --- PRELOAD PLACEHOLDERS ---
+  /* --- PRELOAD PLACEHOLDERS --- */
   (function preloadFrames(){
     // HUD placeholder
     const hudCard = document.getElementById('hudCard');
@@ -671,11 +676,10 @@ Here’s your full v11 single-file HTML with the Testimonials section fixed to (
         return { rows: csvToObjects(txt), raw: txt };
       }
 
-      // MAIN INFO
+      /* MAIN INFO */
       const mainInfoPull = await pullTab('Main site info');
       const mainInfo = {}; (mainInfoPull.rows||[]).forEach(r=> mainInfo[(r.key||'').trim()] = (r.value||'').trim());
 
-      // Labels/links
       const defaultTitle = 'Subject: ARI FEBLOWITZ';
       $('#siteTitle').textContent = mainInfo.site_title || defaultTitle;
 
@@ -708,23 +712,20 @@ Here’s your full v11 single-file HTML with the Testimonials section fixed to (
       setContactSection(phone, email);
       enhanceContactLinks();
 
-      // Dock copy button wires to current email text
       const dockCopy = document.getElementById('dockCopy');
       dockCopy?.addEventListener('click', ()=>{
         const e = (mainInfo.email || DEFAULT_EMAIL).trim();
         navigator.clipboard?.writeText(e).then(()=> toast('Copied: '+e)).catch(()=> toast(e));
       });
 
-      // HUD title from ASSESSMENT (still supported; sheet can override)
       const hudTitleEl = $('#hudTitle');
       const assessTitle = mainInfo.ASSESSMENT || mainInfo.assessment || 'THREAT ASSESSMENT // SKNET_0001';
       hudTitleEl.textContent = assessTitle;
 
-      // HUD Strengths
+      /* HUD Strengths */
       const strengthsText = (mainInfo.Strengths || mainInfo.strengths || '').trim();
       if (strengthsText){
-        const hudBody = $('#hudBody');
-        hudBody.innerHTML = '';
+        const hudBody = $('#hudBody'); hudBody.innerHTML = '';
         strengthsText.split(/\n+/).map(s=>s.trim()).filter(Boolean).forEach(s=>{
           const m = s.match(/^([^:]+):\s*(.+)$/);
           const tag = (m ? m[1] : 'Signal'), body = (m ? m[2] : s);
@@ -736,7 +737,7 @@ Here’s your full v11 single-file HTML with the Testimonials section fixed to (
         document.getElementById('hudCard').style.display='block';
       }
 
-      // Reel
+      /* Reel */
       (function loadReel(){
         const reelInput = (mainInfo.reel_youtube_id||'').trim();
         const reelFrame = $('#reelFrame');
@@ -771,10 +772,22 @@ Here’s your full v11 single-file HTML with the Testimonials section fixed to (
           const personalTab = personalPull.rows;
           const proRows     = proPull.rows;
           const ridesRows   = ridesPull.rows;
-          const testiRows   = testiPull.rows;
+          /** Testimonials: robust parsing **/
           const testiRaw    = testiPull.raw || '';
+          let   testiRows   = testiPull.rows || [];
 
-          // Personal meta + videos
+          // If headers weren't on the first CSV row (because B1 was a title row), retry skipping the first line:
+          const headerKeys = Object.keys(testiRows[0]||{}).map(k=>k.toLowerCase()).join('|');
+          const looksWrong = !(headerKeys.includes('from') && (headerKeys.includes('testimonial') || headerKeys.includes('testimonials')));
+          if (looksWrong && testiRaw){
+            const alt = csvObjectsSkippingFirstLine(testiRaw);
+            const altKeys = Object.keys(alt[0]||{}).map(k=>k.toLowerCase()).join('|');
+            if (altKeys.includes('from') && (altKeys.includes('testimonial') || altKeys.includes('testimonials'))){
+              testiRows = alt;
+            }
+          }
+
+          /* Personal meta + videos */
           const meta = {}; const videos=[];
           (personalTab||[]).forEach(r=>{
             const type=(r.type||'').toLowerCase();
@@ -787,7 +800,7 @@ Here’s your full v11 single-file HTML with the Testimonials section fixed to (
             }
           });
 
-          // Febz featured box
+          /* Febz featured box */
           const febzId = (meta.febz_video_id || '').trim();
           if (febzId){
             const febzHeading = meta.febz_heading || "Also archiving my father's documentary work: FebzFoundFootage";
@@ -798,7 +811,7 @@ Here’s your full v11 single-file HTML with the Testimonials section fixed to (
             $('#febzBox').style.display = 'block';
           }
 
-          // Latest uploads embed (optional)
+          /* Latest uploads embed (optional) */
           const showLatest = (String(meta.latest_mode||'').toLowerCase()==='auto') || false;
           if (showLatest && meta.latest_playlist_or_channel_id){
             const channelId = meta.latest_playlist_or_channel_id;
@@ -809,7 +822,7 @@ Here’s your full v11 single-file HTML with the Testimonials section fixed to (
             }
           }
 
-          // Pro
+          /* Pro */
           const proItems = (proRows||[]).map(r=>({
             title:(r['Name']||'').trim(),
             url:fixImdb((r['URL']||'').trim()),
@@ -822,7 +835,7 @@ Here’s your full v11 single-file HTML with the Testimonials section fixed to (
           .filter(x=>x.title && x.prio>0)
           .sort((a,b)=> (a.onSet!==b.onSet)? (a.onSet? -1:1) : (b.prio-a.prio) || a.title.localeCompare(b.title));
 
-          // Rides
+          /* Rides */
           const rideItems = (ridesRows||[]).map(r=>({
             title:(r['Ride Name']||'').trim(),
             url:(r['Ride Link']||'').trim(),
@@ -835,17 +848,17 @@ Here’s your full v11 single-file HTML with the Testimonials section fixed to (
           .filter(x=>x.title && x.prio>0)
           .sort((a,b)=> b.prio-a.prio || a.title.localeCompare(b.title));
 
-          // Render content grids
+          /* Render content grids */
           renderPro(proItems); renderRides(rideItems); renderPersonal(videos, (meta.featured_video_id||'').trim());
 
-          // Banner tiles
+          /* Banner tiles */
           window.__tilesData = {
             pro: proItems.filter(p=>p.prio>=5).map(p=>({type:'pro', kind:'poster', title:p.title, img:p.posters[0]||'', url:p.url||'#'})),
             ride: rideItems.filter(r=>r.prio===10).map(r=>({type:'ride', kind:'wide', title:r.title, img:r.posters[0]||'', url:r.url||'#'})),
             per: videos.filter(v=>(v.prio||0)>=5 || v.includeInBanner).map(v=>({type:'personal', kind:'wide', title:v.title, img:v.thumb||'', url:v.url||'#', ytid:v.videoId||''}))
           };
 
-          // --- TESTIMONIALS: title from B1 + real rows (singular/plural safe)
+          /* === TESTIMONIALS: title from B1 + all rows (singular/plural safe) === */
           const tBox  = document.getElementById('testimonialsBox');
           const tList = document.getElementById('testimonialsList');
           const tTitle= document.getElementById('testimonialsTitle');
@@ -854,7 +867,8 @@ Here’s your full v11 single-file HTML with the Testimonials section fixed to (
           if (testiRaw){ try{ const b1 = csvFirstRowSecondCol(testiRaw); if (b1) tHeading = b1; }catch{} }
           tTitle.textContent = tHeading;
 
-          const items = (testiRows||[])
+          const rowsForItems = (testiRows||[]);
+          const items = rowsForItems
             .map(r=>{
               const from = (r['From']||r['from']||'').trim();
               const text = (r['Testimonial']||r['Testimonials']||r['testimonial']||r['testimonials']||'').trim();
@@ -960,7 +974,7 @@ Here’s your full v11 single-file HTML with the Testimonials section fixed to (
     });
   }
 
-  /* sysDotEffects preserved */
+  /* sysDotEffects */
   (function sysDotEffects(){
     const dot = document.querySelector('.brand .dot');
     if (!dot) return;
@@ -1018,4 +1032,3 @@ Here’s your full v11 single-file HTML with the Testimonials section fixed to (
   </script>
 </body>
 </html>
-```
