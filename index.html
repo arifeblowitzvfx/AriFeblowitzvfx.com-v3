@@ -109,7 +109,7 @@
     @keyframes dotFlick{ 0%{opacity:1} 5%{opacity:.2} 10%{opacity:1} 15%{opacity:.15} 20%{opacity:1} 30%{opacity:.3} 40%{opacity:1} 55%{opacity:.25} 70%{opacity:1} 85%{opacity:.2} 100%{opacity:.55} }
 
     .brand h1{margin:0; font-weight:900; font-size:clamp(20px,2.6vw,34px); letter-spacing:.12em; text-transform:uppercase; color:#d9fff1}
-    .pill{border:1px dashed rgba(66,255,209,.5); border-radius:999px; padding:.4em .8em; font-size:clamp(11px,1vw,12px); color:var(--muted); backdrop-filter:blur(2px)}
+    .pill{border:1px dashed rgba(66,255,209,.5); border-radius:999px; padding:.4em .8em; font-size:clamp(11px,1vw,12px); color:#caffec; backdrop-filter:blur(2px)}
 
     /* Buttons */
     .btn{--b:rgba(66,255,209,.34); display:inline-flex; align-items:center; gap:.5em; border:1px solid var(--b); background:linear-gradient(180deg, rgba(66,255,209,.12), rgba(66,255,209,0));
@@ -171,7 +171,7 @@
       content:""; position:absolute; top:-60%; left:-40%; width:60%; height:220%;
       background:linear-gradient(120deg, transparent 40%, rgba(255,255,255,.08), transparent 60%);
       transform:rotate(14deg); animation:sweep 8s linear infinite;
-      pointer-events:none; /* do not eat clicks over buttons/links */
+      pointer-events:none;
     }
     @keyframes edgeSpin{to{transform:rotate(360deg)}}
     @keyframes sweep{0%{transform:translateX(-40%) rotate(14deg)} 100%{transform:translateX(200%) rotate(14deg)}}
@@ -220,8 +220,8 @@
     /* Testimonials */
     #testimonialsBox .tlist{display:flex; flex-direction:column; gap:14px; margin-top:8px}
     .testimonial{border:1px solid rgba(66,255,209,.26); border-radius:14px; padding:12px 14px; background:linear-gradient(180deg, rgba(66,255,209,.06), rgba(66,255,209,.01))}
-    .testimonial .quote{display:block; font-weight:700; color:#eafff6}
-    .testimonial .from{display:block; color:#74cdaa; font-size:.95em; margin-top:4px}
+    .testimonial .quote{display:block; font-weight:700; color:#eafff6; line-height:1.5}
+    .testimonial .from{display:block; color:#74cdaa; font-size:.95em; margin-top:6px; overflow-wrap:anywhere}
 
     /* HUD card */
     .hud{margin-top:var(--grid); border:1px solid rgba(0,255,156,.35); border-radius:14px; background:
@@ -493,7 +493,11 @@
   const normNum = v => { const n = Number(String(v||"").replace(/[^\d.-]/g,"")); return isNaN(n)?0:n; };
   function buildCsvUrlFromGid(pubhtml, gid){ return pubhtml.replace(/\/pubhtml.*/, '/pub') + `?gid=${gid}&single=true&output=csv`; }
 
+  // Legacy cache helper (kept only for safety; we won't use it)
   const cache = { get(key){ try{ return JSON.parse(localStorage.getItem(key)||'null'); }catch{return null} }, set(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch{} } };
+
+  // --- One-time: nuke any previous csv:* entries so desktop can't be stale
+  try { Object.keys(localStorage).filter(k=>k.startsWith('csv:')).forEach(k=>localStorage.removeItem(k)); } catch {}
 
   async function discoverGids(pubhtml){
     const map = {};
@@ -501,7 +505,8 @@
       const html = await fetch(pubhtml, {mode:"cors"}).then(r=>r.text());
       const uniqueGids = [...new Set([...html.matchAll(/gid=(\d+)/g)].map(m=>m[1]))];
       for (const gid of uniqueGids){
-        const txt = await fetch(buildCsvUrlFromGid(pubhtml, gid)).then(r=>r.text()).catch(()=>null);
+        // cache-bust CSV peeks too
+        const txt = await fetch(buildCsvUrlFromGid(pubhtml, gid) + `&cb=${Date.now()}`).then(r=>r.text()).catch(()=>null);
         if (!txt) continue;
         const rows = csvToMatrix(txt);
         const headerRow = rows[0] ? rows[0].join('|').toLowerCase() : '';
@@ -568,15 +573,12 @@
     const doubled = [...seq, ...seq];
     doubled.forEach(t=> scrollEl.appendChild(makeTile(t)));
 
-    /* ---- BANNER FLICKER FIX: eagerly load all images ---- */
-    const allImgs = [...scrollEl.querySelectorAll('img')];
-    for (const img of allImgs){
+    const firstImgs = [...scrollEl.querySelectorAll('img')].slice(0,4);
+    firstImgs.forEach(img=>{
       img.fetchPriority = 'high';
-      img.decoding = 'async';
       if (img.dataset.src){ img.src = img.dataset.src; img.removeAttribute('data-src'); }
       if (img.dataset.srcset){ img.srcset = img.dataset.srcset; img.removeAttribute('data-srcset'); }
-    }
-    /* ---- end fix ---- */
+    });
 
     requestAnimationFrame(()=>{
       const totalW = scrollEl.scrollWidth / 2;
@@ -650,24 +652,18 @@
       setStatus('Routing request to MOTHER…', sysStatus.href);
       const gids = await discoverGids(PUBHTML);
 
+      // Always-fresh CSV pulls (cache-busted)
       async function pullCsv(name){
-        const gid = gids[name]; if(!gid) return {rows:[], raw:null, matrix:[]};
-        const key = `csv:${gid}`;
-        let txt;
-        if (name === 'Main site info'){
-          txt = await fetch(buildCsvUrlFromGid(PUBHTML, gid) + `&cb=${Date.now()}`).then(r=>r.text());
-        } else {
-          const cached = cache.get(key);
-          if (cached && cached.txt){ txt = cached.txt; }
-          else { txt = await fetch(buildCsvUrlFromGid(PUBHTML, gid)).then(r=>r.text()); cache.set(key, {ts:Date.now(), txt}); }
-        }
+        const gid = gids[name]; 
+        if(!gid) return {rows:[], raw:null, matrix:[]};
+        const url = buildCsvUrlFromGid(PUBHTML, gid) + `&cb=${Date.now()}`;
+        const txt = await fetch(url).then(r=>r.text());
         return { rows: null, raw: txt, matrix: csvToMatrix(txt) };
       }
 
-      // MAIN INFO
+      // MAIN INFO (simple header on row 1)
       const mainInfoPull = await pullCsv('Main site info');
       const mainMatrix = mainInfoPull.matrix;
-      const mainHeaders = mainMatrix[0]||[];
       const mainRows = mainMatrix.slice(1).filter(r=>r && r.length>1);
       const mainInfo = {};
       mainRows.forEach(r=>{
@@ -755,10 +751,9 @@
           const ridesPull    = await pullCsv('Rides');
           const testiPull    = await pullCsv('Testimonials');
 
-          // Personal videos/meta
+          // Personal videos/meta (simple header in row 1)
           const pRows = personalPull.matrix;
-          const pHeaders = pRows[0]||[];
-          const pData = pRows.slice(1);
+          const pHeaders = pRows[0]||[]; const pData = pRows.slice(1);
           const meta = {}; const videos=[];
           pData.forEach(r=>{
             const row = {}; pHeaders.forEach((h,i)=> row[String(h||'').trim()] = (r[i]||'').toString().trim());
@@ -827,40 +822,47 @@
             per: videos.filter(v=>(v.prio||0)>=5 || v.includeInBanner).map(v=>({type:'personal', kind:'wide', title:v.title, img:v.thumb||'', url:v.url||'#', ytid:v.videoId||''}))
           };
 
-          /* ============ TESTIMONIALS (AUTO-DETECT HEADER + REPLACE PLACEHOLDERS) ============ */
+          /* ============ TESTIMONIALS (STACK ONE CARD PER ROW) ============ */
           const tBox  = document.getElementById('testimonialsBox');
           const tList = document.getElementById('testimonialsList');
           const tTitle= document.getElementById('testimonialsTitle');
 
           const tMatrix = testiPull.matrix;
 
-          // Title from B1 if present
+          // Title from cell B1 if present
           let tHeading = csvFirstRowSecondCol(testiPull.raw||'') || 'Testimonials';
           tTitle.textContent = tHeading;
 
-          // Auto-detect header anywhere: must contain "From" + one of testimonial/text/quote/body
+          // Detect a header row anywhere that contains From + one of text columns
           const looksLikeHeader = (cells)=>{
-            const low = cells.map(c=>String(c||'').trim().toLowerCase());
+            const low = cells.map(c=>String(c||'').toLowerCase());
             const hasFrom = low.includes('from');
-            const hasText = ['testimonial','testimonials','quote','text','body'].some(k=> low.includes(k));
+            const txtCols = ['testimonial','testimonials','quote','text','body'];
+            const hasText = txtCols.some(k=> low.includes(k));
             return hasFrom && hasText;
           };
-
-          // Build objects from the detected header row
           const tObjects = objectsFromDetectedHeader(tMatrix, looksLikeHeader);
 
-          // Normalize text column variants
-          const pickText = (r)=>{
-            const keys = ['Testimonials','Testimonial','testimonial','testimonials','Quote','quote','Text','text','Body','body'];
+          const readText = (r)=>{
+            const keys = ['Testimonial','Testimonials','testimonial','testimonials','Quote','quote','Text','text','Body','body'];
             for (const k of keys){ if (r[k] && String(r[k]).trim()) return String(r[k]).trim(); }
             return '';
           };
+          const readFrom = (r)=> String(r['From']||r['from']||'').trim();
+          const readLink = (r)=> String(r['Link']||r['link']||'').trim();
+          const readPrio = (r)=> normNum(r['Prio']||r['prio']||r['Priority']||r['priority']||'');
 
-          const items = tObjects
-            .map(r => ({ from: String(r['From']||r['from']||'').trim(), text: pickText(r) }))
-            .filter(t => t.from && t.text);
+          let items = tObjects.map(r=>({
+            from: readFrom(r),
+            link: readLink(r),
+            text: readText(r),
+            prio: readPrio(r)
+          })).filter(x=> x.from && x.text);
 
-          // Typography + escaping
+          if (items.some(i=>i.prio>0)){
+            items = items.sort((a,b)=> b.prio - a.prio);
+          }
+
           const smartQuote = s=>{
             const t = s.trim();
             const b = /^["“]/.test(t), e = /["”]$/.test(t);
@@ -869,19 +871,19 @@
           const esc = s=> s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
 
           if (items.length){
-            // Replace ALL gag placeholders entirely
             tList.innerHTML = '';
-            for (const it of items){
+            items.forEach(it=>{
               const el = document.createElement('div'); el.className='testimonial';
-              el.innerHTML = `<span class="quote">${esc(smartQuote(it.text))}</span><span class="from">— ${esc(it.from)}</span>`;
+              const fromSpan = it.link ? `<a href="${esc(it.link)}" target="_blank" rel="noopener">${esc(it.from)}</a>` : esc(it.from);
+              el.innerHTML = `<span class="quote">${esc(smartQuote(it.text))}</span><span class="from">— ${fromSpan}</span>`;
               tList.appendChild(el);
-            }
+            });
             tBox.style.display = 'block';
           } else {
             tBox.style.display = 'none';
           }
-          /* ========== END TESTIMONIALS FIX ========== */
-
+          loaded.testimonials = true;
+          /* ========== END TESTIMONIALS ========== */
         }catch(err){ console.error('[loadSections]', err); }
       }
 
