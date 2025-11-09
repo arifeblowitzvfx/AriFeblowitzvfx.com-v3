@@ -18,13 +18,13 @@
   <link rel="preconnect" href="https://www.youtube.com" crossorigin>
   <link rel="preconnect" href="https://player.vimeo.com" crossorigin>
 
-  <!-- Orbitron for headings -->
+  <!-- Orbitron for 80s UI headings (fallback to system sans) -->
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
 
   <style>
     :root{
       --bg:#070b0d; --panel:#020405; --card:#05090b; --txt:#c9ffe8; --muted:#8de7c4; --accent:#00ff9c;
-      --grid:clamp(14px,1.8vw,24px); --radius:18px; --shadow:0 14px 40px rgba(0,0,0,.55);
+      --grid:clamp(14px, 1.8vw, 24px); --radius:18px; --shadow:0 14px 40px rgba(0,0,0,.55);
       --tileH: clamp(120px, 14vw, 220px); --tileGap: clamp(10px,1.2vw,16px);
       --stickyTop: 8px; --marqueeDur: 45s;
     }
@@ -32,22 +32,22 @@
     html,body{height:100%}
     body{
       margin:0; color:var(--txt);
-      background:
-        radial-gradient(1200px 700px at 20% -10%, #103527 0%, transparent 60%),
-        radial-gradient(1000px 600px at 120% 10%, #0f1c24 0%, transparent 60%),
-        linear-gradient(#06090b, var(--bg) 40%);
-      font:clamp(15px,1.1vw,18px)/1.65 Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background: radial-gradient(1200px 700px at 20% -10%, #103527 0%, transparent 60%),
+                  radial-gradient(1000px 600px at 120% 10%, #0f1c24 0%, transparent 60%),
+                  linear-gradient(#06090b, var(--bg) 40%);
+      font:clamp(15px, 1.1vw, 18px)/1.65 Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
       overflow-y:overlay; letter-spacing:.15px; min-height:100svh;
     }
 
-    /* FX layers must never block mouse */
+    /* Tech-Noir FX: starfield canvas + neon grid floor */
     #fx-stars, #fx-grid { position:fixed; inset:0; pointer-events:none; z-index:0; }
     #fx-stars { opacity:.55; }
     #fx-grid {
+      --g:#0af0a3;
       background:
         radial-gradient(120% 60% at 50% 150%, rgba(0,255,156,.08), transparent 70%),
         repeating-linear-gradient(to right, rgba(0,255,156,.15), rgba(0,255,156,.15) 1px, transparent 1px, transparent 60px),
-        repeating-linear-gradient(to top,   rgba(0,255,156,.15), rgba(0,255,156,.15) 1px, transparent 1px, transparent 60px);
+        repeating-linear-gradient(to top, rgba(0,255,156,.15), rgba(0,255,156,.15) 1px, transparent 1px, transparent 60px);
       mask: linear-gradient(to top, rgba(0,0,0,.82), rgba(0,0,0,.2) 45%, rgba(0,0,0,0) 65%);
       transform: perspective(900px) rotateX(62deg) translateY(32vh) scale(1.15);
       transform-origin: center bottom;
@@ -55,17 +55,17 @@
       opacity:.45;
     }
 
-    /* CRT scan + glow */
+    /* CRT scan + glow (now guaranteed non-interactive) */
     body::after{
       content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
       background-image: repeating-linear-gradient(to bottom, rgba(0,255,156,.24), rgba(0,255,156,.24) 2px, rgba(0,0,0,0) 3px, rgba(0,0,0,0) 7px);
-      mix-blend-mode:soft-light; opacity:.8; animation:scan 16s linear infinite, glowPulse 7s ease-in-out infinite;
+      mix-blend-mode:soft-light; opacity:.85; animation:scan 16s linear infinite, glowPulse 7s ease-in-out infinite;
     }
     body::before{
       content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
       background: radial-gradient(70% 55% at 50% 45%, rgba(0,255,156,.12), transparent 60%),
                   radial-gradient(40% 30% at 60% 35%, rgba(0,255,156,.08), transparent 65%);
-      filter:blur(2px); opacity:.9; animation:glowPulse 7s ease-in-out infinite;
+      filter:blur(2px); opacity:.95; animation:glowPulse 7s ease-in-out infinite;
     }
     @keyframes scan{0%{transform:translateY(0)}100%{transform:translateY(-26px)}}
     @keyframes glowPulse{0%,100%{opacity:.75}50%{opacity:1}}
@@ -84,16 +84,11 @@
     .rail.paused .scroll{animation-play-state:paused;}
     @keyframes marquee{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,0,0)}}
     .tile{flex:0 0 auto; height:var(--tileH); position:relative; border-radius:clamp(8px,1vw,14px); overflow:hidden; background:#071211; border:1px solid rgba(66,255,209,.3)}
-    .tile img{height:100%; width:100%; object-fit:cover; display:block}
+    .tile img{height:100%; width:100%; object-fit:cover; object-position:center; display:block}
     .tile::after{content:attr(data-title); position:absolute; left:0; right:0; bottom:0; font-size:clamp(10px,.9vw,12px); padding:.45em .6em; color:#caffec;
       background:linear-gradient(180deg, transparent, rgba(0,0,0,.86)); text-shadow:0 1px 2px rgba(0,0,0,.55)}
     .tile.poster{width:clamp(90px, 8.5vw, 160px)}
     .tile.wide{width:clamp(160px, 16vw, 320px)}
-
-    /* Skeletons for instant paint */
-    .tile.skel{background:linear-gradient(90deg, #0c1312, #111b1a, #0c1312); position:relative; overflow:hidden}
-    .tile.skel::before{content:""; position:absolute; inset:0; background:linear-gradient(90deg, transparent, rgba(255,255,255,.06), transparent); transform:translateX(-100%); animation:skel 1.2s linear infinite}
-    @keyframes skel{to{transform:translateX(100%)}}
 
     .banner .ctrl{position:absolute; top:50%; translate:0 -50%; z-index:2; display:grid; place-items:center}
     .banner .prev{left:10px}
@@ -105,6 +100,7 @@
     .nav{display:flex; gap:clamp(8px,1vw,12px); align-items:center; justify-content:space-between; flex-wrap:wrap; margin:clamp(6px,.8vw,10px) 0}
     .brand{display:flex; gap:clamp(10px,1.2vw,14px); align-items:center; flex-wrap:wrap}
 
+    /* Status dot (preload yellow → ready green, hover flicker, click yellow burst) */
     .brand .dot{ width:clamp(12px,1.2vw,16px); height:clamp(12px,1.2vw,16px); border-radius:50%;
       background:radial-gradient(circle at 30% 30%, #ffd24a, #6b5a1a 70%); box-shadow:0 0 22px #ffd24a, 0 0 36px rgba(255,210,74,.5); animation:blinkFast 1.1s infinite; position:relative; }
     body.ready .brand .dot{ background:radial-gradient(circle at 30% 30%, var(--accent), #0f4630 70%); box-shadow:0 0 22px var(--accent); animation:blinkSlow 3.6s infinite; }
@@ -116,42 +112,48 @@
     .brand h1{margin:0; font-weight:900; font-size:clamp(20px,2.6vw,34px); letter-spacing:.12em; text-transform:uppercase; color:#d9fff1}
     .pill{border:1px dashed rgba(66,255,209,.5); border-radius:999px; padding:.4em .8em; font-size:clamp(11px,1vw,12px); color:var(--muted); backdrop-filter:blur(2px)}
 
+    /* Buttons */
     .btn{--b:rgba(66,255,209,.34); display:inline-flex; align-items:center; gap:.5em; border:1px solid var(--b); background:linear-gradient(180deg, rgba(66,255,209,.12), rgba(66,255,209,0));
       padding:.65em 1em; border-radius:12px; color:var(--txt); cursor:pointer; font-weight:800; letter-spacing:.02em}
     .btn:hover{border-color:var(--accent); box-shadow:0 0 0 1px rgba(0,255,156,.22) inset}
     .btn.primary{background:linear-gradient(180deg, rgba(0,255,156,.3), rgba(0,255,156,.15)); color:#eafff6; text-shadow:0 1px 0 rgba(0,0,0,.6);}
 
+    /* Top contact: half-size */
     #topContact{ font-size:.5em; flex-basis:100%; display:flex; gap:8px; align-items:center; }
 
+    /* Sticky tabs */
     .tabs-bar{ position:sticky; top:var(--stickyTop); z-index:5; display:flex; justify-content:flex-end; flex-wrap:wrap; gap:clamp(6px,.8vw,10px); margin:0 0 clamp(12px,1.4vw,16px); }
     @media (max-width:920px){ .tabs-bar{justify-content:flex-start} }
     .tab-btn{padding:.6em .9em; border-radius:12px; background:var(--panel); color:var(--txt); border:1px solid rgba(66,255,209,.32); cursor:pointer; font-weight:700}
     .tab-btn.active{outline:1px solid var(--accent); box-shadow:0 0 0 2px rgba(0,255,156,.12) inset}
 
-    .hero{
-      margin:clamp(12px,1.6vw,20px) 0;
-      display:grid;
-      grid-template-columns: minmax(0, 2.1fr) minmax(0, .9fr);
-      grid-template-areas: "left hud";
-      column-gap: calc(var(--grid) + 18px);
-      align-items:start;
-    }
+    /* === HERO LAYOUT === */
+    .hero{ margin:clamp(12px,1.6vw,20px) 0; display:grid; grid-template-columns: minmax(0, 2.1fr) minmax(0, .9fr); grid-template-areas: "left hud"; column-gap: calc(var(--grid) + 18px); align-items:start; }
     .area-left{ grid-area:left; }
     .area-hud{ grid-area:hud; }
     .leftStack{ display:flex; flex-direction:column; gap:0; }
     .leftStack > .card{ margin:0; }
+
     .area-reel{ grid-area:reel; }
     .area-test{ grid-area:test; }
 
     @media (max-width:920px){
-      .hero{ grid-template-columns:1fr; grid-template-areas: "reel" "hud" "test"; }
+      .hero{
+        grid-template-columns:1fr;
+        grid-template-areas:
+          "reel"
+          "hud"
+          "test";
+      }
       .leftStack{ display:contents; }
     }
 
+    /* Card style + animated “light sweep” — non-interactive */
     .card{
-      position:relative; background:linear-gradient(180deg, rgba(10,18,16,.85), rgba(5,9,11,.9));
-      border:1px solid rgba(66,255,209,.34); border-radius:var(--radius);
-      box-shadow:0 18px 46px rgba(0,0,0,.55), inset 0 0 0 1px rgba(0,255,156,.12);
+      position:relative;
+      background:linear-gradient(180deg, rgba(10,18,16,.85), rgba(5,9,11,.9));
+      border:1px solid rgba(66,255,209,.34);
+      border-radius:var(--radius); box-shadow:0 18px 46px rgba(0,0,0,.55), inset 0 0 0 1px rgba(0,255,156,.12);
       overflow:hidden;
     }
     .card::before{
@@ -162,23 +164,28 @@
     .card::after{
       content:""; position:absolute; top:-60%; left:-40%; width:60%; height:220%;
       background:linear-gradient(120deg, transparent 40%, rgba(255,255,255,.08), transparent 60%);
-      transform:rotate(14deg); animation:sweep 8s linear infinite; pointer-events:none;
+      transform:rotate(14deg); animation:sweep 8s linear infinite;
+      pointer-events:none;
     }
     @keyframes edgeSpin{to{transform:rotate(360deg)}}
     @keyframes sweep{0%{transform:translateX(-40%) rotate(14deg)} 100%{transform:translateX(200%) rotate(14deg)}}
 
     .pad{padding:clamp(14px,1.6vw,20px)}
 
+    /* Reel frame */
     .reel{ position:relative; aspect-ratio:16/9; width:100%; border-radius:14px; overflow:hidden; background:#000;
       border:1px solid rgba(0,255,156,.34); outline:1px solid rgba(0,255,156,.2);
-      box-shadow:0 0 20px rgba(0,255,156,.12) inset, 0 0 18px rgba(0,0,0,.6);
-      contain:layout paint; isolation:isolate; }
+      box-shadow:0 0 20px rgba(0,255,156,.12) inset, 0 0 18px rgba(0,0,0,.6); contain:layout paint; isolation:isolate; }
     .reel > iframe{position:absolute; inset:0; width:100%; height:100%; border:0; display:block; box-sizing:border-box}
+    .reel iframe{ max-width:100%; max-height:100%; }
+    @media (min-height:900px){ .reel{min-height:560px} }
 
     .badges{display:flex; flex-wrap:wrap; gap:clamp(8px,1vw,12px); margin-top:clamp(8px,1vw,12px)}
+
     section{display:none; content-visibility:auto; contain-intrinsic-size: 1px 1000px}
     section.active{display:block}
 
+    /* Grids */
     .grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:var(--grid); content-visibility:auto}
     @media (max-width:1000px){ .grid{grid-template-columns:repeat(2, 1fr)} }
     @media (max-width:620px){ .grid{grid-template-columns:1fr} }
@@ -192,20 +199,32 @@
 
     footer{opacity:.85; font-size:.9em; padding:clamp(28px,2.5vw,40px) 0 20px}
 
+    #professional .grid{grid-template-columns:repeat(4, 1fr)}
+    @media (max-width:1100px){ #professional .grid{grid-template-columns:repeat(3, 1 fr)} }
+    @media (max-width:820px){ #professional .grid{grid-template-columns:repeat(2, 1 fr)} }
+    @media (max-width:520px){ #professional .grid{grid-template-columns:1fr} }
+
     details.summaryless > summary{list-style:none}
     details.summaryless > summary::-webkit-details-marker{display:none}
 
     .toast{ position:fixed; z-index:9999; padding:.5em .75em; border-radius:10px; background:#0b1414; color:#caffec; border:1px solid rgba(66,255,209,.4); box-shadow:var(--shadow); font-size:.9em; opacity:0; transform:translateY(-6px); transition:opacity .15s ease, transform .15s ease; }
     .toast.show{ opacity:1; transform:translateY(0); }
 
-    .brand .dot.alert{ background:radial-gradient(circle at 30% 30%, #ffd24a, #6b5a1a 70%); box-shadow:0 0 22px #ffd24a, 0 0 36px rgba(255,210,74,.5); animation:alertFlick .125s linear 8; }
+    /* CLICK-ALERT */
+    .brand .dot.alert{
+      background:radial-gradient(circle at 30% 30%, #ffd24a, #6b5a1a 70%);
+      box-shadow:0 0 22px #ffd24a, 0 0 36px rgba(255,210,74,.5);
+      animation:alertFlick .125s linear 8;
+    }
     @keyframes alertFlick{0%,100%{opacity:.45}50%{opacity:1}}
 
+    /* Testimonials */
     #testimonialsBox .tlist{display:flex; flex-direction:column; gap:14px; margin-top:8px}
     .testimonial{border:1px solid rgba(66,255,209,.26); border-radius:14px; padding:12px 14px; background:linear-gradient(180deg, rgba(66,255,209,.06), rgba(66,255,209,.01))}
     .testimonial .quote{display:block; font-weight:700; color:#eafff6}
     .testimonial .from{display:block; color:#74cdaa; font-size:.95em; margin-top:4px}
 
+    /* HUD card */
     .hud{margin-top:var(--grid); border:1px solid rgba(0,255,156,.35); border-radius:14px; background:
       linear-gradient(0deg, rgba(0,255,156,.08), rgba(0,255,156,.02)),
       repeating-linear-gradient(0deg, rgba(0,255,156,.05), rgba(0,255,156,.05) 2px, transparent 3px, transparent 6px);
@@ -219,6 +238,7 @@
     .hud .tag{flex:0 0 auto; padding:.25em .6em; border:1px solid rgba(0,255,156,.35); border-radius:999px; font-size:.8em; color:#caffec}
     .hud .body{opacity:.95}
 
+    /* Recruiter dock (bottom-right) */
     .recruiter-dock{
       position:fixed; z-index:20; right:12px; bottom:12px; display:flex; gap:10px; align-items:center;
       background:rgba(7,15,13,.75); border:1px solid rgba(0,255,156,.28); border-radius:14px; padding:8px 10px; backdrop-filter:blur(6px);
@@ -229,13 +249,13 @@
   </style>
 </head>
 <body>
-  <!-- FX layers -->
+  <!-- Tech-Noir FX layers -->
   <canvas id="fx-stars" aria-hidden="true"></canvas>
   <div id="fx-grid" aria-hidden="true"></div>
 
   <div id="appRoot">
     <!-- Banner -->
-    <div class="banner" id="bannerWrap">
+    <div class="banner">
       <div class="ctrl prev"><button id="bnPrev" aria-label="Previous">◀</button></div>
       <div class="ctrl next"><button id="bnNext" aria-label="Next">▶</button></div>
       <div class="rail card" id="bannerRail" aria-label="Featured work carousel">
@@ -267,6 +287,7 @@
       <!-- HOME -->
       <section id="home" class="active" role="tabpanel">
         <div class="hero">
+          <!-- LEFT COLUMN: Reel + Testimonials -->
           <div class="area-left leftStack">
             <!-- Reel -->
             <div class="card pad area-reel">
@@ -299,6 +320,7 @@
             <div id="skillsRow1" class="badges"></div>
             <div id="skillsRow2" class="badges"></div>
 
+            <!-- HUD -->
             <div id="hudCard" class="hud" style="display:none">
               <h3 id="hudTitle" class="crt-glow">THREAT ASSESSMENT // SKNET_0001</h3>
               <div class="grid2" id="hudBody"></div>
@@ -355,6 +377,7 @@
         </div>
       </section>
 
+      <!-- CONTACT -->
       <section id="contact" role="tabpanel">
         <div class="card pad">
           <h2 class="crt-glow" style="margin:0 0 .6em">Contact</h2>
@@ -374,491 +397,512 @@
   </div>
 
   <script>
-    (function guard(){
-      const roots = document.querySelectorAll('#appRoot');
-      if (roots.length > 1){ roots.forEach((el,i)=>{ if(i>0) el.remove(); }); }
-      if (window.__siteInitDone) { console.warn('Init already run; skipping.'); return; }
-      window.__siteInitDone = true;
-    })();
+  (function guard(){ const roots = document.querySelectorAll('#appRoot'); if (roots.length > 1){ roots.forEach((el, i)=>{ if(i>0) el.remove(); }); } if (window.__siteInitDone) { console.warn('Init already run; skipping.'); return; } window.__siteInitDone = true; })();
 
-    /* ====== STARFIELD (non-blocking) ====== */
-    (function starfield(){
-      const canvas = document.getElementById('fx-stars');
-      const ctx = canvas.getContext('2d');
-      let w=0,h=0, stars=[];
-      function resize(){
-        const dpr = Math.min(1.5, window.devicePixelRatio || 1);
-        w = canvas.width = Math.floor(innerWidth*dpr);
-        h = canvas.height= Math.floor(innerHeight*dpr);
-        canvas.style.width = innerWidth+'px'; canvas.style.height = innerHeight+'px';
-        if (!stars.length){
-          const count = Math.floor((innerWidth*innerHeight)/9600);
-          stars = Array.from({length:count}, ()=>({ x: Math.random()*w, y: Math.random()*h, z: Math.random()*1.2 + .3, a: Math.random()*0.6 + 0.2 }));
-        }
+  /* ====== STARFIELD FX (lightweight canvas) ====== */
+  (function starfield(){
+    const canvas = document.getElementById('fx-stars');
+    const ctx = canvas.getContext('2d');
+    let w=0,h=0, stars=[];
+    function resize(){
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      w = canvas.width = Math.floor(innerWidth*dpr);
+      h = canvas.height= Math.floor(innerHeight*dpr);
+      canvas.style.width = innerWidth+'px'; canvas.style.height = innerHeight+'px';
+      if (!stars.length){
+        const count = Math.floor((innerWidth*innerHeight)/4800);
+        stars = Array.from({length:count}, ()=>({ x: Math.random()*w, y: Math.random()*h, z: Math.random()*1.2 + .3, a: Math.random()*0.6 + 0.2 }));
       }
-      function tick(){
-        ctx.clearRect(0,0,w,h);
-        for (const s of stars){
-          s.x -= (0.15 + s.z*0.6); if (s.x<0) s.x += w;
-          const r = s.z*1.2; ctx.globalAlpha = s.a;
-          ctx.beginPath(); ctx.arc(s.x, s.y, r, 0, Math.PI*2);
-          ctx.fillStyle = 'rgba(0,255,156,0.9)'; ctx.fill();
-        }
-        ctx.globalAlpha = 1; requestAnimationFrame(tick);
+    }
+    function tick(){
+      ctx.clearRect(0,0,w,h);
+      for (const s of stars){
+        s.x -= (0.15 + s.z*0.6); if (s.x<0) s.x += w;
+        const r = s.z*1.2; ctx.globalAlpha = s.a;
+        ctx.beginPath(); ctx.arc(s.x, s.y, r, 0, Math.PI*2);
+        ctx.fillStyle = 'rgba(0,255,156,0.9)'; ctx.fill();
       }
-      addEventListener('resize', resize, {passive:true}); resize(); tick();
-    })();
-
-    /* ---------- Constants & helpers ---------- */
-    const PUBHTML = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQxBxTbb-Ax7rpnnn5zWDUW6fGq1nUGIEPJb5qfaxifqKyZexNLK28gwpQLS5T5vpeuSvZicAEg69U1/pubhtml";
-    const TAB_MAP = {};
-    const DEFAULT_PHONE = "(818)434-8013";
-    const DEFAULT_EMAIL = "arifeblowitzvfx@gmail.com";
-    const DEFAULT_RESUME = "https://docs.google.com/document/d/1NnKyzE8TtjMOe8WdTEBE7zNscM_RIHBMGF1CMjOn29s/export?format=pdf";
-    const $  = (sel, el=document) => el.querySelector(sel);
-    const $$ = (sel, el=document) => [...el.querySelectorAll(sel)];
-    const ytThumbMax = id => `https://img.youtube.com/vi/${id}/maxresdefault.jpg`;
-    const ytThumbHQ  = id => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
-    const fixImdb = url => (url||"").replace(/https?:\/\/pro\.imdb\.com/i,'https://www.imdb.com').replace(/\?ref_=pro.*$/,'');
-
-    function setTopContact(phone, email){
-      const top = document.getElementById('topContact'); if (!top) return; top.innerHTML = '';
-      if (phone){ const a=document.createElement('a'); a.className='btn'; a.href='tel:' + phone.replace(/[^0-9+]/g,''); a.textContent=phone; top.appendChild(a); }
-      if (email){ const a=document.createElement('a'); a.className='btn'; a.href='mailto:' + email; a.textContent=email; top.appendChild(a); }
+      ctx.globalAlpha = 1;
+      requestAnimationFrame(tick);
     }
-    function setContactSection(phone, email){
-      const wrap = document.getElementById('contactInfo'); if (!wrap) return; wrap.innerHTML='';
-      if (phone){ const a=document.createElement('a'); a.className='btn'; a.href='tel:' + phone.replace(/[^0-9+]/g,''); a.textContent=phone; wrap.appendChild(a); }
-      if (email){ const a=document.createElement('a'); a.className='btn'; a.href='mailto:' + email; a.textContent=email; wrap.appendChild(a); }
-    }
-    setTopContact(DEFAULT_PHONE, DEFAULT_EMAIL);
-    setContactSection(DEFAULT_PHONE, DEFAULT_EMAIL);
-    (function(){ const r = document.getElementById('btnResume'); if (r) r.href = DEFAULT_RESUME; document.getElementById('dockResume').href = r ? r.href : DEFAULT_RESUME; })();
-    document.getElementById('year').textContent = new Date().getFullYear();
+    addEventListener('resize', resize, {passive:true});
+    resize(); tick();
+  })();
 
-    /* ---------- CSV helpers (robust) ---------- */
-    function csvToMatrix(csvText){
-      const rows = []; let field="", row=[], inQ=false; const s=String(csvText||"").replace(/\r/g,'');
-      for (let i=0;i<s.length;i++){ const c=s[i];
-        if (c==='"'){ inQ=!inQ; field+=c; continue; }
-        if (!inQ && c===','){ row.push(field.replace(/^("|“)|("|”)$/g,'').replace(/""/g,'"')); field=""; continue; }
-        if (!inQ && c==='\n'){ row.push(field.replace(/^("|“)|("|”)$/g,'').replace(/""/g,'"')); rows.push(row); row=[]; field=""; continue; }
-        field+=c;
+  const PUBHTML = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQxBxTbb-Ax7rpnnn5zWDUW6fGq1nUGIEPJb5qfaxifqKyZexNLK28gwpQLS5T5vpeuSvZicAEg69U1/pubhtml";
+  const TAB_MAP = {};
+
+  const DEFAULT_PHONE = "(818)434-8013";
+  const DEFAULT_EMAIL = "arifeblowitzvfx@gmail.com";
+  const DEFAULT_RESUME = "https://docs.google.com/document/d/1NnKyzE8TtjMOe8WdTEBE7zNscM_RIHBMGF1CMjOn29s/export?format=pdf";
+
+  function setTopContact(phone, email){
+    const top = document.getElementById('topContact'); if (!top) return; top.innerHTML = '';
+    if (phone){ const a=document.createElement('a'); a.className='btn'; a.href='tel:' + phone.replace(/[^0-9+]/g,''); a.textContent=phone; top.appendChild(a); }
+    if (email){ const a=document.createElement('a'); a.className='btn'; a.href='mailto:' + email; a.textContent=email; top.appendChild(a); }
+  }
+  function setContactSection(phone, email){
+    const wrap = document.getElementById('contactInfo'); if (!wrap) return; wrap.innerHTML='';
+    if (phone){ const a=document.createElement('a'); a.className='btn'; a.href='tel:' + phone.replace(/[^0-9+]/g,''); a.textContent=phone; wrap.appendChild(a); }
+    if (email){ const a=document.createElement('a'); a.className='btn'; a.href='mailto:' + email; a.textContent=email; wrap.appendChild(a); }
+  }
+  setTopContact(DEFAULT_PHONE, DEFAULT_EMAIL);
+  setContactSection(DEFAULT_PHONE, DEFAULT_EMAIL);
+  (function(){ const r = document.getElementById('btnResume'); if (r) r.href = DEFAULT_RESUME; document.getElementById('dockResume').href = r ? r.href : DEFAULT_RESUME; })();
+
+  const $ = (sel, el=document) => el.querySelector(sel);
+  const $$ = (sel, el=document) => [...el.querySelectorAll(sel)];
+  const ytThumb = id => `https://img.youtube.com/vi/${id}/maxresdefault.jpg`;
+  const ytThumbHQ = id => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+  const fixImdb = url => (url||"").replace(/https?:\/\/pro\.imdb\.com/i,'https://www.imdb.com').replace(/\?ref_=pro.*$/,'');
+
+  // CSV helpers
+  function csvToObjects(csvText){
+    const rows = []; let field="", row=[], inQ=false;
+    for (let c of String(csvText||"").replace(/\r/g,'')){
+      if (c==='"'){ inQ = !inQ; field+=c; }
+      else if (c===',' && !inQ){ row.push(field.replace(/^("|“)|("|”)$/g,'').replace(/""/g,'"')); field=""; }
+      else if (c==='\n' && !inQ){ row.push(field.replace(/^("|“)|("|”)$/g,'').replace(/""/g,'"')); rows.push(row); row=[]; field=""; }
+      else field+=c;
+    }
+    if (field.length || row.length){ row.push(field.replace(/^("|“)|("|”)$/g,'').replace(/""/g,'"')); rows.push(row); }
+    if (!rows.length) return [];
+    const headers = rows[0].map(h=>h.trim());
+    return rows.slice(1).filter(r=>r.length>1).map(r=>{ const o={}; headers.forEach((h,i)=>o[h]=r[i]!==undefined?r[i]:""); return o; });
+  }
+  function csvFirstRowSecondCol(csvText){
+    let inQ=false, col=0, val="";
+    for (let i=0;i<csvText.length;i++){
+      const ch = csvText[i];
+      if (ch === '"'){ inQ = !inQ; continue; }
+      if (!inQ && (ch === ',' || ch === '\n')){
+        if (col === 1) return val.trim();
+        if (ch === ',') col++;
+        if (ch === '\n') break;
+        continue;
       }
-      if (field.length || row.length){ row.push(field.replace(/^("|“)|("|”)$/g,'').replace(/""/g,'"')); rows.push(row); }
-      return rows;
+      if (col === 1) val += ch;
+      if (!inQ && ch === ',') col++;
     }
-    function csvToObjects(csvText){
-      const m = csvToMatrix(csvText); if (!m.length) return [];
-      const headers = m[0].map(h=>String(h||'').trim());
-      return m.slice(1).filter(r=>r && r.some(x=>String(x||'').trim())).map(r=>{ const o={}; headers.forEach((h,i)=>o[h]= (r[i]!==undefined ? r[i] : "")); return o; });
-    }
-    function csvFirstRowSecondCol(csvText){ const rows = csvToMatrix(csvText); return rows[0] && rows[0][1] ? String(rows[0][1]).trim() : ""; }
-    const cbMinute = ()=>{ const d=new Date(); const pad=n=>String(n).padStart(2,'0'); return `${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())}T${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`; };
-    function buildCsvUrlFromGid(pubhtml, gid){ return pubhtml.replace(/\/pubhtml.*/, '/pub') + `?gid=${gid}&single=true&output=csv&cb=${encodeURIComponent(cbMinute())}`; }
-    const normBool = v => String(v||"").trim().toLowerCase()==='true' || String(v||"").trim().toLowerCase()==='yes';
-    const normNum  = v => { const n = Number(String(v||"").replace(/[^\d.-]/g,"")); return isNaN(n)?0:n; };
+    return val.trim();
+  }
 
-    async function discoverGids(pubhtml){
-      const map={};
+  const normBool = v => String(v||"").trim().toLowerCase()==='true' || String(v||"").trim().toLowerCase()==='yes';
+  const normNum = v => { const n = Number(String(v||"").replace(/[^\d.-]/g,"")); return isNaN(n)?0:n; };
+  function buildCsvUrlFromGid(pubhtml, gid){ return pubhtml.replace(/\/pubhtml.*/, '/pub') + `?gid=${gid}&single=true&output=csv`; }
+
+  // === LIVE REFRESH & IOS CACHE HANDLING ==============================
+  const IOS = /iP(hone|ad|od)/i.test(navigator.userAgent);
+  const DATA_TTL_MS = 60 * 1000;        // desktop TTL (feel "live" but cache-friendly)
+  const BUSTER_SLOT_MS = 30 * 1000;     // coarse buster window (keeps requests de-duped)
+  const nowSlot = () => Math.floor(Date.now() / BUSTER_SLOT_MS);
+  const addBuster = (url, slot=nowSlot()) => url + (url.includes('?') ? '&' : '?') + 'cb=' + slot;
+
+  const cache = {
+    get(key){
       try{
-        const html = await fetch(pubhtml, {mode:"cors", cache:"no-store"}).then(r=>r.text());
-        const uniqueGids = [...new Set([...html.matchAll(/gid=(\d+)/g)].map(m=>m[1]))];
-        for (const gid of uniqueGids){
-          const url = buildCsvUrlFromGid(pubhtml, gid);
-          const txt = await fetch(url, {mode:'cors', cache:'no-store'}).then(r=>r.text()).catch(()=>null);
-          if (!txt) continue;
-          const rows = csvToObjects(txt);
-          const hdr = Object.keys(rows[0]||{}).join('|').toLowerCase();
-          if (hdr.includes('primary image') && hdr.includes('on set?')) map['Ariel_Feblowitz_Works']=gid;
-          else if (hdr.includes('ride image') && hdr.includes('ride name')) map['Rides']=gid;
-          else if (hdr.includes('type') && hdr.includes('video_id')) map['Personal Youtube']=gid;
-          else if (hdr.includes('key') && hdr.includes('value')) map['Main site info']=gid;
-          else if (hdr.includes('from') && (hdr.includes('testimonial')||hdr.includes('testimonials'))) map['Testimonials']=gid;
-        }
-      }catch(e){ console.error('[discoverGids]', e); }
-      return { ...map, ...TAB_MAP };
-    }
-
-    /* ---------- Banner: independent, fast, resilient ---------- */
-    const bannerWrap  = document.getElementById('bannerWrap');
-    const rail        = document.getElementById('bannerRail');
-    const scrollEl    = document.getElementById('bannerScroll');
-
-    function skeletonBanner(n=14){
-      scrollEl.innerHTML='';
-      const mk = cls => { const d=document.createElement('div'); d.className='tile skel '+cls; return d; };
-      const set = Array.from({length:n}, (_,i)=> mk(i%3===0?'poster':'wide'));
-      [...set, ...set].forEach(el=> scrollEl.appendChild(el));
-    }
-
-    const io = new IntersectionObserver((entries)=>{
-      entries.forEach(({isIntersecting, target})=>{
-        if (!isIntersecting) return;
-        const img = target;
-        if (img.dataset.src){ img.src = img.dataset.src; img.removeAttribute('data-src'); }
-        if (img.dataset.srcset){ img.srcset = img.dataset.srcset; img.removeAttribute('data-srcset'); }
-        io.unobserve(img);
-      });
-    }, { root: rail, rootMargin: '120% 50%', threshold: 0.01 });
-
-    function makeImg({src, alt, kind, ytid, eager=false}){
-      const img = new Image();
-      img.alt = alt || '';
-      img.loading = eager ? 'eager' : 'lazy';
-      img.decoding = 'async';
-      if (eager) img.fetchPriority = 'high';
-      if (kind==='poster'){ img.width=800; img.height=1200; } else { img.width=1280; img.height=720; }
-
-      if (ytid){
-        const tiny = ytThumbHQ(ytid);
-        const big  = ytThumbMax(ytid);
-        img.src = tiny;
-        img.dataset.srcset = `${tiny} 480w, ${big} 1280w`;
-        img.sizes = kind==='poster' ? "(max-width: 900px) 35vw, 12vw" : "(max-width: 900px) 70vw, 24vw";
-      } else {
-        img.src = src;
-      }
-      io.observe(img);
-      return img;
-    }
-
-    function titlePlaceholderSVG(title){
-      const safe = (title||'Untitled').replace(/&/g,'&amp;').replace(/</g,'&lt;');
-      const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 800'><rect width='100%' height='100%' fill='#000'/><text x='50%' y='50%' fill='#9fffcf' font-family='Inter, Segoe UI, Roboto, Arial, sans-serif' font-size='36' text-anchor='middle' dominant-baseline='middle'>${safe}</text></svg>`;
-      return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
-    }
-
-    function makeTile(t, idx){
-      const a=document.createElement('a');
-      a.className='tile ' + (t.type==='pro'?'poster':'wide');
-      a.href=t.url||'#'; a.target='_blank'; a.rel='noopener';
-      a.setAttribute('data-title', t.title||'');
-      const isPoster = t.type==='pro' || t.kind==='poster';
-      const eager = idx < 4;
-      const img = makeImg({src: t.img || titlePlaceholderSVG(t.title), alt: t.title||'', kind: isPoster?'poster':'wide', ytid: (t.ytid||'').trim(), eager});
-      a.appendChild(img);
-      return a;
-    }
-
-    function fillBanner(tiles, {initialOnly=false}={}){
-      scrollEl.innerHTML='';
-      const base = initialOnly ? tiles.slice(0,16) : tiles.slice(0,40);
-      const doubled = [...base, ...base];
-      doubled.forEach((t,i)=> scrollEl.appendChild(makeTile(t, i)));
-      const firstImgs = [...scrollEl.querySelectorAll('img')].slice(0,4);
-      firstImgs.forEach(img=>{ img.loading='eager'; img.fetchPriority='high'; });
-
-      requestAnimationFrame(()=>{
-        const totalW = scrollEl.scrollWidth / 2;
-        const pxPerSec = 60;
-        const dur = Math.max(20, Math.round(totalW / pxPerSec));
-        document.documentElement.style.setProperty('--marqueeDur', dur+'s');
-      });
-    }
-
-    function upgradeBannerImages(){
-      const imgs = scrollEl.querySelectorAll('img[data-srcset]');
-      imgs.forEach(img=>{
-        const srcset = img.dataset.srcset;
-        if (!srcset) return;
-        img.srcset = srcset;
-        img.removeAttribute('data-srcset');
-      });
-    }
-
-    rail.addEventListener('mouseenter', ()=> rail.classList.add('paused'));
-    rail.addEventListener('mouseleave', ()=> rail.classList.remove('paused'));
-    document.getElementById('bnPrev').addEventListener('click', ()=>{ rail.scrollLeft -= 260; });
-    document.getElementById('bnNext').addEventListener('click', ()=>{ rail.scrollLeft += 260; });
-
-    // Instant banner from session cache or skeleton
-    (()=> {
-      const j = sessionStorage.getItem('banner:tiles');
-      if (j){
-        try{ fillBanner(JSON.parse(j), {initialOnly:true}); (requestIdleCallback||setTimeout)(upgradeBannerImages, 500); return; }catch{}
-      }
-      skeletonBanner(); // will be replaced after fetch
-    })();
-
-    // Build banner independently (no dependency on other loaders)
-    async function fetchBannerTiles(){
+        const raw = JSON.parse(localStorage.getItem(key)||'null');
+        if (!raw) return null;
+        if (IOS) return null;                       // iOS always bypasses local cache
+        if ((Date.now() - (raw.ts||0)) > DATA_TTL_MS) return null; // expired
+        return raw;
+      }catch{ return null; }
+    },
+    set(key, val){
       try{
-        const gids = await discoverGids(PUBHTML);
-        const pull = async (name)=>{
-          const gid = gids[name]; if (!gid) return {rows:[], raw:''};
-          const url = buildCsvUrlFromGid(PUBHTML, gid);
-          const txt = await fetch(url, {mode:'cors', cache:'no-store'}).then(r=>r.text());
-          return {rows: csvToObjects(txt), raw: txt};
-        };
-
-        const [personal, pro, rides] = await Promise.all([
-          pull('Personal Youtube'), pull('Ariel_Feblowitz_Works'), pull('Rides')
-        ]);
-
-        // Build candidate arrays; be lenient so we always have content
-        const personalTiles = (personal.rows||[]).filter(r=>{
-          const t=(r.type||'').toLowerCase();
-          return t==='video';
-        }).map(r=>{
-          const videoId=(r.video_id||'').trim();
-          const url=(r.youtube_url||'').trim() || (videoId?`https://www.youtube.com/watch?v=${videoId}`:'#');
-          const thumb=(r.thumb_url||'').trim() || (videoId? ytThumbHQ(videoId) : '');
-          const prio=normNum(r.prio);
-          const include = normBool(r.include_in_banner) || prio>=4; // slightly lower to avoid empty
-          return include ? {type:'personal', kind:'wide', title:(r.title||'').trim(), img:thumb, url, ytid:videoId} : null;
-        }).filter(Boolean);
-
-        const proTiles = (pro.rows||[]).map(r=>{
-          const title=(r['Name']||'').trim();
-          const poster=(r['Primary image']||'').trim();
-          const prio=normNum(r['Prio?']);
-          if (!title || prio<4) return null;
-          return {type:'pro', kind:'poster', title, img:poster, url:fixImdb((r['URL']||'').trim())};
-        }).filter(Boolean);
-
-        const rideTiles = (rides.rows||[]).map(r=>{
-          const title=(r['Ride Name']||'').trim();
-          const poster=(r['Ride Image']||r['Ride image']||'').trim();
-          const prio=normNum(r['Prio']||r['prio']);
-          if (!title || prio<7) return null;
-          return {type:'ride', kind:'wide', title, img:poster, url:(r['Ride Link']||'').trim()};
-        }).filter(Boolean);
-
-        // Merge with graceful fallback order
-        let merged=[];
-        const buckets=[proTiles, rideTiles, personalTiles].filter(b=>b.length);
-        if (buckets.length){
-          const L=Math.max(...buckets.map(b=>b.length));
-          for (let i=0;i<L;i++){ buckets.forEach(b=>{ if (b[i]) merged.push(b[i]); }); }
-        }
-        // If still empty, attempt to use any personal videos regardless of prio
-        if (!merged.length && (personal.rows||[]).length){
-          merged = (personal.rows||[]).filter(r=>(r.type||'').toLowerCase()==='video').slice(0,20).map(r=>{
-            const videoId=(r.video_id||'').trim();
-            return {type:'personal', kind:'wide', title:(r.title||'').trim(), img: ytThumbHQ(videoId), url: (r.youtube_url||`https://www.youtube.com/watch?v=${videoId}`), ytid:videoId};
-          });
-        }
-
-        // Apply results
-        if (merged.length){
-          fillBanner(merged, {initialOnly:true});
-          (requestIdleCallback||setTimeout)(()=>{ fillBanner(merged, {initialOnly:false}); upgradeBannerImages(); }, 800);
-          try{ sessionStorage.setItem('banner:tiles', JSON.stringify(merged.slice(0,32))); }catch{}
-          bannerWrap.style.display = '';
-        } else {
-          // No data — hide banner rather than empty boxes
-          bannerWrap.style.display = 'none';
-        }
-      }catch(err){
-        console.error('[banner tiles]', err);
-        // On error, keep skeleton for this visit but don’t block the rest
-      }
+        if (IOS) return; // don't persist on iOS
+        localStorage.setItem(key, JSON.stringify({ ts: Date.now(), ...val }));
+      }catch{}
     }
-    fetchBannerTiles();
+  };
+  // Force data refresh when returning from bfcache on iOS/Safari
+  window.addEventListener('pageshow', (e)=>{
+    if (e.persisted && IOS){
+      try{
+        Object.keys(localStorage).forEach(k=>{ if (k.startsWith('csv:')) localStorage.removeItem(k); });
+      }catch{}
+      // Soft re-run data sections without a full reload
+      if (window.__softRefresh) window.__softRefresh();
+    }
+  });
+  // ====================================================================
 
-    /* ---------- Rest of site (unchanged logic, trimmed) ---------- */
-    const sysStatus = document.getElementById('sysStatus');
-    function setStatus(msg, linkHref){ if (!sysStatus) return; sysStatus.textContent = msg; if (linkHref) sysStatus.href = linkHref; }
+  const rail = $('#bannerRail'); const scrollEl = $('#bannerScroll');
 
-    const loaded = { main:false, reel:false, sections:false };
-    document.getElementById('year').textContent = new Date().getFullYear();
+  /* --- IMG LAZY LOADER --- */
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(({isIntersecting, target})=>{
+      if (!isIntersecting) return;
+      const img = target;
+      const src = img.dataset.src;
+      if (src){ img.src = src; img.removeAttribute('data-src'); }
+      if (img.dataset.srcset){ img.srcset = img.dataset.srcset; img.removeAttribute('data-srcset'); }
+      io.unobserve(img);
+    });
+  }, { root: rail, rootMargin: '100% 40%', threshold: 0.01 });
 
-    $$('.tab-btn').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        $$('.tab-btn').forEach(b=>{ b.classList.toggle('active', b===btn); b.setAttribute('aria-selected', b===btn) });
-        const name = btn.dataset.tab;
-        $$('section').forEach(s=>s.classList.toggle('active', s.id===name));
-        if (!loaded.sections) { loadSections(); }
-        window.scrollTo({ top: $('.wrap').offsetTop, behavior: 'smooth' });
-      });
+  function makeImgLazy({src, alt, kind, ytId}){
+    const img = new Image();
+    img.alt = alt || '';
+    img.loading = 'lazy'; img.decoding = 'async'; img.fetchPriority = 'low';
+    if (kind==='poster'){ img.width = 800; img.height = 1200; } else { img.width = 1280; img.height = 720; }
+    let main = src;
+    if (ytId){
+      const hq = ytThumbHQ(ytId); main = ytThumb(ytId);
+      img.dataset.srcset = `${hq} 480w, ${main} 1280w`;
+      img.sizes = kind==='poster' ? "(max-width: 900px) 35vw, 12vw" : "(max-width: 900px) 70vw, 24vw";
+    } else {
+      img.sizes = kind==='poster' ? "(max-width: 900px) 35vw, 12vw" : "(max-width: 900px) 70vw, 24vw";
+    }
+    img.dataset.src = main; io.observe(img); return img;
+  }
+
+  function titlePlaceholderSVG(title){
+    const safe = (title||'Untitled').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+    const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 800'><rect width='100%' height='100%' fill='#000'/><text x='50%' y='50%' fill='#9fffcf' font-family='Inter, Segoe UI, Roboto, Arial, sans-serif' font-size='36' text-anchor='middle' dominant-baseline='middle'>${safe}</text></svg>`;
+    return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+  }
+
+  function makeTile(t){
+    const a=document.createElement('a');
+    a.className='tile ' + (t.type==='pro'?'poster':'wide');
+    a.href=t.url||'#'; a.target='_blank'; a.rel='noopener';
+    a.setAttribute('data-title', t.title||'');
+    const isPoster = t.type==='pro' || t.kind==='poster';
+    const img = makeImgLazy({src: t.img || titlePlaceholderSVG(t.title), alt: t.title||'', kind: isPoster?'poster':'wide', ytId: (t.ytid||'').trim()});
+    a.appendChild(img);
+    return a;
+  }
+
+  function fillBanner(tiles){
+    scrollEl.innerHTML='';
+    const seq = tiles.slice(0, 36); // === BANNER SPEED TUNING: slightly fewer to paint faster
+    const doubled = [...seq, ...seq];
+    doubled.forEach(t=> scrollEl.appendChild(makeTile(t)));
+
+    const firstImgs = [...scrollEl.querySelectorAll('img')].slice(0,6); // warm more thumbs up front
+    firstImgs.forEach(img=>{
+      img.fetchPriority = 'high';
+      if (img.dataset.src){ img.src = img.dataset.src; img.removeAttribute('data-src'); }
+      if (img.dataset.srcset){ img.srcset = img.dataset.srcset; img.removeAttribute('data-srcset'); }
     });
 
-    function toast(text, x, y){
-      const t=document.createElement('div'); t.className='toast'; t.textContent=text; document.body.appendChild(t);
-      const px = Math.min(window.innerWidth-160, Math.max(12, x|| (window.innerWidth-160)/2)); const py = Math.min(window.innerHeight-60, Math.max(8, y|| 18));
-      t.style.left = px+'px'; t.style.top = py+'px';
-      requestAnimationFrame(()=> t.classList.add('show'));
-      setTimeout(()=>{ t.classList.remove('show'); setTimeout(()=>t.remove(),180); }, 1100);
-    }
+    requestAnimationFrame(()=>{
+      const totalW = scrollEl.scrollWidth / 2;
+      const pxPerSec = 55;
+      const dur = Math.max(24, Math.round(totalW / pxPerSec));
+      document.documentElement.style.setProperty('--marqueeDur', dur+'s');
+    });
+  }
 
-    function enhanceContactLinks(){
-      const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-      const scope = [document.getElementById('topContact'), document.getElementById('contactInfo')].filter(Boolean);
-      scope.forEach(root=>{
-        root.querySelectorAll('a[href^="tel:"], a[href^="mailto:"]').forEach(a=>{
-          a.addEventListener('click', e=>{
-            if (isMobile) return; e.preventDefault();
-            const text = a.textContent.trim();
-            navigator.clipboard?.writeText(text).then(()=>{ toast('Copied: '+text, e.clientX, e.clientY); }).catch(()=>{ toast(text, e.clientX, e.clientY); });
-          }, {passive:false});
-        });
+  rail.addEventListener('mouseenter', ()=> rail.classList.add('paused'));
+  rail.addEventListener('mouseleave', ()=> rail.classList.remove('paused'));
+  $('#bnPrev').addEventListener('click', ()=>{ rail.scrollLeft -= 260; });
+  $('#bnNext').addEventListener('click', ()=>{ rail.scrollLeft += 260; });
+
+  $$('.tab-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      $$('.tab-btn').forEach(b=>{ b.classList.toggle('active', b===btn); b.setAttribute('aria-selected', b===btn) });
+      const name = btn.dataset.tab;
+      $$('section').forEach(s=>s.classList.toggle('active', s.id===name));
+      if (!loaded.sections) { loadSections(); }
+      window.scrollTo({ top: $('.wrap').offsetTop, behavior: 'smooth' });
+    });
+  });
+  $('#year').textContent = new Date().getFullYear();
+  const sysStatus = document.getElementById('sysStatus');
+  function setStatus(msg, linkHref){ if (!sysStatus) return; sysStatus.textContent = msg; if (linkHref) { sysStatus.href = linkHref; } }
+
+  const loaded = { main:false, reel:false, sections:false, banner:false, testimonials:false };
+
+  // --- PRELOAD PLACEHOLDERS ---
+  (function preloadFrames(){
+    // HUD placeholder
+    const hudCard = document.getElementById('hudCard');
+    const hudTitle = document.getElementById('hudTitle');
+    const hudBody  = document.getElementById('hudBody');
+    function renderHUD(lines){
+      hudBody.innerHTML='';
+      lines.forEach(l=>{
+        const row = document.createElement('div'); row.className='line';
+        const tag = document.createElement('span'); tag.className='tag'; tag.textContent = String(l.tag||'').toUpperCase();
+        const body = document.createElement('div'); body.className='body'; body.textContent = l.body||'';
+        row.appendChild(tag); row.appendChild(body); hudBody.appendChild(row);
       });
+      hudCard.style.display='block';
     }
+    hudTitle.textContent = 'Scanning Subject Attributes…';
+    renderHUD([
+      {tag:'WY:LINK', body:'Handshake with Weyland Yutani mainframe… OK'},
+      {tag:'CYBD:PROC', body:'Cyberdyne predictive model warm-up… OK'},
+      {tag:'SKNET:SIG', body:'Skynet heuristic prefetch… nominal'},
+      {tag:'IO/TIMEBASE', body:'Genlock sync… LTC/VITC stable'},
+      {tag:'LENS DB', body:'FF/APS-C tables cached; distortion LUTs primed'},
+      {tag:'RIGS', body:'Technodolly/Graphlite/Spydercam/MILO profiles loaded'}
+    ]);
 
-    async function pullTab(name, gids){
-      const gid = gids[name]; if (!gid) return {rows:[], raw:''};
-      const url = buildCsvUrlFromGid(PUBHTML, gid);
-      const txt = await fetch(url, {mode:'cors', cache:'no-store'}).then(r=>r.text());
-      return { rows: csvToObjects(txt), raw: txt };
-    }
+    // Testimonials placeholder (gag text gets replaced on sheet load)
+    const tBox  = document.getElementById('testimonialsBox');
+    const tList = document.getElementById('testimonialsList');
+    const tTitle= document.getElementById('testimonialsTitle');
+    tTitle.textContent = 'Satellite uplink awaiting interstellar comms to verify subject with known associates…';
+    const gag = (q,f)=>`<div class="testimonial"><span class="quote">“${q}”</span><span class="from">— ${f}</span></div>`;
+    tList.innerHTML = [
+      gag('Cross-referencing guild logs, call sheets, and lunch orders…','Mother // Unit 1824'),
+      gag('Decrypting production radio chatter: “He solved it on set.”','Cyberdyne Archive • Tape B-12')
+    ].join('');
+    tBox.style.display = 'block';
+  })();
 
-    async function loadSections(){
-      try{
-        if (loaded.sections) return; loaded.sections = true;
-        const gids = await discoverGids(PUBHTML);
+  (async function init(){
+    try{
+      setStatus('Routing request to MOTHER…', sysStatus.href);
 
-        // Main site info
-        const mainInfoPull = await pullTab('Main site info', gids);
-        const mainInfo = {}; (mainInfoPull.rows||[]).forEach(r=> mainInfo[(r.key||'').trim()] = (r.value||'').trim());
-
-        document.getElementById('siteTitle').textContent = mainInfo.site_title || 'Subject: ARI FEBLOWITZ';
-        const imdbUrl = fixImdb(mainInfo.imdb_url || 'https://www.imdb.me/ArielFeblowitz');
-        const subtitleTxt = mainInfo.site_subtitle || 'Techvis & Virtual Production Supervisor';
-        const subtitleEl = document.getElementById('siteSubtitle'); subtitleEl.textContent = subtitleTxt; subtitleEl.href = imdbUrl;
-        document.getElementById('about1').textContent = mainInfo.about_paragraph_1 || document.getElementById('about1').textContent;
-        document.getElementById('about2').textContent = mainInfo.about_paragraph_2 || document.getElementById('about2').textContent;
-        const linksHref = mainInfo.all_links_url || 'https://linktr.ee/admin/links';
-        document.getElementById('btnIMDb').href = imdbUrl;
-        document.getElementById('btnYouTube').href = mainInfo.youtube_url || document.getElementById('btnYouTube').href;
-        document.getElementById('btnLinks').href = linksHref;
-        const resumeURL = (mainInfo.resume_url && mainInfo.resume_url.trim()) || DEFAULT_RESUME;
-        document.getElementById('btnResume').href = resumeURL;
-        document.getElementById('dockResume').href = resumeURL;
-
-        setStatus('Link established', linksHref);
-        const aboutStatus = document.getElementById('aboutStatus'); if (aboutStatus) aboutStatus.style.display = 'none';
-        document.body.classList.add('ready');
-        document.getElementById('reelHeader').textContent = 'Demo Reel';
-        document.getElementById('aboutHeader').textContent = 'About';
-
-        const phone = (mainInfo.phone||DEFAULT_PHONE).trim();
-        const email = (mainInfo.email||DEFAULT_EMAIL).trim();
-        setTopContact(phone, email);
-        setContactSection(phone, email);
-        enhanceContactLinks();
-
-        document.getElementById('dockCopy')?.addEventListener('click', ()=>{
-          const e = (mainInfo.email || DEFAULT_EMAIL).trim();
-          navigator.clipboard?.writeText(e).then(()=> toast('Copied: '+e)).catch(()=> toast(e));
-        });
-
-        // Reel
-        (function loadReel(){
-          const reelInput = (mainInfo.reel_youtube_id||'').trim();
-          const reelFrame = document.getElementById('reelFrame');
-          const setIframe = src => { reelFrame.loading='lazy'; reelFrame.decoding='async'; reelFrame.fetchPriority='low'; reelFrame.src = src; };
-          if (/^\s*</i.test(reelInput)){
-            const tmp = document.createElement('div'); tmp.innerHTML = reelInput; const ifr = tmp.querySelector('iframe');
-            if (ifr && ifr.src){ setIframe(ifr.src); return; }
+      // discoverGids() stays the same logic
+      async function discoverGids(pubhtml){
+        const map = {};
+        try{
+          const html = await fetch(pubhtml, {mode:"cors"}).then(r=>r.text());
+          const uniqueGids = [...new Set([...html.matchAll(/gid=(\d+)/g)].map(m=>m[1]))];
+          for (const gid of uniqueGids){
+            const txt = await fetch(buildCsvUrlFromGid(pubhtml, gid)).then(r=>r.text()).catch(()=>null);
+            if (!txt) continue;
+            const rows = csvToObjects(txt);
+            const hdr = Object.keys(rows[0]||{}).join('|').toLowerCase();
+            if (hdr.includes('primary image') && hdr.includes('on set?')) map['Ariel_Feblowitz_Works']=gid;
+            else if (hdr.includes('ride image') && hdr.includes('ride name')) map['Rides']=gid;
+            else if (hdr.includes('type') && hdr.includes('video_id')) map['Personal Youtube']=gid;
+            else if (hdr.includes('key') && hdr.includes('value')) map['Main site info']=gid;
+            else if (hdr.includes('from') && hdr.includes('testimonial')) map['Testimonials']=gid;
           }
-          const vimeoM = reelInput.match(/vimeo\.com\/(?:video\/)?(\d+)/i);
-          if (vimeoM){ setIframe(`https://player.vimeo.com/video/${vimeoM[1]}?badge=0&autopause=0&title=0&byline=0`); return; }
-          if (/^\d{7,}$/.test(reelInput)){ setIframe(`https://player.vimeo.com/video/${reelInput}?badge=0&autopause=0&title=0&byline=0`); return; }
-          const ytM = reelInput.match(/[?&]v=([\w-]{6,})/) || reelInput.match(/youtu\.be\/([\w-]{6,})/);
-          if (ytM){ setIframe(`https://www.youtube.com/embed/${ytM[1]}?rel=0&modestbranding=1`); return; }
-          if (/^[\w-]{6,}$/.test(reelInput)){ setIframe(`https://www.youtube.com/embed/${reelInput}?rel=0&modestbranding=1`); return; }
-        })();
+        }catch(e){ console.error('[discoverGids]', e); }
+        return { ...map, ...TAB_MAP };
+      }
 
-        // Grids + Testimonials
-        const [personalPull, proPull, ridesPull, testiPull] = await Promise.all([
-          pullTab('Personal Youtube', gids), pullTab('Ariel_Feblowitz_Works', gids),
-          pullTab('Rides', gids), pullTab('Testimonials', gids)
-        ]);
+      const gids = await discoverGids(PUBHTML);
 
-        const videos=[];
-        const meta={};
-        (personalPull.rows||[]).forEach(r=>{
-          const type=(String(r.type||'').toLowerCase());
-          if (type==='meta'){ meta[(r.key||'').trim()] = (r.value||'').trim(); }
-          else if (type==='video'){
-            const videoId=(r.video_id||'').trim();
-            const url=(r.youtube_url||'').trim() || (videoId?`https://www.youtube.com/watch?v=${videoId}`:'');
-            const thumb=(r.thumb_url||'').trim() || (videoId? ytThumbHQ(videoId) : '');
-            videos.push({ prio: normNum(r.prio), videoId, title:(r.title||'').trim(), role:(r.role||'').trim(), url, thumb });
+      // pullTab with iOS + TTL handling
+      async function pullTab(name, {bypassCache=false} = {}){
+        const gid = gids[name]; if(!gid) return {rows:[], raw:null};
+        const key = `csv:${gid}`;
+        let txt;
+
+        const base = buildCsvUrlFromGid(PUBHTML, gid);
+        // "Main site info" should feel even more live
+        const liveUrl = addBuster(base);
+        const iosOpts = IOS ? { cache: 'reload' } : {};
+
+        if (name === 'Main site info' || bypassCache){
+          txt = await fetch(liveUrl, iosOpts).then(r=>r.text());
+        } else {
+          const cached = cache.get(key);
+          if (cached && cached.txt){ txt = cached.txt; }
+          else {
+            const url = IOS ? liveUrl : base; // iOS always busts
+            txt = await fetch(url, iosOpts).then(r=>r.text());
+            cache.set(key, {txt});
           }
-        });
+        }
+        return { rows: csvToObjects(txt), raw: txt };
+      }
 
-        const proItems = (proPull.rows||[]).map(r=>({
-          title:(r['Name']||'').trim(), url:fixImdb((r['URL']||'').trim()),
-          role:(r['My Role']||'').trim(), prod:(r['Production Co.']||'').trim(),
-          onSet: normBool(r['On Set?']), prio:normNum(r['Prio?']),
-          posters:[(r['Primary image']||'').trim()].filter(Boolean)
-        })).filter(x=>x.title && x.prio>0)
+      // MAIN INFO (always live-busted)
+      const mainInfoPull = await pullTab('Main site info');
+      const mainInfo = {};
+      (mainInfoPull.rows||[]).forEach(r=> mainInfo[(r.key||'').trim()] = (r.value||'').trim());
+
+      // Optional server-controlled TTL (seconds) from sheet
+      const ttlSheet = Number(mainInfo.cache_ttl_seconds||'');
+      if (!isNaN(ttlSheet) && ttlSheet>0) {
+        // cap between 15s and 5m
+        const t = Math.min(300, Math.max(15, ttlSheet));
+        // update globals
+        // (not fatal if blocked by const; we simply shadow via window)
+        window.__DATA_TTL_OVERRIDE__ = t*1000;
+      }
+
+      // Labels/links
+      const defaultTitle = 'Subject: ARI FEBLOWITZ';
+      $('#siteTitle').textContent = mainInfo.site_title || defaultTitle;
+      const imdbUrl = fixImdb(mainInfo.imdb_url || 'https://www.imdb.me/ArielFeblowitz');
+      const subtitleTxt = mainInfo.site_subtitle || 'Techvis & Virtual Production Supervisor';
+      const subtitleEl = $('#siteSubtitle'); subtitleEl.textContent = subtitleTxt; subtitleEl.href = imdbUrl;
+      $('#about1').textContent = mainInfo.about_paragraph_1 || $('#about1').textContent;
+      $('#about2').textContent = mainInfo.about_paragraph_2 || $('#about2').textContent;
+      const linksHref = mainInfo.all_links_url || 'https://linktr.ee/admin/links';
+      $('#btnIMDb').href = imdbUrl;
+      $('#btnYouTube').href = mainInfo.youtube_url || $('#btnYouTube').href;
+      $('#btnLinks').href = linksHref;
+      const resumeURL = (mainInfo.resume_url && mainInfo.resume_url.trim()) || DEFAULT_RESUME;
+      $('#btnResume').href = resumeURL; $('#dockResume').href = resumeURL;
+
+      setStatus('Link established', linksHref);
+      const aboutStatus = $('#aboutStatus'); if (aboutStatus) aboutStatus.style.display = 'none';
+      document.body.classList.add('ready');
+      $('#reelHeader').textContent = 'Demo Reel';
+      $('#aboutHeader').textContent = 'About';
+      loaded.main = true;
+
+      const phone = (mainInfo.phone||DEFAULT_PHONE).trim();
+      const email = (mainInfo.email||DEFAULT_EMAIL).trim();
+      setTopContact(phone, email);
+      setContactSection(phone, email);
+      enhanceContactLinks();
+
+      // Dock copy button wires to current email
+      document.getElementById('dockCopy')?.addEventListener('click', ()=>{
+        const e = (mainInfo.email || DEFAULT_EMAIL).trim();
+        navigator.clipboard?.writeText(e).then(()=> toast('Copied: '+e)).catch(()=> toast(e));
+      });
+
+      // HUD title & strengths
+      const hudTitleEl = $('#hudTitle');
+      const assessTitle = mainInfo.ASSESSMENT || mainInfo.assessment || 'THREAT ASSESSMENT // SKNET_0001';
+      hudTitleEl.textContent = assessTitle;
+
+      const strengthsText = (mainInfo.Strengths || mainInfo.strengths || '').trim();
+      if (strengthsText){
+        const hudBody = $('#hudBody'); hudBody.innerHTML = '';
+        strengthsText.split(/\n+/).map(s=>s.trim()).filter(Boolean).forEach(s=>{
+          const m = s.match(/^([^:]+):\s*(.+)$/);
+          const tag = (m ? m[1] : 'Signal'), body = (m ? m[2] : s);
+          const row = document.createElement('div'); row.className='line';
+          const t = document.createElement('span'); t.className='tag'; t.textContent = tag.toUpperCase();
+          const b = document.createElement('div'); b.className='body'; b.textContent = body;
+          row.appendChild(t); row.appendChild(b); hudBody.appendChild(row);
+        });
+        document.getElementById('hudCard').style.display='block';
+      }
+
+      // Reel
+      (function loadReel(){
+        const reelInput = (mainInfo.reel_youtube_id||'').trim();
+        const reelFrame = $('#reelFrame');
+        const setIframe = src => { reelFrame.loading='lazy'; reelFrame.decoding='async'; reelFrame.fetchPriority='low'; reelFrame.src = src; };
+        if (/^\s*</i.test(reelInput)){
+          const tmp = document.createElement('div'); tmp.innerHTML = reelInput;
+          const ifr = tmp.querySelector('iframe');
+          if (ifr && ifr.src){ setIframe(ifr.src); loaded.reel=true; return; }
+        }
+        const vimeoM = reelInput.match(/vimeo\.com\/(?:video\/)?(\d+)/i);
+        if (vimeoM){ setIframe(`https://player.vimeo.com/video/${vimeoM[1]}?badge=0&autopause=0&title=0&byline=0`); loaded.reel=true; return; }
+        if (/^\d{7,}$/.test(reelInput)){ setIframe(`https://player.vimeo.com/video/${reelInput}?badge=0&autopause=0&title=0&byline=0`); loaded.reel=true; return; }
+        const ytM = reelInput.match(/[?&]v=([\w-]{6,})/) || reelInput.match(/youtu\.be\/([\w-]{6,})/);
+        if (ytM){ setIframe(`https://www.youtube.com/embed/${ytM[1]}?rel=0&modestbranding=1`); loaded.reel=true; return; }
+        if (/^[\w-]{6,}$/.test(reelInput)){ setIframe(`https://www.youtube.com/embed/${reelInput}?rel=0&modestbranding=1`); loaded.reel=true; return; }
+        loaded.reel=true;
+      })();
+
+      const defer = window.requestIdleCallback || (fn=>setTimeout(fn, 0));
+      // === BANNER SPEED TUNING: kick sooner
+      defer(()=> setTimeout(buildBannerDeferred, 160));
+      defer(loadSections);
+
+      async function loadSections({bypassCache=false} = {}){
+        try{
+          if (loaded.sections && !bypassCache) return; loaded.sections = true;
+
+          const personalPull = await pullTab('Personal Youtube', {bypassCache});
+          const proPull      = await pullTab('Ariel_Feblowitz_Works', {bypassCache});
+          const ridesPull    = await pullTab('Rides', {bypassCache});
+          const testiPull    = await pullTab('Testimonials', {bypassCache});
+
+          const personalTab = personalPull.rows;
+          const proRows = proPull.rows;
+          const ridesRows = ridesPull.rows;
+          const testiRows = testiPull.rows;
+          const testiRaw  = testiPull.raw || '';
+
+          // Personal meta + videos
+          const meta = {}; const videos=[];
+          (personalTab||[]).forEach(r=>{
+            const type=(r.type||'').toLowerCase();
+            if (type==='meta'){
+              meta[(r.key||'').trim()] = (r.value||'').trim();
+            } else if (type==='video'){
+              const videoId=(r.video_id||'').trim();
+              const url=(r.youtube_url||'').trim() || (videoId?`https://www.youtube.com/watch?v=${videoId}`:'');
+              const thumb=(r.thumb_url||'').trim() || (videoId? ytThumb(videoId) : '');
+              videos.push({ prio:normNum(r.prio), includeInBanner: normBool(r.include_in_banner) || normNum(r.prio)>=5, featured: normBool(r.featured), videoId, title:(r.title||'').trim(), role:(r.role||'').trim(), url, thumb, ytid: videoId });
+            }
+          });
+
+          // Febz featured box
+          const febzId = (meta.febz_video_id || '').trim();
+          if (febzId){
+            const febzHeading = meta.febz_heading || "Also archiving my father's documentary work: FebzFoundFootage";
+            const febzBody = meta.febz_body || "A growing archive of Gary Feblowitz’s documentary footage and rare segments.";
+            $('#febzHeading').textContent = febzHeading;
+            $('#febzBody').textContent = febzBody;
+            $('#febzLink').href = `https://www.youtube.com/watch?v=${febzId}`;
+            $('#febzThumb').src = ytThumb(febzId);
+            $('#febzBox').style.display = 'block';
+          }
+
+          // Latest uploads embed (optional)
+          const showLatest = (String(meta.latest_mode||'').toLowerCase()==='auto') || false;
+          if (showLatest && meta.latest_playlist_or_channel_id){
+            const channelId = meta.latest_playlist_or_channel_id;
+            if (channelId.startsWith('UC')){
+              const uploadsId = 'UU'+channelId.slice(2);
+              $('#latestFrame').src = `https://www.youtube.com/embed/videoseries?list=${uploadsId}&rel=0`;
+              $('#latestBox').style.display = 'block';
+            }
+          }
+
+          // Pro
+          const proItems = (proRows||[]).map(r=>({
+            title:(r['Name']||'').trim(), url:fixImdb((r['URL']||'').trim()),
+            role:(r['My Role']||'').trim(), prod:(r['Production Co.']||'').trim(),
+            onSet: normBool(r['On Set?']), prio:normNum(r['Prio?']),
+            posters:[(r['Primary image']||'').trim()].filter(Boolean)
+          }))
+          .filter(x=>x.title && x.prio>0)
           .sort((a,b)=> (a.onSet!==b.onSet)? (a.onSet? -1:1) : (b.prio-a.prio) || a.title.localeCompare(b.title));
 
-        const rideItems = (ridesPull.rows||[]).map(r=>({
-          title:(r['Ride Name']||'').trim(),
-          url:(r['Ride Link']||'').trim(),
-          role:(r['My Role']||'').trim(),
-          company:(r['Ride Company']||'').trim(),
-          desc:(r['Description']||'').trim(),
-          prio:normNum(r['Prio']||r['prio']),
-          posters:[(r['Ride Image']||r['Ride image']||'').trim()].filter(Boolean)
-        })).filter(x=>x.title && x.prio>0)
+          // Rides
+          const rideItems = (ridesRows||[]).map(r=>({
+            title:(r['Ride Name']||'').trim(),
+            url:(r['Ride Link']||'').trim(),
+            role:(r['My Role']||'').trim(),
+            company:(r['Ride Company']||'').trim(),
+            desc:(r['Description']||'').trim(),
+            prio:normNum(r['Prio']),
+            posters:[(r['Ride Image']||'').trim()].filter(Boolean)
+          }))
+          .filter(x=>x.title && x.prio>0)
           .sort((a,b)=> b.prio-a.prio || a.title.localeCompare(b.title));
 
-        // Render sections
-        (function renderPro(items){
-          const grid = document.getElementById('proGrid'); grid.innerHTML='';
-          if (!items.length){ grid.innerHTML = `<div class="muted">No items yet — add rows in the “Ariel_Feblowitz_Works” tab.</div>`; return; }
-          items.forEach(p=>{
-            const c=document.createElement('a'); c.className='proj card'; c.href=p.url||'#'; c.target='_blank'; c.rel='noopener';
-            const wrap=document.createElement('div'); wrap.className='thumb poster';
-            const img=new Image(); img.alt=''; img.loading='lazy'; img.decoding='async'; img.fetchPriority='low'; img.src = p.posters[0] || titlePlaceholderSVG(p.title); img.width=800; img.height=1200;
-            wrap.appendChild(img);
-            const meta=document.createElement('div'); meta.className='meta';
-            const info=[p.role, p.prod].filter(Boolean).join(' • ');
-            meta.innerHTML = `<div class="title">${p.title}</div><div class="role">${info}</div>`;
-            c.appendChild(wrap); c.appendChild(meta); grid.appendChild(c);
-          });
-        })(proItems);
+          // Render content grids
+          renderPro(proItems); renderRides(rideItems); renderPersonal(videos, (meta.featured_video_id||'').trim());
 
-        (function renderRides(items){
-          const grid = document.getElementById('ridesGrid'); grid.innerHTML='';
-          if (!items.length){ grid.innerHTML = `<div class="muted">No items yet — add rows in the “Rides” tab.</div>`; return; }
-          items.forEach(p=>{
-            const c=document.createElement('a'); c.className='proj card'; c.href=p.url||'#'; c.target='_blank'; c.rel='noopener';
-            const wrap=document.createElement('div'); wrap.className='thumb';
-            const img=new Image(); img.alt=''; img.loading='lazy'; img.decoding='async'; img.fetchPriority='low'; img.src = p.posters[0] || titlePlaceholderSVG(p.title); img.width=1280; img.height=720;
-            wrap.appendChild(img);
-            const meta=document.createElement('div'); meta.className='meta';
-            const info=[p.role, p.company].filter(Boolean).join(' • ');
-            let body=''; if (p.desc){ body = `<details class="summaryless" style="margin-top:.45em; font-size:.95em"><summary class="btn" style="display:inline-flex; margin:0; padding:.35em .6em;">Details</summary><div class="muted" style="margin-top:.6em">${p.desc}</div></details>`; }
-            meta.innerHTML = `<div class="title">${p.title}</div><div class="role">${info}</div>${body}`;
-            c.appendChild(wrap); c.appendChild(meta); grid.appendChild(c);
-          });
-        })(rideItems);
+          // Banner tiles
+          window.__tilesData = {
+            pro: proItems.filter(p=>p.prio>=5).map(p=>({type:'pro', kind:'poster', title:p.title, img:p.posters[0]||'', url:p.url||'#'})),
+            ride: rideItems.filter(r=>r.prio===10).map(r=>({type:'ride', kind:'wide', title:r.title, img:r.posters[0]||'', url:r.url||'#'})),
+            per: videos.filter(v=>(v.prio||0)>=5 || v.includeInBanner).map(v=>({type:'personal', kind:'wide', title:v.title, img:v.thumb||'', url:v.url||'#', ytid:v.videoId||''}))
+          };
+          // If banner already ran, refresh with new data quickly
+          if (loaded.banner) { fillBanner([...window.__tilesData.pro, ...window.__tilesData.ride, ...window.__tilesData.per]); }
 
-        (function renderPersonal(videos){
-          const grid = document.getElementById('personalGrid'); grid.innerHTML='';
-          if (!videos.length){ grid.innerHTML = `<div class="muted">No videos yet — add rows in the “Personal Youtube” tab.</div>`; return; }
-          videos.forEach(v=>{
-            const c=document.createElement('a'); c.className='proj card'; c.href=v.url||'#'; c.target='_blank'; c.rel='noopener';
-            const wrap=document.createElement('div'); wrap.className='thumb';
-            const img=new Image(); img.alt=''; img.loading='lazy'; img.decoding='async'; img.fetchPriority='low'; img.src = v.thumb || (v.videoId? ytThumbHQ(v.videoId) : titlePlaceholderSVG(v.title)); img.width=1280; img.height=720;
-            wrap.appendChild(img);
-            const meta=document.createElement('div'); meta.className='meta';
-            meta.innerHTML = `<div class="title">${v.title||''}</div><div class="role">${v.role||''}</div>`;
-            c.appendChild(wrap); c.appendChild(meta); grid.appendChild(c);
-          });
-        })(videos);
-
-        // Testimonials
-        (function renderTestimonials(testiRows, testiRaw){
+          // --- TESTIMONIALS: title from B1 + real rows
           const tBox  = document.getElementById('testimonialsBox');
           const tList = document.getElementById('testimonialsList');
           const tTitle= document.getElementById('testimonialsTitle');
+
           let tHeading = 'Testimonials';
-          if (testiRaw){ try{ const b1 = csvFirstRowSecondCol(testiRaw); if (b1) tHeading = b1; }catch{} }
+          if (testiRaw){
+            try{ const b1 = csvFirstRowSecondCol(testiRaw); if (b1) tHeading = b1; }catch{}
+          }
           tTitle.textContent = tHeading;
-          const items = (testiRows||[]).map(r=>({
-            from: String(r['From']||'').trim(),
-            text: String(r['Testimonial']||r['Testimonials']||r['Quote']||r['Text']||r['Body']||'').trim()
-          })).filter(t=>t.from && t.text);
+
+          const items = (testiRows||[])
+            .map(r=>({ from:(r['From']||'').trim(), text:(r['Testimonial']||r['Testimonials']||r['Quote']||r['Text']||'').trim() }))
+            .filter(t=>t.from && t.text);
+
           if (items.length){
             const smartQuote = s=>{
-              const t = s.trim(); const b = /^["“]/.test(t), e = /["”]$/.test(t);
+              const t = s.trim(); const b = /^["“]/.test(t); const e = /["”]$/.test(t);
               return (b&&e)?t:`“${t.replace(/^["“'‘`]/,'').replace(/["”'’`]$/,'')}”`;
             };
             const esc = s=> s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
@@ -869,50 +913,152 @@
               tList.appendChild(el);
             });
             tBox.style.display = 'block';
-          } else {
-            tBox.style.display = 'none';
           }
-        })(testiPull.rows, testiPull.raw);
-
-      }catch(err){ console.error('[loadSections]', err); }
-    }
-    // Start loading sections after a short idle to prioritize banner
-    (requestIdleCallback||setTimeout)(loadSections, 200);
-
-    // Status + ready
-    const sysStatus = document.getElementById('sysStatus');
-    function setStatus(msg, linkHref){ if (!sysStatus) return; sysStatus.textContent = msg; if (linkHref) sysStatus.href = linkHref; }
-    setStatus('Routing request to MOTHER…', sysStatus.href);
-    document.body.classList.add('ready');
-
-    // Dot FX extras
-    (function sysDotEffects(){
-      const dot = document.querySelector('.brand .dot'); if (!dot) return;
-      function replay(name, ms){ dot.style.animation='none'; void dot.offsetWidth; dot.style.animation = `${name} ${ms}ms linear 1`; }
-      const isInteractive = el => el && el.closest && el.closest('a, button, .tab-btn, .tile, .btn');
-      let lastHover = 0; const HOVER_COOLDOWN = 3000;
-      function onHover(){ const now=Date.now(); if (now-lastHover < HOVER_COOLDOWN) return; lastHover=now; replay('dotFlick', 950); }
-      document.addEventListener('mouseover', e=>{ if (isInteractive(e.target)) onHover(); }, {passive:true});
-      document.addEventListener('focusin',   e=>{ if (isInteractive(e.target)) onHover(); });
-      function onClick(){ if (!document.body.classList.contains('ready')) return; dot.classList.add('alert'); replay('alertFlick',1000); setTimeout(()=>{ dot.classList.remove('alert'); dot.style.animation=''; }, 1000); }
-      document.addEventListener('pointerdown', e=>{ if (isInteractive(e.target)) onClick(); }, {passive:true});
-      document.addEventListener('keydown', e=>{ if ((e.key==='Enter'||e.key===' ') && isInteractive(e.target)) onClick(); });
-
-      function tryInject(){
-        const wrap = document.getElementById('contactInfo');
-        const links = document.getElementById('btnLinks');
-        const resume = document.getElementById('btnResume');
-        if (!wrap || !links) return false;
-        if (!wrap.querySelector('[data-extra="links"]')){
-          const a = document.createElement('a'); a.className='btn'; a.href=links.href; a.target='_blank'; a.rel='noopener'; a.textContent='All My Links'; a.setAttribute('data-extra','links'); wrap.appendChild(a);
-        }
-        if (resume && resume.href && !wrap.querySelector('[data-extra="resume"]')){
-          const a = document.createElement('a'); a.className='btn'; a.href=resume.href; a.download=''; a.textContent='Download Résumé'; a.setAttribute('data-extra','resume'); wrap.appendChild(a);
-        }
-        return true;
+        }catch(err){ console.error('[loadSections]', err); }
       }
-      let tries = 0; const timer = setInterval(()=>{ if (tryInject() || ++tries>20) clearInterval(timer); }, 250);
-    })();
+
+      function renderPro(items){
+        const grid = $('#proGrid'); grid.innerHTML='';
+        if (!items.length){ grid.innerHTML = `<div class="muted">No items yet — add rows in the “Ariel_Feblowitz_Works” tab.</div>`; return; }
+        items.forEach(p=>{
+          const c=document.createElement('a'); c.className='proj card'; c.href=p.url||'#'; c.target='_blank'; c.rel='noopener';
+          const wrap=document.createElement('div'); wrap.className='thumb poster';
+          const img=new Image(); img.alt=''; img.loading='lazy'; img.decoding='async'; img.fetchPriority='low'; img.src = p.posters[0] || titlePlaceholderSVG(p.title); img.width=800; img.height=1200;
+          wrap.appendChild(img);
+          const meta=document.createElement('div'); meta.className='meta';
+          const info=[p.role, p.prod].filter(Boolean).join(' • ');
+          meta.innerHTML = `<div class="title">${p.title}</div><div class="role">${info}</div>`;
+          c.appendChild(wrap); c.appendChild(meta); grid.appendChild(c);
+        });
+      }
+
+      function renderRides(items){
+        const grid = $('#ridesGrid'); grid.innerHTML='';
+        if (!items.length){ grid.innerHTML = `<div class="muted">No items yet — add rows in the “Rides” tab.</div>`; return; }
+        items.forEach(p=>{
+          const c=document.createElement('a'); c.className='proj card'; c.href=p.url||'#'; c.target='_blank'; c.rel='noopener';
+          const wrap=document.createElement('div'); wrap.className='thumb';
+          const img=new Image(); img.alt=''; img.loading='lazy'; img.decoding='async'; img.fetchPriority='low'; img.src = p.posters[0] || titlePlaceholderSVG(p.title); img.width=1280; img.height=720;
+          wrap.appendChild(img);
+          const meta=document.createElement('div'); meta.className='meta';
+          const info=[p.role, p.company].filter(Boolean).join(' • ');
+          let body=''; if (p.desc){ body = `<details class="summaryless" style="margin-top:.45em; font-size:.95em"><summary class="btn" style="display:inline-flex; margin:0; padding:.35em .6em;">Details</summary><div class="muted" style="margin-top:.6em">${p.desc}</div></details>`; }
+          meta.innerHTML = `<div class="title">${p.title}</div><div class="role">${info}</div>${body}`;
+          c.appendChild(wrap); c.appendChild(meta); grid.appendChild(c);
+        });
+      }
+
+      function renderPersonal(videos, featuredId){
+        const grid = $('#personalGrid'); grid.innerHTML='';
+        if (!videos.length){ grid.innerHTML = `<div class="muted">No videos yet — add rows in the “Personal Youtube” tab.</div>`; return; }
+        const fIdx = videos.findIndex(v=>v.videoId===featuredId); if (fIdx>0){ const [f]=videos.splice(fIdx,1); videos.unshift(f); }
+        videos.forEach(v=>{
+          const c=document.createElement('a'); c.className='proj card'; c.href=v.url||'#'; c.target='_blank'; c.rel='noopener';
+          const wrap=document.createElement('div'); wrap.className='thumb';
+          const img=new Image(); img.alt=''; img.loading='lazy'; img.decoding='async'; img.fetchPriority='low'; img.src = v.thumb || (v.videoId? ytThumb(v.videoId) : titlePlaceholderSVG(v.title)); img.width=1280; img.height=720;
+          wrap.appendChild(img);
+          const meta=document.createElement('div'); meta.className='meta';
+          meta.innerHTML = `<div class="title">${v.title||''}</div><div class="role">${v.role||''}</div>`;
+          c.appendChild(wrap); c.appendChild(meta); grid.appendChild(c);
+        });
+      }
+
+      function buildBannerDeferred(){
+        if (loaded.banner || !window.__tilesData) return;
+        loaded.banner = true;
+        const {pro, ride, per} = window.__tilesData;
+        const interleaved=[]; const L=Math.max(pro.length, ride.length, per.length);
+        for(let i=0;i<L;i++){ if(pro[i]) interleaved.push(pro[i]); if(ride[i]) interleaved.push(ride[i]); if(per[i]) interleaved.push(per[i]); }
+        fillBanner(interleaved);
+      }
+
+      // Soft refresh hook used on iOS pageshow persisted returns
+      window.__softRefresh = async function(){
+        try{
+          loaded.sections = false;
+          await loadSections({bypassCache:true});
+        }catch(e){ console.warn('softRefresh failed', e); }
+      };
+
+    }catch(err){ console.error('[init]', err); }
+  })();
+
+  function toast(text, x, y){
+    const t=document.createElement('div'); t.className='toast'; t.textContent=text; document.body.appendChild(t);
+    const px = Math.min(window.innerWidth-160, Math.max(12, x|| (window.innerWidth-160)/2)); const py = Math.min(window.innerHeight-60, Math.max(8, y|| 18));
+    t.style.left = px+'px'; t.style.top = py+'px';
+    requestAnimationFrame(()=> t.classList.add('show'));
+    setTimeout(()=>{ t.classList.remove('show'); setTimeout(()=>t.remove(),180); }, 1100);
+  }
+
+  function enhanceContactLinks(){
+    const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const scope = [document.getElementById('topContact'), document.getElementById('contactInfo')].filter(Boolean);
+    scope.forEach(root=>{
+      root.querySelectorAll('a[href^="tel:"], a[href^="mailto:"]').forEach(a=>{
+        a.addEventListener('click', e=>{
+          if (isMobile) return;
+          e.preventDefault();
+          const text = a.textContent.trim();
+          navigator.clipboard?.writeText(text).then(()=>{ toast('Copied: '+text, e.clientX, e.clientY); }).catch(()=>{ toast(text, e.clientX, e.clientY); });
+        }, {passive:false});
+      });
+    });
+  }
+
+  /* sysDotEffects preserved */
+  (function sysDotEffects(){
+    const dot = document.querySelector('.brand .dot');
+    if (!dot) return;
+
+    function replay(name, ms){
+      dot.style.animation = 'none';
+      void dot.offsetWidth;
+      dot.style.animation = `${name} ${ms}ms linear 1`;
+    }
+    const isInteractive = el => el && el.closest && el.closest('a, button, .tab-btn, .tile, .btn');
+
+    document.addEventListener('mouseover', e=>{ if (isInteractive(e.target)) replay('dotFlick', 950); }, {passive:true});
+    document.addEventListener('focusin',   e=>{ if (isInteractive(e.target)) replay('dotFlick', 950); });
+
+    function onClick(){
+      if (!document.body.classList.contains('ready')) return;
+      const prevBG = dot.style.background;
+      const prevBox = dot.style.boxShadow;
+      const prevAnim = dot.style.animation;
+      dot.classList.add('alert');
+      dot.style.setProperty('background','radial-gradient(circle at 30% 30%, #ffd24a, #6b5a1a 70%)','important');
+      dot.style.setProperty('box-shadow','0 0 22px #ffd24a, 0 0 36px rgba(255,210,74,.5)','important');
+      replay('alertFlick', 1000);
+      setTimeout(()=>{
+        dot.classList.remove('alert');
+        dot.style.background = prevBG;
+        dot.style.boxShadow = prevBox;
+        dot.style.animation = prevAnim || '';
+      }, 1000);
+    }
+    document.addEventListener('pointerdown', e=>{ if (isInteractive(e.target)) onClick(); }, {passive:true});
+    document.addEventListener('keydown', e=>{ if ((e.key==='Enter'||e.key===' ') && isInteractive(e.target)) onClick(); });
+
+    function tryInject(){
+      const wrap = document.getElementById('contactInfo');
+      const links = document.getElementById('btnLinks');
+      const resume = document.getElementById('btnResume');
+      if (!wrap || !links) return false;
+      if (!wrap.querySelector('[data-extra="links"]')){
+        const a = document.createElement('a');
+        a.className='btn'; a.href=links.href; a.target='_blank'; a.rel='noopener';
+        a.textContent='All My Links'; a.setAttribute('data-extra','links'); wrap.appendChild(a);
+      }
+      if (resume && resume.href && !wrap.querySelector('[data-extra="resume"]')){
+        const a = document.createElement('a');
+        a.className='btn'; a.href=resume.href; a.download='';
+        a.textContent='Download Résumé'; a.setAttribute('data-extra','resume'); wrap.appendChild(a);
+      }
+      return true;
+    }
+    let tries = 0; const timer = setInterval(()=>{ if (tryInject() || ++tries>20) clearInterval(timer); }, 250);
+  })();
   </script>
 </body>
 </html>
