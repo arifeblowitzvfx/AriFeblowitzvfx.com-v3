@@ -39,8 +39,8 @@
       overflow-y:overlay; letter-spacing:.15px; min-height:100svh;
     }
 
-    /* FX layers (never intercept clicks) */
-    #fx-stars, #fx-grid { position:fixed; inset:0; pointer-events:none; z-index:0; }
+    /* FX layers (explicitly non-interactive) */
+    #fx-stars, #fx-grid { position:fixed; inset:0; pointer-events:none !important; z-index:0; }
     #fx-stars { opacity:.55; }
     #fx-grid {
       background:
@@ -56,12 +56,12 @@
 
     /* CRT scan + glow (non-interactive) */
     body::after{
-      content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
+      content:""; position:fixed; inset:0; pointer-events:none !important; z-index:0;
       background-image: repeating-linear-gradient(to bottom, rgba(0,255,156,.24), rgba(0,255,156,.24) 2px, rgba(0,0,0,0) 3px, rgba(0,0,0,0) 7px);
       mix-blend-mode:soft-light; opacity:.8; animation:scan 16s linear infinite, glowPulse 7s ease-in-out infinite;
     }
     body::before{
-      content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
+      content:""; position:fixed; inset:0; pointer-events:none !important; z-index:0;
       background: radial-gradient(70% 55% at 50% 45%, rgba(0,255,156,.12), transparent 60%),
                   radial-gradient(40% 30% at 60% 35%, rgba(0,255,156,.08), transparent 65%);
       filter:blur(2px); opacity:.9; animation:glowPulse 7s ease-in-out infinite;
@@ -154,7 +154,7 @@
       .leftStack{ display:contents; }
     }
 
-    /* Card + light sweep (non-interactive ::after) */
+    /* Card + light sweep (non-interactive) */
     .card{
       position:relative;
       background:linear-gradient(180deg, rgba(10,18,16,.85), rgba(5,9,11,.9));
@@ -163,7 +163,7 @@
       overflow:hidden;
     }
     .card::before{
-      content:""; position:absolute; inset:-1px; pointer-events:none;
+      content:""; position:absolute; inset:-1px; pointer-events:none !important;
       background:conic-gradient(from 0deg at 10% 0%, rgba(0,255,156,.18), transparent 20%, transparent 80%, rgba(0,255,156,.18));
       filter:blur(8px); opacity:.35; animation:edgeSpin 12s linear infinite;
     }
@@ -171,7 +171,7 @@
       content:""; position:absolute; top:-60%; left:-40%; width:60%; height:220%;
       background:linear-gradient(120deg, transparent 40%, rgba(255,255,255,.08), transparent 60%);
       transform:rotate(14deg); animation:sweep 8s linear infinite;
-      pointer-events:none; /* IMPORTANT: do not eat clicks over buttons/links */
+      pointer-events:none !important;
     }
     @keyframes edgeSpin{to{transform:rotate(360deg)}}
     @keyframes sweep{0%{transform:translateX(-40%) rotate(14deg)} 100%{transform:translateX(200%) rotate(14deg)}}
@@ -271,7 +271,6 @@
           <h1 id="siteTitle" class="crt-glow">Subject: ARI FEBLOWITZ</h1>
           <a id="siteSubtitle" class="pill crt-glow" href="https://www.imdb.me/ArielFeblowitz" target="_blank" rel="noopener">Techvis & Virtual Production Supervisor</a>
           <a id="sysStatus" class="pill crt-glow" href="https://linktr.ee/admin/links" target="_blank" rel="noopener">Routing request to MOTHER…</a>
-          <button id="btnRefresh" class="pill" style="cursor:pointer">Refresh data</button>
           <div id="topContact" class="badges" style="margin-left:6px"></div>
         </div>
       </div>
@@ -409,7 +408,7 @@
       h = canvas.height= Math.floor(innerHeight*dpr);
       canvas.style.width = innerWidth+'px'; canvas.style.height = innerHeight+'px';
       if (!stars.length){
-        const count = Math.floor((innerWidth*innerHeight)/9600); // ~50% fewer
+        const count = Math.floor((innerWidth*innerHeight)/9600);
         stars = Array.from({length:count}, ()=>({ x: Math.random()*w, y: Math.random()*h, z: Math.random()*1.2 + .3, a: Math.random()*0.6 + 0.2 }));
       }
     }
@@ -455,47 +454,13 @@
   const ytThumbHQ = id => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
   const fixImdb = url => (url||"").replace(/https?:\/\/pro\.imdb\.com/i,'https://www.imdb.com').replace(/\?ref_=pro.*$/,'');
 
-  /* ---------- Cross-device cache policy ---------- */
+  /* ---------- UA helpers (for iOS Safari caching quirks) ---------- */
   const UA = navigator.userAgent || '';
   const isIOS = /iP(ad|hone|od)/.test(UA);
-  // minute bucket string like 2025-03-25T14:07
-  const cbMinute = ()=> {
-    const d = new Date();
-    const pad = n => String(n).padStart(2,'0');
-    return `${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())}T${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
-  };
+  const isWebKit = /WebKit/i.test(UA) && !/CriOS|FxiOS|EdgiOS/i.test(UA);
+  const isIOSSafari = isIOS && isWebKit;
 
-  // Local cache: disabled on iOS; 5-minute TTL elsewhere
-  const CACHE_TTL_MS = 5 * 60 * 1000;
-  const disableLocalCache = isIOS;
-
-  const cache = {
-    get(key){
-      if (disableLocalCache) return null;
-      try{
-        const raw = localStorage.getItem(key); if (!raw) return null;
-        const {ts, txt} = JSON.parse(raw);
-        if (!ts || (Date.now() - ts) > CACHE_TTL_MS) return null;
-        return {ts, txt};
-      }catch{return null}
-    },
-    set(key, val){
-      if (disableLocalCache) return;
-      try{ localStorage.setItem(key, JSON.stringify({ts:Date.now(), txt:val})); }catch{}
-    },
-    clearPrefix(prefix){
-      try{
-        const rm = [];
-        for (let i=0;i<localStorage.length;i++){
-          const k = localStorage.key(i);
-          if (k && k.startsWith(prefix)) rm.push(k);
-        }
-        rm.forEach(k=> localStorage.removeItem(k));
-      }catch{}
-    }
-  };
-
-  /* ---------- CSV utils ---------- */
+  /* ---------- CSV utilities ---------- */
   function csvToMatrix(csvText){
     const rows = []; let field="", row=[], inQ=false;
     const s = String(csvText||"").replace(/\r/g,'');
@@ -509,25 +474,35 @@
     if (field.length || row.length){ row.push(field.replace(/^("|“)|("|”)$/g,'').replace(/""/g,'"')); rows.push(row); }
     return rows;
   }
-  function csvToObjects(csvText){
-    const m = csvToMatrix(csvText);
-    if (!m.length) return [];
-    const headers = m[0].map(h=>String(h||'').trim());
-    return m.slice(1).filter(r=>r && r.some(x=>String(x||'').trim())).map(r=>{
-      const o={}; headers.forEach((h,i)=>o[h]= (r[i]!==undefined ? r[i] : "")); return o;
-    });
-  }
   function csvFirstRowSecondCol(csvText){
     const rows = csvToMatrix(csvText);
     return rows[0] && rows[0][1] ? String(rows[0][1]).trim() : "";
   }
-  function buildCsvUrlFromGid(pubhtml, gid){
-    // add minute-bucketed cache buster
-    const cb = cbMinute();
-    return pubhtml.replace(/\/pubhtml.*/, '/pub') + `?gid=${gid}&single=true&output=csv&cb=${encodeURIComponent(cb)}`;
-  }
+
   const normBool = v => String(v||"").trim().toLowerCase()==='true' || String(v||"").trim().toLowerCase()==='yes';
   const normNum = v => { const n = Number(String(v||"").replace(/[^\d.-]/g,"")); return isNaN(n)?0:n; };
+
+  /* minute-bucketed cache-buster (YYYYMMDDHHmm) */
+  function cbMinute(){
+    const d=new Date();
+    const pad=n=>String(n).padStart(2,'0');
+    return `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}${pad(d.getHours())}${pad(d.getMinutes())}`;
+  }
+  function buildCsvUrlFromGid(pubhtml, gid){
+    return pubhtml.replace(/\/pubhtml.*/, '/pub') + `?gid=${gid}&single=true&output=csv&cb=${cbMinute()}`;
+  }
+
+  /* local cache (disabled on iOS Safari) */
+  const cache = {
+    get(key){
+      if (isIOSSafari) return null;
+      try{ const v = JSON.parse(localStorage.getItem(key)||'null'); return v; }catch{return null}
+    },
+    set(key, val){
+      if (isIOSSafari) return;
+      try{ localStorage.setItem(key, JSON.stringify(val)); }catch{}
+    }
+  };
 
   async function discoverGids(pubhtml){
     const map = {};
@@ -536,29 +511,29 @@
       const uniqueGids = [...new Set([...html.matchAll(/gid=(\d+)/g)].map(m=>m[1]))];
       for (const gid of uniqueGids){
         const url = buildCsvUrlFromGid(pubhtml, gid);
-        const txt = await fetch(url, {mode:'cors', cache:'no-store'}).then(r=>r.text()).catch(()=>null);
+        const txt = await fetch(url, {mode:"cors", cache:"no-store"}).then(r=>r.text()).catch(()=>null);
         if (!txt) continue;
-        const rows = csvToObjects(txt);
-        const hdr = Object.keys(rows[0]||{}).join('|').toLowerCase();
-        if (hdr.includes('primary image') && hdr.includes('on set?')) map['Ariel_Feblowitz_Works']=gid;
-        else if (hdr.includes('ride image') && hdr.includes('ride name')) map['Rides']=gid;
-        else if (hdr.includes('type') && hdr.includes('video_id')) map['Personal Youtube']=gid;
-        else if (hdr.includes('key') && hdr.includes('value')) map['Main site info']=gid;
-        else if (hdr.includes('from') && (hdr.includes('testimonial')||hdr.includes('testimonials'))) map['Testimonials']=gid;
+        const rows = csvToMatrix(txt);
+        const headerRow = rows[0] ? rows[0].join('|').toLowerCase() : '';
+        if (headerRow.includes('primary image') && headerRow.includes('on set?')) map['Ariel_Feblowitz_Works']=gid;
+        else if (headerRow.includes('ride image') && headerRow.includes('ride name')) map['Rides']=gid;
+        else if (headerRow.includes('type') && headerRow.includes('video_id')) map['Personal Youtube']=gid;
+        else if (headerRow.includes('key') && headerRow.includes('value')) map['Main site info']=gid;
+        else if (headerRow.includes('from') && (headerRow.includes('testimonial') || headerRow.includes('testimonials') || headerRow.includes('quote') || headerRow.includes('text') || headerRow.includes('body'))) map['Testimonials']=gid;
       }
     }catch(e){ console.error('[discoverGids]', e); }
     return { ...map, ...TAB_MAP };
   }
 
-  /* --- Banner helpers (unchanged visuals) --- */
-  const rail = document.getElementById('bannerRail');
-  const scrollEl = document.getElementById('bannerScroll');
+  const rail = $('#bannerRail'); const scrollEl = $('#bannerScroll');
 
+  /* --- IMG LAZY LOADER --- */
   const io = new IntersectionObserver((entries)=>{
     entries.forEach(({isIntersecting, target})=>{
       if (!isIntersecting) return;
       const img = target;
-      if (img.dataset.src){ img.src = img.dataset.src; img.removeAttribute('data-src'); }
+      const src = img.dataset.src;
+      if (src){ img.src = src; img.removeAttribute('data-src'); }
       if (img.dataset.srcset){ img.srcset = img.dataset.srcset; img.removeAttribute('data-srcset'); }
       io.unobserve(img);
     });
@@ -620,8 +595,8 @@
 
   rail.addEventListener('mouseenter', ()=> rail.classList.add('paused'));
   rail.addEventListener('mouseleave', ()=> rail.classList.remove('paused'));
-  document.getElementById('bnPrev').addEventListener('click', ()=>{ rail.scrollLeft -= 260; });
-  document.getElementById('bnNext').addEventListener('click', ()=>{ rail.scrollLeft += 260; });
+  $('#bnPrev').addEventListener('click', ()=>{ rail.scrollLeft -= 260; });
+  $('#bnNext').addEventListener('click', ()=>{ rail.scrollLeft += 260; });
 
   $$('.tab-btn').forEach(btn=>{
     btn.addEventListener('click', ()=>{
@@ -632,12 +607,11 @@
       window.scrollTo({ top: $('.wrap').offsetTop, behavior: 'smooth' });
     });
   });
-  document.getElementById('year').textContent = new Date().getFullYear();
+  $('#year').textContent = new Date().getFullYear();
   const sysStatus = document.getElementById('sysStatus');
   function setStatus(msg, linkHref){ if (!sysStatus) return; sysStatus.textContent = msg; if (linkHref) { sysStatus.href = linkHref; } }
 
-  const loaded = { main:false, reel:false, sections:false, banner:false };
-  let GIDS = null;
+  const loaded = { main:false, reel:false, sections:false, banner:false, testimonials:false };
 
   // --- PRELOAD PLACEHOLDERS ---
   (function preloadFrames(){
@@ -665,7 +639,7 @@
       {tag:'RIGS', body:'Technodolly/Graphlite/Spydercam/MILO profiles loaded'}
     ]);
 
-    // Testimonials placeholder (gag text that will be replaced)
+    // Testimonials placeholder
     const tBox  = document.getElementById('testimonialsBox');
     const tList = document.getElementById('testimonialsList');
     const tTitle= document.getElementById('testimonialsTitle');
@@ -678,148 +652,56 @@
     tBox.style.display = 'block';
   })();
 
-  // Pull a tab with cache policy (forceFresh bypasses local cache)
-  async function pullTabByName(name, {forceFresh=false} = {}){
-    if (!GIDS) GIDS = await discoverGids(PUBHTML);
-    const gid = GIDS[name]; if (!gid) return { rows:[], raw:'' };
-    const key = `csv:${gid}`;
-    let txt = null;
-
-    if (!forceFresh){
-      const cached = cache.get(key);
-      if (cached && cached.txt) txt = cached.txt;
-    }
-    if (!txt){
-      const url = buildCsvUrlFromGid(PUBHTML, gid);
-      txt = await fetch(url, {mode:'cors', cache:'no-store'}).then(r=>r.text());
-      cache.set(key, txt);
-    }
-    return { rows: csvToObjects(txt), raw: txt };
-  }
-
-  // Convenience to pull many tabs at once (with same freshness policy)
-  async function pullAll({forceFresh=false} = {}){
-    const [mainInfoPull, personalPull, proPull, ridesPull, testiPull] = await Promise.all([
-      pullTabByName('Main site info', {forceFresh}),
-      pullTabByName('Personal Youtube', {forceFresh}),
-      pullTabByName('Ariel_Feblowitz_Works', {forceFresh}),
-      pullTabByName('Rides', {forceFresh}),
-      pullTabByName('Testimonials', {forceFresh})
-    ]);
-    return { mainInfoPull, personalPull, proPull, ridesPull, testiPull };
-  }
-
-  // Renderers (same visuals as your working version)
-  function renderPro(items){
-    const grid = document.getElementById('proGrid'); grid.innerHTML='';
-    if (!items.length){ grid.innerHTML = `<div class="muted">No items yet — add rows in the “Ariel_Feblowitz_Works” tab.</div>`; return; }
-    items.forEach(p=>{
-      const c=document.createElement('a'); c.className='proj card'; c.href=p.url||'#'; c.target='_blank'; c.rel='noopener';
-      const wrap=document.createElement('div'); wrap.className='thumb poster';
-      const img=new Image(); img.alt=''; img.loading='lazy'; img.decoding='async'; img.fetchPriority='low'; img.src = p.posters[0] || titlePlaceholderSVG(p.title); img.width=800; img.height=1200;
-      wrap.appendChild(img);
-      const meta=document.createElement('div'); meta.className='meta';
-      const info=[p.role, p.prod].filter(Boolean).join(' • ');
-      meta.innerHTML = `<div class="title">${p.title}</div><div class="role">${info}</div>`;
-      c.appendChild(wrap); c.appendChild(meta); grid.appendChild(c);
-    });
-  }
-  function renderRides(items){
-    const grid = document.getElementById('ridesGrid'); grid.innerHTML='';
-    if (!items.length){ grid.innerHTML = `<div class="muted">No items yet — add rows in the “Rides” tab.</div>`; return; }
-    items.forEach(p=>{
-      const c=document.createElement('a'); c.className='proj card'; c.href=p.url||'#'; c.target='_blank'; c.rel='noopener';
-      const wrap=document.createElement('div'); wrap.className='thumb';
-      const img=new Image(); img.alt=''; img.loading='lazy'; img.decoding='async'; img.fetchPriority='low'; img.src = p.posters[0] || titlePlaceholderSVG(p.title); img.width=1280; img.height=720;
-      wrap.appendChild(img);
-      const meta=document.createElement('div'); meta.className='meta';
-      const info=[p.role, p.company].filter(Boolean).join(' • ');
-      let body=''; if (p.desc){ body = `<details class="summaryless" style="margin-top:.45em; font-size:.95em"><summary class="btn" style="display:inline-flex; margin:0; padding:.35em .6em;">Details</summary><div class="muted" style="margin-top:.6em">${p.desc}</div></details>`; }
-      meta.innerHTML = `<div class="title">${p.title}</div><div class="role">${info}</div>${body}`;
-      c.appendChild(wrap); c.appendChild(meta); grid.appendChild(c);
-    });
-  }
-  function renderPersonal(videos, featuredId){
-    const grid = document.getElementById('personalGrid'); grid.innerHTML='';
-    if (!videos.length){ grid.innerHTML = `<div class="muted">No videos yet — add rows in the “Personal Youtube” tab.</div>`; return; }
-    const fIdx = videos.findIndex(v=>v.videoId===featuredId); if (fIdx>0){ const [f]=videos.splice(fIdx,1); videos.unshift(f); }
-    videos.forEach(v=>{
-      const c=document.createElement('a'); c.className='proj card'; c.href=v.url||'#'; c.target='_blank'; c.rel='noopener';
-      const wrap=document.createElement('div'); wrap.className='thumb';
-      const img=new Image(); img.alt=''; img.loading='lazy'; img.decoding='async'; img.fetchPriority='low'; img.src = v.thumb || (v.videoId? ytThumb(v.videoId) : titlePlaceholderSVG(v.title)); img.width=1280; img.height=720;
-      wrap.appendChild(img);
-      const meta=document.createElement('div'); meta.className='meta';
-      meta.innerHTML = `<div class="title">${v.title||''}</div><div class="role">${v.role||''}</div>`;
-      c.appendChild(wrap); c.appendChild(meta); grid.appendChild(c);
-    });
-  }
-  function renderTestimonials(testiRows, testiRaw){
-    const tBox  = document.getElementById('testimonialsBox');
-    const tList = document.getElementById('testimonialsList');
-    const tTitle= document.getElementById('testimonialsTitle');
-
-    let tHeading = 'Testimonials';
-    if (testiRaw){ try{ const b1 = csvFirstRowSecondCol(testiRaw); if (b1) tHeading = b1; }catch{} }
-    tTitle.textContent = tHeading;
-
-    const items = (testiRows||[]).map(r=>({
-      from: String(r['From']||'').trim(),
-      text: String(r['Testimonial']||r['Testimonials']||r['Quote']||r['Text']||r['Body']||'').trim()
-    })).filter(t=>t.from && t.text);
-
-    if (items.length){
-      const smartQuote = s=>{
-        const t = s.trim();
-        const b = /^["“]/.test(t), e = /["”]$/.test(t);
-        return (b&&e)?t:`“${t.replace(/^["“'‘`]/,'').replace(/["”'’`]$/,'')}”`;
-      };
-      const esc = s=> s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
-      tList.innerHTML = '';
-      items.forEach(it=>{
-        const el = document.createElement('div'); el.className='testimonial';
-        el.innerHTML = `<span class="quote">${esc(smartQuote(it.text))}</span><span class="from">— ${esc(it.from)}</span>`;
-        tList.appendChild(el);
-      });
-      tBox.style.display = 'block';
-    } else {
-      tBox.style.display = 'none';
-    }
-  }
-
-  function fillBannerFromData({pro, ride, per}){
-    const interleaved=[]; const L=Math.max(pro.length, ride.length, per.length);
-    for(let i=0;i<L;i++){ if(pro[i]) interleaved.push(pro[i]); if(ride[i]) interleaved.push(ride[i]); if(per[i]) interleaved.push(per[i]); }
-    fillBanner(interleaved);
-  }
-
-  async function init(){
+  (async function init(){
     try{
       setStatus('Routing request to MOTHER…', sysStatus.href);
-      GIDS = await discoverGids(PUBHTML);
+      const gids = await discoverGids(PUBHTML);
+
+      async function pullCsv(name){
+        const gid = gids[name]; if(!gid) return {rows:[], raw:null, matrix:[]};
+        const key = `csv:${gid}`;
+        let txt;
+        // Always fetch fresh with minute cache-buster; only fall back to cache if fetch fails
+        const url = buildCsvUrlFromGid(PUBHTML, gid);
+        try{
+          txt = await fetch(url, {mode:'cors', cache:'no-store'}).then(r=>r.text());
+          cache.set(key, {ts:Date.now(), txt});
+        }catch(e){
+          const cached = cache.get(key);
+          txt = cached && cached.txt ? cached.txt : '';
+        }
+        return { rows: null, raw: txt, matrix: csvToMatrix(txt) };
+      }
 
       // MAIN INFO
-      const { mainInfoPull } = await pullAll({forceFresh:true});
-      const mainInfo = {}; (mainInfoPull.rows||[]).forEach(r=> mainInfo[(r.key||'').trim()] = (r.value||'').trim());
+      const mainInfoPull = await pullCsv('Main site info');
+      const mainMatrix = mainInfoPull.matrix;
+      const mainRows = mainMatrix.slice(1).filter(r=>r && r.length>1);
+      const mainInfo = {};
+      mainRows.forEach(r=>{
+        const key = (r[0]||'').trim(); const val = (r[1]||'').trim();
+        if (key) mainInfo[key] = val;
+      });
 
       // Labels/links
-      document.getElementById('siteTitle').textContent = mainInfo.site_title || 'Subject: ARI FEBLOWITZ';
+      $('#siteTitle').textContent = mainInfo.site_title || 'Subject: ARI FEBLOWITZ';
       const imdbUrl = fixImdb(mainInfo.imdb_url || 'https://www.imdb.me/ArielFeblowitz');
       const subtitleTxt = mainInfo.site_subtitle || 'Techvis & Virtual Production Supervisor';
-      const subtitleEl = document.getElementById('siteSubtitle'); subtitleEl.textContent = subtitleTxt; subtitleEl.href = imdbUrl;
-      document.getElementById('about1').textContent = mainInfo.about_paragraph_1 || document.getElementById('about1').textContent;
-      document.getElementById('about2').textContent = mainInfo.about_paragraph_2 || document.getElementById('about2').textContent;
+      const subtitleEl = $('#siteSubtitle'); subtitleEl.textContent = subtitleTxt; subtitleEl.href = imdbUrl;
+      $('#about1').textContent = mainInfo.about_paragraph_1 || $('#about1').textContent;
+      $('#about2').textContent = mainInfo.about_paragraph_2 || $('#about2').textContent;
       const linksHref = mainInfo.all_links_url || 'https://linktr.ee/admin/links';
-      document.getElementById('btnIMDb').href = imdbUrl;
-      document.getElementById('btnYouTube').href = mainInfo.youtube_url || document.getElementById('btnYouTube').href;
-      document.getElementById('btnLinks').href = linksHref;
+      $('#btnIMDb').href = imdbUrl;
+      $('#btnYouTube').href = mainInfo.youtube_url || $('#btnYouTube').href;
+      $('#btnLinks').href = linksHref;
       const resumeURL = (mainInfo.resume_url && mainInfo.resume_url.trim()) || DEFAULT_RESUME;
-      document.getElementById('btnResume').href = resumeURL; document.getElementById('dockResume').href = resumeURL;
+      $('#btnResume').href = resumeURL; $('#dockResume').href = resumeURL;
 
       setStatus('Link established', linksHref);
-      const aboutStatus = document.getElementById('aboutStatus'); if (aboutStatus) aboutStatus.style.display = 'none';
+      const aboutStatus = $('#aboutStatus'); if (aboutStatus) aboutStatus.style.display = 'none';
       document.body.classList.add('ready');
-      document.getElementById('reelHeader').textContent = 'Demo Reel';
-      document.getElementById('aboutHeader').textContent = 'About';
+      $('#reelHeader').textContent = 'Demo Reel';
+      $('#aboutHeader').textContent = 'About';
       loaded.main = true;
 
       const phone = (mainInfo.phone||DEFAULT_PHONE).trim();
@@ -835,10 +717,10 @@
       });
 
       // HUD
-      document.getElementById('hudTitle').textContent = mainInfo.ASSESSMENT || mainInfo.assessment || 'THREAT ASSESSMENT // SKNET_0001';
+      $('#hudTitle').textContent = mainInfo.ASSESSMENT || mainInfo.assessment || 'THREAT ASSESSMENT // SKNET_0001';
       const strengthsText = (mainInfo.Strengths || mainInfo.strengths || '').trim();
       if (strengthsText){
-        const hudBody = document.getElementById('hudBody'); hudBody.innerHTML = '';
+        const hudBody = $('#hudBody'); hudBody.innerHTML = '';
         strengthsText.split(/\n+/).map(s=>s.trim()).filter(Boolean).forEach(s=>{
           const m = s.match(/^([^:]+):\s*(.+)$/);
           const tag = (m ? m[1] : 'Signal'), body = (m ? m[2] : s);
@@ -849,10 +731,10 @@
         document.getElementById('hudCard').style.display='block';
       }
 
-      // Reel (accepts vimeo id/url or youtube id/url or full iframe)
+      // Reel
       (function loadReel(){
         const reelInput = (mainInfo.reel_youtube_id||'').trim();
-        const reelFrame = document.getElementById('reelFrame');
+        const reelFrame = $('#reelFrame');
         const setIframe = src => { reelFrame.loading='lazy'; reelFrame.decoding='async'; reelFrame.fetchPriority='low'; reelFrame.src = src; };
         if (/^\s*</i.test(reelInput)){
           const tmp = document.createElement('div'); tmp.innerHTML = reelInput;
@@ -868,120 +750,220 @@
         loaded.reel=true;
       })();
 
-      // Defer section loads and banner
       const defer = window.requestIdleCallback || (fn=>setTimeout(fn, 0));
       defer(loadSections);
       defer(()=> setTimeout(buildBannerDeferred, 400));
 
-      // Manual refresh button
-      document.getElementById('btnRefresh').addEventListener('click', async ()=>{
-        await refreshAll(true);
-        toast('Data refreshed');
-      });
+      async function loadSections(){
+        try{
+          if (loaded.sections) return; loaded.sections = true;
 
-      // Auto-refresh when page becomes visible / online / bfcache restore
-      document.addEventListener('visibilitychange', async ()=>{
-        if (document.visibilityState === 'visible') await refreshAll(true);
-      });
-      window.addEventListener('online', async ()=>{ await refreshAll(true); });
-      window.addEventListener('pageshow', async (e)=>{ if (e.persisted) await refreshAll(true); });
+          const personalPull = await pullCsv('Personal Youtube');
+          const proPull      = await pullCsv('Ariel_Feblowitz_Works');
+          const ridesPull    = await pullCsv('Rides');
+          const testiPull    = await pullCsv('Testimonials');
+
+          // Personal videos/meta (simple header in row 1)
+          const pRows = personalPull.matrix;
+          const pHeaders = pRows[0]||[];
+          const pData = pRows.slice(1);
+          const meta = {}; const videos=[];
+          pData.forEach(r=>{
+            const row = {}; pHeaders.forEach((h,i)=> row[String(h||'').trim()] = (r[i]||'').toString().trim());
+            const type=(row.type||'').toLowerCase();
+            if (type==='meta'){ meta[(row.key||'').trim()] = (row.value||'').trim(); }
+            else if (type==='video'){
+              const videoId=row.video_id||'';
+              const url=row.youtube_url|| (videoId?`https://www.youtube.com/watch?v=${videoId}`:'');
+              const thumb=row.thumb_url|| (videoId? ytThumb(videoId) : '');
+              videos.push({ prio: +row.prio||0, includeInBanner: (String(row.include_in_banner||'').toLowerCase()==='true') || (+row.prio||0)>=5, featured: String(row.featured||'').toLowerCase()==='true', videoId, title:row.title||'', role:row.role||'', url, thumb, ytid: videoId });
+            }
+          });
+
+          // Febz box
+          const febzId = (meta.febz_video_id || '').trim();
+          if (febzId){
+            $('#febzHeading').textContent = meta.febz_heading || "Also archiving my father's documentary work: FebzFoundFootage";
+            $('#febzBody').textContent = meta.febz_body || "A growing archive of Gary Feblowitz’s documentary footage and rare segments.";
+            $('#febzLink').href = `https://www.youtube.com/watch?v=${febzId}`;
+            $('#febzThumb').src = ytThumb(febzId);
+            $('#febzBox').style.display = 'block';
+          }
+          const showLatest = (String(meta.latest_mode||'').toLowerCase()==='auto');
+          if (showLatest && meta.latest_playlist_or_channel_id){
+            const channelId = meta.latest_playlist_or_channel_id;
+            if (channelId.startsWith('UC')){
+              const uploadsId = 'UU'+channelId.slice(2);
+              $('#latestFrame').src = `https://www.youtube.com/embed/videoseries?list=${uploadsId}&rel=0`;
+              $('#latestBox').style.display = 'block';
+            }
+          }
+
+          // Pro grid
+          const proRows = proPull.matrix;
+          const proHdr  = proRows[0]||[];
+          const proData = proRows.slice(1).map(r=>{ const o={}; proHdr.forEach((h,i)=>o[h]=r[i]||''); return o; });
+          const proItems = proData.map(r=>({
+            title:(r['Name']||'').trim(), url:fixImdb((r['URL']||'').trim()),
+            role:(r['My Role']||'').trim(), prod:(r['Production Co.']||'').trim(),
+            onSet: /^(true|yes)$/i.test(r['On Set?']||''), prio:+(r['Prio?']||0),
+            posters:[(r['Primary image']||'').trim()].filter(Boolean)
+          })).filter(x=>x.title && x.prio>0)
+            .sort((a,b)=> (a.onSet!==b.onSet)? (a.onSet? -1:1) : (b.prio-a.prio) || a.title.localeCompare(b.title));
+
+          // Rides grid
+          const ridesRows = ridesPull.matrix;
+          const ridesHdr  = ridesRows[0]||[];
+          const ridesData = ridesRows.slice(1).map(r=>{ const o={}; ridesHdr.forEach((h,i)=>o[h]=r[i]||''); return o; });
+          const rideItems = ridesData.map(r=>({
+            title:(r['Ride Name']||'').trim(),
+            url:(r['Ride Link']||'').trim(),
+            role:(r['My Role']||'').trim(),
+            company:(r['Ride Company']||'').trim(),
+            desc:(r['Description']||'').trim(),
+            prio:+(r['Prio']||r['prio']||0),
+            posters:[(r['Ride Image']||r['Ride image']||'').trim()].filter(Boolean)
+          })).filter(x=>x.title && x.prio>0)
+            .sort((a,b)=> b.prio-a.prio || a.title.localeCompare(b.title));
+
+          renderPro(proItems); renderRides(rideItems); renderPersonal(videos, (meta.featured_video_id||'').trim());
+
+          // Banner tiles
+          window.__tilesData = {
+            pro: proItems.filter(p=>p.prio>=5).map(p=>({type:'pro', kind:'poster', title:p.title, img:p.posters[0]||'', url:p.url||'#'})),
+            ride: rideItems.filter(r=>r.prio===10).map(r=>({type:'ride', kind:'wide', title:r.title, img:r.posters[0]||'', url:r.url||'#'})),
+            per: videos.filter(v=>(v.prio||0)>=5 || v.includeInBanner).map(v=>({type:'personal', kind:'wide', title:v.title, img:v.thumb||'', url:v.url||'#', ytid:v.videoId||''}))
+          };
+
+          /* ============ TESTIMONIALS (fresh pull) ============ */
+          await refreshTestimonials(testiPull); // initial render
+
+          // iOS Safari: re-validate when tab is visible or device goes online
+          document.addEventListener('visibilitychange', async ()=>{
+            if (document.visibilityState === 'visible') {
+              const freshPull = await pullCsv('Testimonials');
+              await refreshTestimonials(freshPull);
+            }
+          });
+          window.addEventListener('online', async ()=>{
+            const freshPull = await pullCsv('Testimonials');
+            await refreshTestimonials(freshPull);
+          });
+
+        }catch(err){ console.error('[loadSections]', err); }
+      }
+
+      async function refreshTestimonials(testiPull){
+        try{
+          const tBox  = document.getElementById('testimonialsBox');
+          const tList = document.getElementById('testimonialsList');
+          const tTitle= document.getElementById('testimonialsTitle');
+
+          const tMatrix = testiPull.matrix;
+          let tHeading = 'Testimonials';
+          const b1 = csvFirstRowSecondCol(testiPull.raw||''); if (b1) tHeading = b1;
+          tTitle.textContent = tHeading;
+
+          const cellsLow = (row)=>row.map(c=>String(c||'').toLowerCase().trim());
+          let headerIndex = 0;
+          for (let i=0;i<tMatrix.length;i++){
+            const low = cellsLow(tMatrix[i]||[]);
+            if (low.includes('from') && (low.includes('testimonial') || low.includes('testimonials') || low.includes('quote') || low.includes('text') || low.includes('body'))){
+              headerIndex = i; break;
+            }
+          }
+          const headers = (tMatrix[headerIndex]||[]).map(h=>String(h||'').trim());
+          const rows = tMatrix.slice(headerIndex+1);
+
+          const pickText = (obj)=>{
+            for (const k of ['Testimonial','Testimonials','testimonial','testimonials','Quote','quote','Text','text','Body','body']){
+              if (obj[k] && String(obj[k]).trim()) return String(obj[k]).trim();
+            }
+            return '';
+          };
+
+          const items = rows.map(r=>{
+            const o={}; headers.forEach((h,i)=> o[h]=r[i]!==undefined?r[i]:'');
+            return { from: String(o['From']||o['from']||'').trim(), text: pickText(o) };
+          }).filter(t=>t.from && t.text);
+
+          const smartQuote = s=>{
+            const t = s.trim();
+            const b = /^["“]/.test(t), e = /["”]$/.test(t);
+            return (b && e) ? t : `“${t.replace(/^["“'‘`]/,'').replace(/["”'‘`]$/,'')}”`;
+          };
+          const esc = s=> s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+
+          if (items.length){
+            tList.innerHTML = '';
+            items.forEach(it=>{
+              const el = document.createElement('div'); el.className='testimonial';
+              el.innerHTML = `<span class="quote">${esc(smartQuote(it.text))}</span><span class="from">— ${esc(it.from)}</span>`;
+              tList.appendChild(el);
+            });
+            tBox.style.display = 'block';
+          } else {
+            tBox.style.display = 'none';
+          }
+
+        }catch(e){ console.error('[refreshTestimonials]', e); }
+      }
+
+      function renderPro(items){
+        const grid = $('#proGrid'); grid.innerHTML='';
+        if (!items.length){ grid.innerHTML = `<div class="muted">No items yet — add rows in the “Ariel_Feblowitz_Works” tab.</div>`; return; }
+        items.forEach(p=>{
+          const c=document.createElement('a'); c.className='proj card'; c.href=p.url||'#'; c.target='_blank'; c.rel='noopener';
+          const wrap=document.createElement('div'); wrap.className='thumb poster';
+          const img=new Image(); img.alt=''; img.loading='lazy'; img.decoding='async'; img.fetchPriority='low'; img.src = p.posters[0] || titlePlaceholderSVG(p.title); img.width=800; img.height=1200;
+          wrap.appendChild(img);
+          const meta=document.createElement('div'); meta.className='meta';
+          const info=[p.role, p.prod].filter(Boolean).join(' • ');
+          meta.innerHTML = `<div class="title">${p.title}</div><div class="role">${info}</div>`;
+          c.appendChild(wrap); c.appendChild(meta); grid.appendChild(c);
+        });
+      }
+      function renderRides(items){
+        const grid = $('#ridesGrid'); grid.innerHTML='';
+        if (!items.length){ grid.innerHTML = `<div class="muted">No items yet — add rows in the “Rides” tab.</div>`; return; }
+        items.forEach(p=>{
+          const c=document.createElement('a'); c.className='proj card'; c.href=p.url||'#'; c.target='_blank'; c.rel='noopener';
+          const wrap=document.createElement('div'); wrap.className='thumb';
+          const img=new Image(); img.alt=''; img.loading='lazy'; img.decoding='async'; img.fetchPriority='low'; img.src = p.posters[0] || titlePlaceholderSVG(p.title); img.width=1280; img.height=720;
+          wrap.appendChild(img);
+          const meta=document.createElement('div'); meta.className='meta';
+          const info=[p.role, p.company].filter(Boolean).join(' • ');
+          let body=''; if (p.desc){ body = `<details class="summaryless" style="margin-top:.45em; font-size:.95em"><summary class="btn" style="display:inline-flex; margin:0; padding:.35em .6em;">Details</summary><div class="muted" style="margin-top:.6em">${p.desc}</div></details>`; }
+          meta.innerHTML = `<div class="title">${p.title}</div><div class="role">${info}</div>${body}`;
+          c.appendChild(wrap); c.appendChild(meta); grid.appendChild(c);
+        });
+      }
+      function renderPersonal(videos, featuredId){
+        const grid = $('#personalGrid'); grid.innerHTML='';
+        if (!videos.length){ grid.innerHTML = `<div class="muted">No videos yet — add rows in the “Personal Youtube” tab.</div>`; return; }
+        const fIdx = videos.findIndex(v=>v.videoId===featuredId); if (fIdx>0){ const [f]=videos.splice(fIdx,1); videos.unshift(f); }
+        videos.forEach(v=>{
+          const c=document.createElement('a'); c.className='proj card'; c.href=v.url||'#'; c.target='_blank'; c.rel='noopener';
+          const wrap=document.createElement('div'); wrap.className='thumb';
+          const img=new Image(); img.alt=''; img.loading='lazy'; img.decoding='async'; img.fetchPriority='low'; img.src = v.thumb || (v.videoId? ytThumb(v.videoId) : titlePlaceholderSVG(v.title)); img.width=1280; img.height=720;
+          wrap.appendChild(img);
+          const meta=document.createElement('div'); meta.className='meta';
+          meta.innerHTML = `<div class="title">${v.title||''}</div><div class="role">${v.role||''}</div>`;
+          c.appendChild(wrap); c.appendChild(meta); grid.appendChild(c);
+        });
+      }
+
+      function buildBannerDeferred(){
+        if (loaded.banner || !window.__tilesData) return;
+        loaded.banner = true;
+        const {pro, ride, per} = window.__tilesData;
+        const interleaved=[]; const L=Math.max(pro.length, ride.length, per.length);
+        for(let i=0;i<L;i++){ if(pro[i]) interleaved.push(pro[i]); if(ride[i]) interleaved.push(ride[i]); if(per[i]) interleaved.push(per[i]); }
+        fillBanner(interleaved);
+      }
 
     }catch(err){ console.error('[init]', err); }
-  }
-
-  async function loadSections(forceFresh=false){
-    try{
-      if (loaded.sections && !forceFresh) return; loaded.sections = true;
-
-      const { personalPull, proPull, ridesPull, testiPull } = await pullAll({forceFresh});
-
-      // Personal meta + videos
-      const meta = {}; const videos=[];
-      (personalPull.rows||[]).forEach(r=>{
-        const type=(String(r.type||'').toLowerCase());
-        if (type==='meta'){ meta[(r.key||'').trim()] = (r.value||'').trim(); }
-        else if (type==='video'){
-          const videoId=(r.video_id||'').trim();
-          const url=(r.youtube_url||'').trim() || (videoId?`https://www.youtube.com/watch?v=${videoId}`:'');
-          const thumb=(r.thumb_url||'').trim() || (videoId? ytThumb(videoId) : '');
-          videos.push({ prio:normNum(r.prio), includeInBanner: normBool(r.include_in_banner) || normNum(r.prio)>=5, featured: normBool(r.featured), videoId, title:(r.title||'').trim(), role:(r.role||'').trim(), url, thumb, ytid: videoId });
-        }
-      });
-
-      // Febz featured box
-      const febzId = (meta.febz_video_id || '').trim();
-      if (febzId){
-        document.getElementById('febzHeading').textContent = meta.febz_heading || "Also archiving my father's documentary work: FebzFoundFootage";
-        document.getElementById('febzBody').textContent    = meta.febz_body || "A growing archive of Gary Feblowitz’s documentary footage and rare segments.";
-        document.getElementById('febzLink').href           = `https://www.youtube.com/watch?v=${febzId}`;
-        document.getElementById('febzThumb').src           = ytThumb(febzId);
-        document.getElementById('febzBox').style.display   = 'block';
-      }
-
-      // Latest uploads embed (optional)
-      const showLatest = (String(meta.latest_mode||'').toLowerCase()==='auto') || false;
-      if (showLatest && meta.latest_playlist_or_channel_id){
-        const channelId = meta.latest_playlist_or_channel_id;
-        if (channelId.startsWith('UC')){
-          const uploadsId = 'UU'+channelId.slice(2);
-          document.getElementById('latestFrame').src = `https://www.youtube.com/embed/videoseries?list=${uploadsId}&rel=0`;
-          document.getElementById('latestBox').style.display = 'block';
-        }
-      }
-
-      // Pro grid
-      const proItems = (proPull.rows||[]).map(r=>({
-        title:(r['Name']||'').trim(), url:fixImdb((r['URL']||'').trim()),
-        role:(r['My Role']||'').trim(), prod:(r['Production Co.']||'').trim(),
-        onSet: normBool(r['On Set?']), prio:normNum(r['Prio?']),
-        posters:[(r['Primary image']||'').trim()].filter(Boolean)
-      })).filter(x=>x.title && x.prio>0)
-        .sort((a,b)=> (a.onSet!==b.onSet)? (a.onSet? -1:1) : (b.prio-a.prio) || a.title.localeCompare(b.title));
-
-      // Rides grid
-      const rideItems = (ridesPull.rows||[]).map(r=>({
-        title:(r['Ride Name']||'').trim(),
-        url:(r['Ride Link']||'').trim(),
-        role:(r['My Role']||'').trim(),
-        company:(r['Ride Company']||'').trim(),
-        desc:(r['Description']||'').trim(),
-        prio:normNum(r['Prio']||r['prio']),
-        posters:[(r['Ride Image']||r['Ride image']||'').trim()].filter(Boolean)
-      })).filter(x=>x.title && x.prio>0)
-        .sort((a,b)=> b.prio-a.prio || a.title.localeCompare(b.title));
-
-      renderPro(proItems);
-      renderRides(rideItems);
-      renderPersonal(videos, (meta.featured_video_id||'').trim());
-
-      // Banner tiles
-      window.__tilesData = {
-        pro: proItems.filter(p=>p.prio>=5).map(p=>({type:'pro', kind:'poster', title:p.title, img:p.posters[0]||'', url:p.url||'#'})),
-        ride: rideItems.filter(r=>r.prio===10).map(r=>({type:'ride', kind:'wide', title:r.title, img:r.posters[0]||'', url:r.url||'#'})),
-        per: videos.filter(v=>(v.prio||0)>=5 || v.includeInBanner).map(v=>({type:'personal', kind:'wide', title:v.title, img:v.thumb||'', url:v.url||'#', ytid:v.videoId||''}))
-      };
-
-      // Testimonials
-      renderTestimonials(testiPull.rows, testiPull.raw);
-
-    }catch(err){ console.error('[loadSections]', err); }
-  }
-
-  function buildBannerDeferred(){
-    if (loaded.banner || !window.__tilesData) return;
-    loaded.banner = true;
-    fillBannerFromData(window.__tilesData);
-  }
-
-  async function refreshAll(forceFresh){
-    // clear local cache for CSVs to avoid mixing with fresh pulls
-    cache.clearPrefix('csv:');
-    loaded.sections = false; // re-render sections
-    await loadSections(!!forceFresh);
-    // banner may need rebuild if tiles changed
-    loaded.banner = false;
-    buildBannerDeferred();
-  }
+  })();
 
   function toast(text, x, y){
     const t=document.createElement('div'); t.className='toast'; t.textContent=text; document.body.appendChild(t);
@@ -1065,9 +1047,6 @@
     }
     let tries = 0; const timer = setInterval(()=>{ if (tryInject() || ++tries>20) clearInterval(timer); }, 250);
   })();
-
-  // Kickoff
-  init();
   </script>
 </body>
 </html>
