@@ -128,26 +128,27 @@
     .tab-btn.active{outline:1px solid var(--accent); box-shadow:0 0 0 2px rgba(0,255,156,.12) inset}
 
     /* === HERO LAYOUT === */
-    .hero{
-      margin:clamp(12px,1.6vw,20px) 0;
-      display:grid;
-      grid-template-columns: minmax(0, 2.1fr) minmax(0, .9fr);
-      grid-template-areas: "left hud";
-      column-gap: calc(var(--grid) + 18px);
-      align-items:start;
-    }
+    .hero{ margin:clamp(12px,1.6vw,20px) 0; display:grid; grid-template-columns: minmax(0, 2.1fr) minmax(0, .9fr); grid-template-areas: "left hud"; column-gap: calc(var(--grid) + 18px); align-items:start; }
     .area-left{ grid-area:left; }
     .area-hud{ grid-area:hud; }
     .leftStack{ display:flex; flex-direction:column; gap:0; }
     .leftStack > .card{ margin:0; }
+
     .area-reel{ grid-area:reel; }
     .area-test{ grid-area:test; }
+
     @media (max-width:920px){
-      .hero{ grid-template-columns:1fr; grid-template-areas: "reel" "hud" "test"; }
+      .hero{
+        grid-template-columns:1fr;
+        grid-template-areas:
+          "reel"
+          "hud"
+          "test";
+      }
       .leftStack{ display:contents; }
     }
 
-    /* Card style + animated sweep — non-interactive */
+    /* Card style + animated “light sweep” — non-interactive */
     .card{
       position:relative;
       background:linear-gradient(180deg, rgba(10,18,16,.85), rgba(5,9,11,.9));
@@ -163,7 +164,8 @@
     .card::after{
       content:""; position:absolute; top:-60%; left:-40%; width:60%; height:220%;
       background:linear-gradient(120deg, transparent 40%, rgba(255,255,255,.08), transparent 60%);
-      transform:rotate(14deg); animation:sweep 8s linear infinite; pointer-events:none;
+      transform:rotate(14deg); animation:sweep 8s linear infinite;
+      pointer-events:none;
     }
     @keyframes edgeSpin{to{transform:rotate(360deg)}}
     @keyframes sweep{0%{transform:translateX(-40%) rotate(14deg)} 100%{transform:translateX(200%) rotate(14deg)}}
@@ -173,11 +175,13 @@
     /* Reel frame */
     .reel{ position:relative; aspect-ratio:16/9; width:100%; border-radius:14px; overflow:hidden; background:#000;
       border:1px solid rgba(0,255,156,.34); outline:1px solid rgba(0,255,156,.2);
-      box-shadow:0 0 20px rgba(0,255,156,.12) inset, 0 0 18px rgba(0,0,0,.6);
-      contain:layout paint; isolation:isolate; }
+      box-shadow:0 0 20px rgba(0,255,156,.12) inset, 0 0 18px rgba(0,0,0,.6); contain:layout paint; isolation:isolate; }
     .reel > iframe{position:absolute; inset:0; width:100%; height:100%; border:0; display:block; box-sizing:border-box}
+    .reel iframe{ max-width:100%; max-height:100%; }
+    @media (min-height:900px){ .reel{min-height:560px} }
 
     .badges{display:flex; flex-wrap:wrap; gap:clamp(8px,1vw,12px); margin-top:clamp(8px,1vw,12px)}
+
     section{display:none; content-visibility:auto; contain-intrinsic-size: 1px 1000px}
     section.active{display:block}
 
@@ -393,12 +397,7 @@
   </div>
 
   <script>
-  (function guard(){
-    const roots = document.querySelectorAll('#appRoot');
-    if (roots.length > 1){ roots.forEach((el, i)=>{ if(i>0) el.remove(); }); }
-    if (window.__siteInitDone) { console.warn('Init already run; skipping.'); return; }
-    window.__siteInitDone = true;
-  })();
+  (function guard(){ const roots = document.querySelectorAll('#appRoot'); if (roots.length > 1){ roots.forEach((el, i)=>{ if(i>0) el.remove(); }); } if (window.__siteInitDone) { console.warn('Init already run; skipping.'); return; } window.__siteInitDone = true; })();
 
   /* ====== STARFIELD FX (lightweight canvas) ====== */
   (function starfield(){
@@ -430,28 +429,12 @@
     resize(); tick();
   })();
 
-  /* ====== SHEETS + CACHING UTILITIES ====== */
   const PUBHTML = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQxBxTbb-Ax7rpnnn5zWDUW6fGq1nUGIEPJb5qfaxifqKyZexNLK28gwpQLS5T5vpeuSvZicAEg69U1/pubhtml";
   const TAB_MAP = {};
 
   const DEFAULT_PHONE = "(818)434-8013";
   const DEFAULT_EMAIL = "arifeblowitzvfx@gmail.com";
   const DEFAULT_RESUME = "https://docs.google.com/document/d/1NnKyzE8TtjMOe8WdTEBE7zNscM_RIHBMGF1CMjOn29s/export?format=pdf";
-
-  const $ = (sel, el=document) => el.querySelector(sel);
-  const $$ = (sel, el=document) => [...el.querySelectorAll(sel)];
-  const ytThumb    = id => `https://img.youtube.com/vi/${id}/maxresdefault.jpg`;
-  const ytThumbHQ  = id => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
-  const fixImdb    = url => (url||"").replace(/https?:\/\/pro\.imdb\.com/i,'https://www.imdb.com').replace(/\?ref_=pro.*$/,'');
-
-  // iOS/WKWebView detection (Google app uses this)
-  const isIOSWebKit = /iP(hone|ad|od)/i.test(navigator.userAgent) && /AppleWebKit/i.test(navigator.userAgent);
-
-  // Per-minute cache buster (UTC minute precision)
-  function cbMinute(){
-    const d=new Date(); const p=n=>String(n).padStart(2,'0');
-    return `${d.getUTCFullYear()}-${p(d.getUTCMonth()+1)}-${p(d.getUTCDate())}T${p(d.getUTCHours())}:${p(d.getUTCMinutes())}`;
-  }
 
   function setTopContact(phone, email){
     const top = document.getElementById('topContact'); if (!top) return; top.innerHTML = '';
@@ -466,6 +449,12 @@
   setTopContact(DEFAULT_PHONE, DEFAULT_EMAIL);
   setContactSection(DEFAULT_PHONE, DEFAULT_EMAIL);
   (function(){ const r = document.getElementById('btnResume'); if (r) r.href = DEFAULT_RESUME; document.getElementById('dockResume').href = r ? r.href : DEFAULT_RESUME; })();
+
+  const $ = (sel, el=document) => el.querySelector(sel);
+  const $$ = (sel, el=document) => [...el.querySelectorAll(sel)];
+  const ytThumb = id => `https://img.youtube.com/vi/${id}/maxresdefault.jpg`;
+  const ytThumbHQ = id => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+  const fixImdb = url => (url||"").replace(/https?:\/\/pro\.imdb\.com/i,'https://www.imdb.com').replace(/\?ref_=pro.*$/,'');
 
   // CSV helpers
   function csvToObjects(csvText){
@@ -482,85 +471,90 @@
     return rows.slice(1).filter(r=>r.length>1).map(r=>{ const o={}; headers.forEach((h,i)=>o[h]=r[i]!==undefined?r[i]:""); return o; });
   }
   function csvFirstRowSecondCol(csvText){
-    const lines = String(csvText||"").split(/\n/); if (!lines.length) return "";
-    const first = lines[0]; const parts = []; let cur="", q=false;
-    for (let i=0;i<first.length;i++){ const ch=first[i];
-      if (ch==='"'){ q=!q; continue; }
-      if (!q && ch===','){ parts.push(cur); cur=""; continue; }
-      cur+=ch;
+    let inQ=false, col=0, val="";
+    for (let i=0;i<csvText.length;i++){
+      const ch = csvText[i];
+      if (ch === '"'){ inQ = !inQ; continue; }
+      if (!inQ && (ch === ',' || ch === '\n')){
+        if (col === 1) return val.trim();
+        if (ch === ',') col++;
+        if (ch === '\n') break;
+        continue;
+      }
+      if (col === 1) val += ch;
+      if (!inQ && ch === ',') col++;
     }
-    parts.push(cur);
-    return (parts[1]||"").trim();
+    return val.trim();
   }
 
-  // Cache adapters (localStorage disabled for iOS/WKWebView)
+  const normBool = v => String(v||"").trim().toLowerCase()==='true' || String(v||"").trim().toLowerCase()==='yes';
+  const normNum = v => { const n = Number(String(v||"").replace(/[^\d.-]/g,"")); return isNaN(n)?0:n; };
+  function buildCsvUrlFromGid(pubhtml, gid){ return pubhtml.replace(/\/pubhtml.*/, '/pub') + `?gid=${gid}&single=true&output=csv`; }
+
+  // === LIVE REFRESH & IOS CACHE HANDLING ==============================
+  const IOS = /iP(hone|ad|od)/i.test(navigator.userAgent);
+  const DATA_TTL_MS = 60 * 1000;        // desktop TTL (feel "live" but cache-friendly)
+  const BUSTER_SLOT_MS = 30 * 1000;     // coarse buster window (keeps requests de-duped)
+  const nowSlot = () => Math.floor(Date.now() / BUSTER_SLOT_MS);
+  const addBuster = (url, slot=nowSlot()) => url + (url.includes('?') ? '&' : '?') + 'cb=' + slot;
+
   const cache = {
     get(key){
-      if (isIOSWebKit) return null;
-      try{ return JSON.parse(localStorage.getItem(key)||'null'); }catch{return null}
+      try{
+        const raw = JSON.parse(localStorage.getItem(key)||'null');
+        if (!raw) return null;
+        if (IOS) return null;                       // iOS always bypasses local cache
+        if ((Date.now() - (raw.ts||0)) > DATA_TTL_MS) return null; // expired
+        return raw;
+      }catch{ return null; }
     },
     set(key, val){
-      if (isIOSWebKit) return;
-      try{ localStorage.setItem(key, JSON.stringify(val)); }catch{}
+      try{
+        if (IOS) return; // don't persist on iOS
+        localStorage.setItem(key, JSON.stringify({ ts: Date.now(), ...val }));
+      }catch{}
     }
   };
+  // Force data refresh when returning from bfcache on iOS/Safari
+  window.addEventListener('pageshow', (e)=>{
+    if (e.persisted && IOS){
+      try{
+        Object.keys(localStorage).forEach(k=>{ if (k.startsWith('csv:')) localStorage.removeItem(k); });
+      }catch{}
+      // Soft re-run data sections without a full reload
+      if (window.__softRefresh) window.__softRefresh();
+    }
+  });
+  // ====================================================================
 
-  function buildCsvUrlFromGid(pubhtml, gid){
-    // append per-minute cb to defeat stubborn caches on iOS/Google app
-    return pubhtml.replace(/\/pubhtml.*/, '/pub') + `?gid=${gid}&single=true&output=csv&cb=${encodeURIComponent(cbMinute())}`;
-  }
-
-  async function discoverGids(pubhtml){
-    const map = {};
-    try{
-      // add cb here, too
-      const html = await fetch(pubhtml + `?cb=${encodeURIComponent(cbMinute())}`, {mode:"cors", cache:"no-store"}).then(r=>r.text());
-      const uniqueGids = [...new Set([...html.matchAll(/gid=(\d+)/g)].map(m=>m[1]))];
-      for (const gid of uniqueGids){
-        const txt = await fetch(buildCsvUrlFromGid(pubhtml, gid), {mode:'cors', cache:'no-store'}).then(r=>r.text()).catch(()=>null);
-        if (!txt) continue;
-        const rows = csvToObjects(txt);
-        const hdr = Object.keys(rows[0]||{}).join('|').toLowerCase();
-        if (hdr.includes('primary image') && hdr.includes('on set?')) map['Ariel_Feblowitz_Works']=gid;
-        else if (hdr.includes('ride image') && hdr.includes('ride name')) map['Rides']=gid;
-        else if (hdr.includes('type') && hdr.includes('video_id')) map['Personal Youtube']=gid;
-        else if (hdr.includes('key') && hdr.includes('value')) map['Main site info']=gid;
-        else if (hdr.includes('from') && hdr.includes('testimonial')) map['Testimonials']=gid;
-      }
-    }catch(e){ console.error('[discoverGids]', e); }
-    return { ...map, ...TAB_MAP };
-  }
-
-  /* ---------- Banner: fast + SWR ---------- */
   const rail = $('#bannerRail'); const scrollEl = $('#bannerScroll');
 
+  /* --- IMG LAZY LOADER --- */
   const io = new IntersectionObserver((entries)=>{
     entries.forEach(({isIntersecting, target})=>{
       if (!isIntersecting) return;
       const img = target;
-      if (img.dataset.src){ img.src = img.dataset.src; img.removeAttribute('data-src'); }
+      const src = img.dataset.src;
+      if (src){ img.src = src; img.removeAttribute('data-src'); }
       if (img.dataset.srcset){ img.srcset = img.dataset.srcset; img.removeAttribute('data-srcset'); }
       io.unobserve(img);
     });
-  }, { root: rail, rootMargin: '120% 60%', threshold: 0.01 });
+  }, { root: rail, rootMargin: '100% 40%', threshold: 0.01 });
 
-  function makeImgLazy({src, alt, kind, ytId, eager=false}){
+  function makeImgLazy({src, alt, kind, ytId}){
     const img = new Image();
     img.alt = alt || '';
-    img.loading = eager ? 'eager' : 'lazy';
-    img.decoding = 'async';
-    if (eager) img.fetchPriority = 'high';
+    img.loading = 'lazy'; img.decoding = 'async'; img.fetchPriority = 'low';
     if (kind==='poster'){ img.width = 800; img.height = 1200; } else { img.width = 1280; img.height = 720; }
     let main = src;
     if (ytId){
-      const hq = ytThumbHQ(ytId); const max = ytThumb(ytId);
-      img.src = hq;
-      img.dataset.srcset = `${hq} 480w, ${max} 1280w`;
+      const hq = ytThumbHQ(ytId); main = ytThumb(ytId);
+      img.dataset.srcset = `${hq} 480w, ${main} 1280w`;
       img.sizes = kind==='poster' ? "(max-width: 900px) 35vw, 12vw" : "(max-width: 900px) 70vw, 24vw";
     } else {
-      img.dataset.src = main;
+      img.sizes = kind==='poster' ? "(max-width: 900px) 35vw, 12vw" : "(max-width: 900px) 70vw, 24vw";
     }
-    io.observe(img); return img;
+    img.dataset.src = main; io.observe(img); return img;
   }
 
   function titlePlaceholderSVG(title){
@@ -569,53 +563,43 @@
     return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
   }
 
-  function makeTile(t, idx){
+  function makeTile(t){
     const a=document.createElement('a');
     a.className='tile ' + (t.type==='pro'?'poster':'wide');
     a.href=t.url||'#'; a.target='_blank'; a.rel='noopener';
     a.setAttribute('data-title', t.title||'');
     const isPoster = t.type==='pro' || t.kind==='poster';
-    const img = makeImgLazy({
-      src: t.img || titlePlaceholderSVG(t.title),
-      alt: t.title||'',
-      kind: isPoster?'poster':'wide',
-      ytId: (t.ytid||'').trim(),
-      eager: idx < 4  // first few are eager/high
-    });
+    const img = makeImgLazy({src: t.img || titlePlaceholderSVG(t.title), alt: t.title||'', kind: isPoster?'poster':'wide', ytId: (t.ytid||'').trim()});
     a.appendChild(img);
     return a;
   }
 
   function fillBanner(tiles){
     scrollEl.innerHTML='';
-    const seq = tiles.slice(0, 40);
+    const seq = tiles.slice(0, 36); // === BANNER SPEED TUNING: slightly fewer to paint faster
     const doubled = [...seq, ...seq];
-    doubled.forEach((t,i)=> scrollEl.appendChild(makeTile(t, i)));
+    doubled.forEach(t=> scrollEl.appendChild(makeTile(t)));
+
+    const firstImgs = [...scrollEl.querySelectorAll('img')].slice(0,6); // warm more thumbs up front
+    firstImgs.forEach(img=>{
+      img.fetchPriority = 'high';
+      if (img.dataset.src){ img.src = img.dataset.src; img.removeAttribute('data-src'); }
+      if (img.dataset.srcset){ img.srcset = img.dataset.srcset; img.removeAttribute('data-srcset'); }
+    });
 
     requestAnimationFrame(()=>{
       const totalW = scrollEl.scrollWidth / 2;
-      const pxPerSec = 60;
-      const dur = Math.max(20, Math.round(totalW / pxPerSec));
+      const pxPerSec = 55;
+      const dur = Math.max(24, Math.round(totalW / pxPerSec));
       document.documentElement.style.setProperty('--marqueeDur', dur+'s');
     });
   }
-
-  // Paint instantly from prior session if available
-  (function paintBannerFromSession(){
-    try{
-      const raw = sessionStorage.getItem('banner:tiles');
-      if (!raw) return;
-      const tiles = JSON.parse(raw);
-      if (Array.isArray(tiles) && tiles.length) fillBanner(tiles);
-    }catch{}
-  })();
 
   rail.addEventListener('mouseenter', ()=> rail.classList.add('paused'));
   rail.addEventListener('mouseleave', ()=> rail.classList.remove('paused'));
   $('#bnPrev').addEventListener('click', ()=>{ rail.scrollLeft -= 260; });
   $('#bnNext').addEventListener('click', ()=>{ rail.scrollLeft += 260; });
 
-  /* ---------- Page wiring ---------- */
   $$('.tab-btn').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       $$('.tab-btn').forEach(b=>{ b.classList.toggle('active', b===btn); b.setAttribute('aria-selected', b===btn) });
@@ -657,7 +641,7 @@
       {tag:'RIGS', body:'Technodolly/Graphlite/Spydercam/MILO profiles loaded'}
     ]);
 
-    // Testimonials placeholder
+    // Testimonials placeholder (gag text gets replaced on sheet load)
     const tBox  = document.getElementById('testimonialsBox');
     const tList = document.getElementById('testimonialsList');
     const tTitle= document.getElementById('testimonialsTitle');
@@ -673,30 +657,69 @@
   (async function init(){
     try{
       setStatus('Routing request to MOTHER…', sysStatus.href);
+
+      // discoverGids() stays the same logic
+      async function discoverGids(pubhtml){
+        const map = {};
+        try{
+          const html = await fetch(pubhtml, {mode:"cors"}).then(r=>r.text());
+          const uniqueGids = [...new Set([...html.matchAll(/gid=(\d+)/g)].map(m=>m[1]))];
+          for (const gid of uniqueGids){
+            const txt = await fetch(buildCsvUrlFromGid(pubhtml, gid)).then(r=>r.text()).catch(()=>null);
+            if (!txt) continue;
+            const rows = csvToObjects(txt);
+            const hdr = Object.keys(rows[0]||{}).join('|').toLowerCase();
+            if (hdr.includes('primary image') && hdr.includes('on set?')) map['Ariel_Feblowitz_Works']=gid;
+            else if (hdr.includes('ride image') && hdr.includes('ride name')) map['Rides']=gid;
+            else if (hdr.includes('type') && hdr.includes('video_id')) map['Personal Youtube']=gid;
+            else if (hdr.includes('key') && hdr.includes('value')) map['Main site info']=gid;
+            else if (hdr.includes('from') && hdr.includes('testimonial')) map['Testimonials']=gid;
+          }
+        }catch(e){ console.error('[discoverGids]', e); }
+        return { ...map, ...TAB_MAP };
+      }
+
       const gids = await discoverGids(PUBHTML);
 
-      async function pullTab(name){
+      // pullTab with iOS + TTL handling
+      async function pullTab(name, {bypassCache=false} = {}){
         const gid = gids[name]; if(!gid) return {rows:[], raw:null};
         const key = `csv:${gid}`;
-        // iOS/WebKit: never use local cache; always fresh per-minute
-        if (isIOSWebKit){
-          const txt = await fetch(buildCsvUrlFromGid(PUBHTML, gid), {mode:'cors', cache:'no-store'}).then(r=>r.text());
-          return { rows: csvToObjects(txt), raw: txt };
-        }
-        // Non-iOS: keep fast path for everything except "Main site info"
-        if (name !== 'Main site info'){
+        let txt;
+
+        const base = buildCsvUrlFromGid(PUBHTML, gid);
+        // "Main site info" should feel even more live
+        const liveUrl = addBuster(base);
+        const iosOpts = IOS ? { cache: 'reload' } : {};
+
+        if (name === 'Main site info' || bypassCache){
+          txt = await fetch(liveUrl, iosOpts).then(r=>r.text());
+        } else {
           const cached = cache.get(key);
-          if (cached && cached.txt) return { rows: csvToObjects(cached.txt), raw: cached.txt };
+          if (cached && cached.txt){ txt = cached.txt; }
+          else {
+            const url = IOS ? liveUrl : base; // iOS always busts
+            txt = await fetch(url, iosOpts).then(r=>r.text());
+            cache.set(key, {txt});
+          }
         }
-        const txt = await fetch(buildCsvUrlFromGid(PUBHTML, gid), {mode:'cors', cache:'no-store'}).then(r=>r.text());
-        cache.set(key, {ts:Date.now(), txt});
         return { rows: csvToObjects(txt), raw: txt };
       }
 
-      // MAIN INFO (always fresh per-minute)
+      // MAIN INFO (always live-busted)
       const mainInfoPull = await pullTab('Main site info');
       const mainInfo = {};
       (mainInfoPull.rows||[]).forEach(r=> mainInfo[(r.key||'').trim()] = (r.value||'').trim());
+
+      // Optional server-controlled TTL (seconds) from sheet
+      const ttlSheet = Number(mainInfo.cache_ttl_seconds||'');
+      if (!isNaN(ttlSheet) && ttlSheet>0) {
+        // cap between 15s and 5m
+        const t = Math.min(300, Math.max(15, ttlSheet));
+        // update globals
+        // (not fatal if blocked by const; we simply shadow via window)
+        window.__DATA_TTL_OVERRIDE__ = t*1000;
+      }
 
       // Labels/links
       const defaultTitle = 'Subject: ARI FEBLOWITZ';
@@ -771,17 +794,18 @@
       })();
 
       const defer = window.requestIdleCallback || (fn=>setTimeout(fn, 0));
+      // === BANNER SPEED TUNING: kick sooner
+      defer(()=> setTimeout(buildBannerDeferred, 160));
       defer(loadSections);
-      defer(()=> setTimeout(buildBannerDeferred, 400));
 
-      async function loadSections(){
+      async function loadSections({bypassCache=false} = {}){
         try{
-          if (loaded.sections) return; loaded.sections = true;
+          if (loaded.sections && !bypassCache) return; loaded.sections = true;
 
-          const personalPull = await pullTab('Personal Youtube');
-          const proPull      = await pullTab('Ariel_Feblowitz_Works');
-          const ridesPull    = await pullTab('Rides');
-          const testiPull    = await pullTab('Testimonials');
+          const personalPull = await pullTab('Personal Youtube', {bypassCache});
+          const proPull      = await pullTab('Ariel_Feblowitz_Works', {bypassCache});
+          const ridesPull    = await pullTab('Rides', {bypassCache});
+          const testiPull    = await pullTab('Testimonials', {bypassCache});
 
           const personalTab = personalPull.rows;
           const proRows = proPull.rows;
@@ -799,7 +823,7 @@
               const videoId=(r.video_id||'').trim();
               const url=(r.youtube_url||'').trim() || (videoId?`https://www.youtube.com/watch?v=${videoId}`:'');
               const thumb=(r.thumb_url||'').trim() || (videoId? ytThumb(videoId) : '');
-              videos.push({ prio:normNum(r.prio), includeInBanner: (String(r.include_in_banner||'').toLowerCase()==='true') || normNum(r.prio)>=5, featured: (String(r.featured||'').toLowerCase()==='true'), videoId, title:(r.title||'').trim(), role:(r.role||'').trim(), url, thumb, ytid: videoId });
+              videos.push({ prio:normNum(r.prio), includeInBanner: normBool(r.include_in_banner) || normNum(r.prio)>=5, featured: normBool(r.featured), videoId, title:(r.title||'').trim(), role:(r.role||'').trim(), url, thumb, ytid: videoId });
             }
           });
 
@@ -830,7 +854,7 @@
           const proItems = (proRows||[]).map(r=>({
             title:(r['Name']||'').trim(), url:fixImdb((r['URL']||'').trim()),
             role:(r['My Role']||'').trim(), prod:(r['Production Co.']||'').trim(),
-            onSet: (String(r['On Set?']||'').toLowerCase()==='true'), prio:normNum(r['Prio?']),
+            onSet: normBool(r['On Set?']), prio:normNum(r['Prio?']),
             posters:[(r['Primary image']||'').trim()].filter(Boolean)
           }))
           .filter(x=>x.title && x.prio>0)
@@ -852,32 +876,24 @@
           // Render content grids
           renderPro(proItems); renderRides(rideItems); renderPersonal(videos, (meta.featured_video_id||'').trim());
 
-          // Banner tiles for this pageview (also cache to session for instant paint on next load)
+          // Banner tiles
           window.__tilesData = {
             pro: proItems.filter(p=>p.prio>=5).map(p=>({type:'pro', kind:'poster', title:p.title, img:p.posters[0]||'', url:p.url||'#'})),
             ride: rideItems.filter(r=>r.prio===10).map(r=>({type:'ride', kind:'wide', title:r.title, img:r.posters[0]||'', url:r.url||'#'})),
             per: videos.filter(v=>(v.prio||0)>=5 || v.includeInBanner).map(v=>({type:'personal', kind:'wide', title:v.title, img:v.thumb||'', url:v.url||'#', ytid:v.videoId||''}))
           };
+          // If banner already ran, refresh with new data quickly
+          if (loaded.banner) { fillBanner([...window.__tilesData.pro, ...window.__tilesData.ride, ...window.__tilesData.per]); }
 
-          try{
-            const merged = (()=> {
-              const {pro, ride, per} = window.__tilesData;
-              const interleaved=[]; const L=Math.max(pro.length, ride.length, per.length);
-              for(let i=0;i<L;i++){ if(pro[i]) interleaved.push(pro[i]); if(ride[i]) interleaved.push(ride[i]); if(per[i]) interleaved.push(per[i]); }
-              return interleaved;
-            })();
-            if (merged.length){
-              sessionStorage.setItem('banner:tiles', JSON.stringify(merged.slice(0,32)));
-            }
-          }catch{}
-
-          // --- TESTIMONIALS (now always fresh per-minute on all devices)
+          // --- TESTIMONIALS: title from B1 + real rows
           const tBox  = document.getElementById('testimonialsBox');
           const tList = document.getElementById('testimonialsList');
           const tTitle= document.getElementById('testimonialsTitle');
 
           let tHeading = 'Testimonials';
-          if (testiRaw){ try{ const b1 = csvFirstRowSecondCol(testiRaw); if (b1) tHeading = b1; }catch{} }
+          if (testiRaw){
+            try{ const b1 = csvFirstRowSecondCol(testiRaw); if (b1) tHeading = b1; }catch{}
+          }
           tTitle.textContent = tHeading;
 
           const items = (testiRows||[])
@@ -953,8 +969,16 @@
         const {pro, ride, per} = window.__tilesData;
         const interleaved=[]; const L=Math.max(pro.length, ride.length, per.length);
         for(let i=0;i<L;i++){ if(pro[i]) interleaved.push(pro[i]); if(ride[i]) interleaved.push(ride[i]); if(per[i]) interleaved.push(per[i]); }
-        if (interleaved.length) fillBanner(interleaved);
+        fillBanner(interleaved);
       }
+
+      // Soft refresh hook used on iOS pageshow persisted returns
+      window.__softRefresh = async function(){
+        try{
+          loaded.sections = false;
+          await loadSections({bypassCache:true});
+        }catch(e){ console.warn('softRefresh failed', e); }
+      };
 
     }catch(err){ console.error('[init]', err); }
   })();
