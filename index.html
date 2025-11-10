@@ -17,6 +17,11 @@
   <link rel="preconnect" href="https://i.ytimg.com" crossorigin>
   <link rel="preconnect" href="https://www.youtube.com" crossorigin>
   <link rel="preconnect" href="https://player.vimeo.com" crossorigin>
+  <link rel="dns-prefetch" href="https://docs.google.com">
+  <link rel="dns-prefetch" href="https://docs.googleusercontent.com">
+  <link rel="dns-prefetch" href="https://img.youtube.com">
+  <link rel="dns-prefetch" href="https://i.ytimg.com">
+  <link rel="dns-prefetch" href="https://www.youtube.com">
 
   <!-- Orbitron for 80s UI headings (fallback to system sans) -->
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
@@ -55,7 +60,7 @@
       opacity:.45;
     }
 
-    /* CRT scan + glow (now guaranteed non-interactive) */
+    /* CRT scan + glow (non-interactive) */
     body::after{
       content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
       background-image: repeating-linear-gradient(to bottom, rgba(0,255,156,.24), rgba(0,255,156,.24) 2px, rgba(0,0,0,0) 3px, rgba(0,0,0,0) 7px);
@@ -100,7 +105,7 @@
     .nav{display:flex; gap:clamp(8px,1vw,12px); align-items:center; justify-content:space-between; flex-wrap:wrap; margin:clamp(6px,.8vw,10px) 0}
     .brand{display:flex; gap:clamp(10px,1.2vw,14px); align-items:center; flex-wrap:wrap}
 
-    /* Status dot (preload yellow → ready green, hover flicker, click yellow burst) */
+    /* Status dot */
     .brand .dot{ width:clamp(12px,1.2vw,16px); height:clamp(12px,1.2vw,16px); border-radius:50%;
       background:radial-gradient(circle at 30% 30%, #ffd24a, #6b5a1a 70%); box-shadow:0 0 22px #ffd24a, 0 0 36px rgba(255,210,74,.5); animation:blinkFast 1.1s infinite; position:relative; }
     body.ready .brand .dot{ background:radial-gradient(circle at 30% 30%, var(--accent), #0f4630 70%); box-shadow:0 0 22px var(--accent); animation:blinkSlow 3.6s infinite; }
@@ -127,7 +132,7 @@
     .tab-btn{padding:.6em .9em; border-radius:12px; background:var(--panel); color:var(--txt); border:1px solid rgba(66,255,209,.32); cursor:pointer; font-weight:700}
     .tab-btn.active{outline:1px solid var(--accent); box-shadow:0 0 0 2px rgba(0,255,156,.12) inset}
 
-    /* === HERO LAYOUT === (unchanged logic; new cosmetics below) */
+    /* === HERO LAYOUT === */
     .hero{
       margin:clamp(12px,1.6vw,20px) 0;
       display:grid;
@@ -155,7 +160,7 @@
       .leftStack{ display:contents; }
     }
 
-    /* Card style + animated “light sweep” — NOW NON-INTERACTIVE */
+    /* Card style + animated “light sweep” — non-interactive */
     .card{
       position:relative;
       background:linear-gradient(180deg, rgba(10,18,16,.85), rgba(5,9,11,.9));
@@ -172,7 +177,7 @@
       content:""; position:absolute; top:-60%; left:-40%; width:60%; height:220%;
       background:linear-gradient(120deg, transparent 40%, rgba(255,255,255,.08), transparent 60%);
       transform:rotate(14deg); animation:sweep 8s linear infinite;
-      pointer-events:none; /* <<< KEY FIX: decorative sweep never blocks clicks */
+      pointer-events:none;
     }
     @keyframes edgeSpin{to{transform:rotate(360deg)}}
     @keyframes sweep{0%{transform:translateX(-40%) rotate(14deg)} 100%{transform:translateX(200%) rotate(14deg)}}
@@ -194,7 +199,7 @@
 
     /* Grids */
     .grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:var(--grid); content-visibility:auto}
-    @media (max-width:1000px){ .grid{grid-template-columns:repeat(2, 1 fr)} }
+    @media (max-width:1000px){ .grid{grid-template-columns:repeat(2, 1fr)} }
     @media (max-width:620px){ .grid{grid-template-columns:1fr} }
     .proj{overflow:hidden}
     .thumb{position:relative; aspect-ratio:16/9; overflow:hidden; border-radius:14px; border:1px solid rgba(66,255,209,.26)}
@@ -437,7 +442,7 @@
   })();
 
   const PUBHTML = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQxBxTbb-Ax7rpnnn5zWDUW6fGq1nUGIEPJb5qfaxifqKyZexNLK28gwpQLS5T5vpeuSvZicAEg69U1/pubhtml";
-  const TAB_MAP = {};
+  const TAB_MAP = {}; // optional manual overrides
 
   const DEFAULT_PHONE = "(818)434-8013";
   const DEFAULT_EMAIL = "arifeblowitzvfx@gmail.com";
@@ -496,31 +501,53 @@
 
   const normBool = v => String(v||"").trim().toLowerCase()==='true' || String(v||"").trim().toLowerCase()==='yes';
   const normNum = v => { const n = Number(String(v||"").replace(/[^\d.-]/g,"")); return isNaN(n)?0:n; };
+  const sha1 = str => { // tiny sync hash for change detection
+    let h=0; for (let i=0;i<str.length;i++){ h=((h<<5)-h)+str.charCodeAt(i); h|=0; }
+    return h.toString(36);
+  };
   function buildCsvUrlFromGid(pubhtml, gid){ return pubhtml.replace(/\/pubhtml.*/, '/pub') + `?gid=${gid}&single=true&output=csv`; }
 
-  const cache = { get(key){ try{ return JSON.parse(localStorage.getItem(key)||'null'); }catch{return null} }, set(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch{} } };
-
-  /* === LIVE CACHE FIXES === */
-
-  // Cache policy per tab (ms). 0 = always fresh.
-  const TAB_TTL = {
-    'Main site info': 0,            // always fresh
-    'Testimonials': 0,              // always fresh (so new quotes show up right away)
-    'Personal Youtube': 30000,      // refresh every ~30s
-    'Ariel_Feblowitz_Works': 30000, // refresh every ~30s
-    'Rides': 30000                  // refresh every ~30s
+  const cache = {
+    get(key){ try{ return JSON.parse(localStorage.getItem(key)||'null'); }catch{return null} },
+    set(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch{} },
+    del(key){ try{ localStorage.removeItem(key);}catch{} }
   };
-  // Time-sliced cache-buster that only changes every 30s
-  const timeBuster = () => Math.floor(Date.now() / 30000);
 
+  /* === LIVE CACHE POLICIES === */
+  const TAB_TTL = {
+    'Main site info': 0,
+    'Testimonials': 0,
+    'Personal Youtube': 30000,
+    'Ariel_Feblowitz_Works': 30000,
+    'Rides': 30000
+  };
+  const timeBuster = () => Math.floor(Date.now() / 30000); // changes every 30s
+
+  // Abortable fetch with timeout
+  async function fetchText(url, {timeout=9000, cacheMode="no-store"}={}){
+    const ctrl = new AbortController();
+    const t = setTimeout(()=>ctrl.abort(), timeout);
+    try{
+      const res = await fetch(url, {cache:cacheMode, signal:ctrl.signal, mode:"cors", credentials:"omit"});
+      const txt = await res.text();
+      return txt;
+    } finally { clearTimeout(t); }
+  }
+
+  // GID discovery memoized
   async function discoverGids(pubhtml){
+    const MEMO_KEY = 'gids:memo';
+    const memo = cache.get(MEMO_KEY);
+    if (memo && memo.ts && (Date.now()-memo.ts) < 12*60*60*1000) {
+      return { ...memo.map, ...TAB_MAP };
+    }
     const map = {};
     try{
-      const html = await fetch(pubhtml + `?cb=${timeBuster()}`, {mode:"cors", cache:"no-store"}).then(r=>r.text());
+      const html = await fetchText(pubhtml + `?cb=${timeBuster()}`, {cacheMode:"no-store"});
       const uniqueGids = [...new Set([...html.matchAll(/gid=(\d+)/g)].map(m=>m[1]))];
       for (const gid of uniqueGids){
         const probeUrl = buildCsvUrlFromGid(pubhtml, gid) + `&cb=${timeBuster()}`;
-        const txt = await fetch(probeUrl, {cache:"no-store"}).then(r=>r.text()).catch(()=>null);
+        const txt = await fetchText(probeUrl, {cacheMode:"no-store"}).catch(()=>null);
         if (!txt) continue;
         const rows = csvToObjects(txt);
         const hdr = Object.keys(rows[0]||{}).join('|').toLowerCase();
@@ -530,8 +557,43 @@
         else if (hdr.includes('key') && hdr.includes('value')) map['Main site info']=gid;
         else if (hdr.includes('from') && hdr.includes('testimonial')) map['Testimonials']=gid;
       }
+      cache.set(MEMO_KEY, {ts:Date.now(), map});
     }catch(e){ console.error('[discoverGids]', e); }
     return { ...map, ...TAB_MAP };
+  }
+
+  // Stale-while-revalidate pull
+  async function pullTab(name, gids){
+    const gid = gids[name]; if(!gid) return {rows:[], raw:null, hash:null};
+    const key = `csv:${gid}`;
+    const ttl = (name in TAB_TTL) ? TAB_TTL[name] : 30000;
+    const url = buildCsvUrlFromGid(PUBHTML, gid) + `&cb=${timeBuster()}`;
+
+    const cached = cache.get(key);
+    let usedCached=false, rows=[], raw=null, hash=null;
+
+    if (cached && cached.txt && (ttl===0 || (cached.ts + ttl > Date.now()))) {
+      raw = cached.txt; rows = csvToObjects(raw); hash = cached.hash || sha1(raw); usedCached = true;
+    }
+
+    // For 0-TTL tabs, we still render cached instantly, then revalidate
+    if (!usedCached && cached && cached.txt){
+      raw = cached.txt; rows = csvToObjects(raw); hash = cached.hash || sha1(raw);
+    }
+
+    // Revalidate (non-blocking)
+    (async ()=>{
+      try{
+        const fresh = await fetchText(url, {cacheMode:"no-store"});
+        const freshHash = sha1(fresh);
+        if (!cached || cached.hash !== freshHash){
+          cache.set(key, { ts: Date.now(), txt: fresh, hash: freshHash });
+          document.dispatchEvent(new CustomEvent('csv-updated', {detail:{ gid, name, txt:fresh, hash:freshHash }}));
+        }
+      }catch(e){ console.warn('[pullTab revalidate]', name, e); }
+    })();
+
+    return { rows, raw, hash, gid };
   }
 
   const rail = $('#bannerRail'); const scrollEl = $('#bannerScroll');
@@ -546,12 +608,14 @@
       if (img.dataset.srcset){ img.srcset = img.dataset.srcset; img.removeAttribute('data-srcset'); }
       io.unobserve(img);
     });
-  }, { root: rail, rootMargin: '100% 40%', threshold: 0.01 });
+  }, { root: rail, rootMargin: '120% 60%', threshold: 0.01 });
 
-  function makeImgLazy({src, alt, kind, ytId}){
+  function makeImgLazy({src, alt, kind, ytId, highPrio=false}){
     const img = new Image();
     img.alt = alt || '';
-    img.loading = 'lazy'; img.decoding = 'async'; img.fetchPriority = 'low';
+    img.loading = highPrio ? 'eager' : 'lazy';
+    img.decoding = highPrio ? 'sync' : 'async';
+    img.fetchPriority = highPrio ? 'high' : 'low';
     if (kind==='poster'){ img.width = 800; img.height = 1200; } else { img.width = 1280; img.height = 720; }
     let main = src;
     if (ytId){
@@ -570,35 +634,38 @@
     return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
   }
 
-  function makeTile(t){
+  function makeTile(t, highPrio=false){
     const a=document.createElement('a');
     a.className='tile ' + (t.type==='pro'?'poster':'wide');
     a.href=t.url||'#'; a.target='_blank'; a.rel='noopener';
     a.setAttribute('data-title', t.title||'');
     const isPoster = t.type==='pro' || t.kind==='poster';
-    const img = makeImgLazy({src: t.img || titlePlaceholderSVG(t.title), alt: t.title||'', kind: isPoster?'poster':'wide', ytId: (t.ytid||'').trim()});
+    const img = makeImgLazy({src: t.img || titlePlaceholderSVG(t.title), alt: t.title||'', kind: isPoster?'poster':'wide', ytId: (t.ytid||'').trim(), highPrio});
     a.appendChild(img);
     return a;
   }
 
-  function fillBanner(tiles){
+  // Progressive banner fill: first 8 now, rest later; doubling after first paint
+  function fillBannerProgressive(allTiles){
     scrollEl.innerHTML='';
-    const seq = tiles.slice(0, 42);
-    const doubled = [...seq, ...seq];
-    doubled.forEach(t=> scrollEl.appendChild(makeTile(t)));
+    const seq = allTiles.slice(0, 42);
+    const firstChunk = seq.slice(0, 8);
+    const rest = seq.slice(8);
 
-    const firstImgs = [...scrollEl.querySelectorAll('img')].slice(0,4);
-    firstImgs.forEach(img=>{
-      img.fetchPriority = 'high';
-      if (img.dataset.src){ img.src = img.dataset.src; img.removeAttribute('data-src'); }
-      if (img.dataset.srcset){ img.srcset = img.dataset.srcset; img.removeAttribute('data-srcset'); }
-    });
+    firstChunk.forEach((t,i)=> scrollEl.appendChild(makeTile(t, /*highPrio*/ i<4)));
 
     requestAnimationFrame(()=>{
-      const totalW = scrollEl.scrollWidth / 2;
+      const totalW = Math.max(1, scrollEl.scrollWidth);
       const pxPerSec = 55;
-      const dur = Math.max(28, Math.round(totalW / pxPerSec));
+      const dur = Math.max(24, Math.round(totalW / pxPerSec));
       document.documentElement.style.setProperty('--marqueeDur', dur+'s');
+    });
+
+    // Defer the rest and the seamless double
+    const idle = window.requestIdleCallback || (fn=>setTimeout(fn,0));
+    idle(()=>{
+      rest.forEach(t=> scrollEl.appendChild(makeTile(t)));
+      const doubled = [...seq].forEach(t=> scrollEl.appendChild(makeTile(t))); // second loop
     });
   }
 
@@ -648,7 +715,7 @@
       {tag:'RIGS', body:'Technodolly/Graphlite/Spydercam/MILO profiles loaded'}
     ]);
 
-    // Testimonials placeholder (gag text gets replaced on sheet load)
+    // Testimonials placeholder gag (gets replaced)
     const tBox  = document.getElementById('testimonialsBox');
     const tList = document.getElementById('testimonialsList');
     const tTitle= document.getElementById('testimonialsTitle');
@@ -666,122 +733,114 @@
       setStatus('Routing request to MOTHER…', sysStatus.href);
       const gids = await discoverGids(PUBHTML);
 
-      async function pullTab(name){
-        const gid = gids[name]; if(!gid) return {rows:[], raw:null};
-        const key = `csv:${gid}`;
-        const ttl = (name in TAB_TTL) ? TAB_TTL[name] : 30000; // default TTL 30s
-        const now = Date.now();
-        const url = buildCsvUrlFromGid(PUBHTML, gid) + `&cb=${timeBuster()}`;
+      async function pullAndApply_Main(){
+        const mainPull = await pullTab('Main site info', gids);
+        const rows = mainPull.rows;
+        if (!rows.length) return;
+        const mainInfo = {}; rows.forEach(r=> mainInfo[(r.key||'').trim()] = (r.value||'').trim());
 
-        if (ttl === 0) {
-          const txt = await fetch(url, {cache:"no-store"}).then(r=>r.text());
-          return { rows: csvToObjects(txt), raw: txt };
-        }
+        // Labels/links
+        const defaultTitle = 'Subject: ARI FEBLOWITZ';
+        $('#siteTitle').textContent = mainInfo.site_title || defaultTitle;
+        const imdbUrl = fixImdb(mainInfo.imdb_url || 'https://www.imdb.me/ArielFeblowitz');
+        const subtitleTxt = mainInfo.site_subtitle || 'Techvis & Virtual Production Supervisor';
+        const subtitleEl = $('#siteSubtitle'); subtitleEl.textContent = subtitleTxt; subtitleEl.href = imdbUrl;
+        $('#about1').textContent = mainInfo.about_paragraph_1 || $('#about1').textContent;
+        $('#about2').textContent = mainInfo.about_paragraph_2 || $('#about2').textContent;
+        const linksHref = mainInfo.all_links_url || 'https://linktr.ee/admin/links';
+        $('#btnIMDb').href = imdbUrl;
+        $('#btnYouTube').href = mainInfo.youtube_url || $('#btnYouTube').href;
+        $('#btnLinks').href = linksHref;
+        const resumeURL = (mainInfo.resume_url && mainInfo.resume_url.trim()) || DEFAULT_RESUME;
+        $('#btnResume').href = resumeURL; $('#dockResume').href = resumeURL;
 
-        const cached = cache.get(key);
-        if (cached && cached.txt && (cached.ts + ttl > now)) {
-          return { rows: csvToObjects(cached.txt), raw: cached.txt };
-        }
+        setStatus('Link established', linksHref);
+        const aboutStatus = $('#aboutStatus'); if (aboutStatus) aboutStatus.style.display = 'none';
+        document.body.classList.add('ready');
+        $('#reelHeader').textContent = 'Demo Reel';
+        $('#aboutHeader').textContent = 'About';
+        loaded.main = true;
 
-        const txt = await fetch(url, {cache:"no-store"}).then(r=>r.text());
-        cache.set(key, { ts: now, txt });
-        return { rows: csvToObjects(txt), raw: txt };
-      }
+        const phone = (mainInfo.phone||DEFAULT_PHONE).trim();
+        const email = (mainInfo.email||DEFAULT_EMAIL).trim();
+        setTopContact(phone, email);
+        setContactSection(phone, email);
+        enhanceContactLinks();
 
-      // MAIN INFO
-      const mainInfoPull = await pullTab('Main site info');
-      const mainInfo = {};
-      (mainInfoPull.rows||[]).forEach(r=> mainInfo[(r.key||'').trim()] = (r.value||'').trim());
-
-      // Labels/links
-      const defaultTitle = 'Subject: ARI FEBLOWITZ';
-      $('#siteTitle').textContent = mainInfo.site_title || defaultTitle;
-      const imdbUrl = fixImdb(mainInfo.imdb_url || 'https://www.imdb.me/ArielFeblowitz');
-      const subtitleTxt = mainInfo.site_subtitle || 'Techvis & Virtual Production Supervisor';
-      const subtitleEl = $('#siteSubtitle'); subtitleEl.textContent = subtitleTxt; subtitleEl.href = imdbUrl;
-      $('#about1').textContent = mainInfo.about_paragraph_1 || $('#about1').textContent;
-      $('#about2').textContent = mainInfo.about_paragraph_2 || $('#about2').textContent;
-      const linksHref = mainInfo.all_links_url || 'https://linktr.ee/admin/links';
-      $('#btnIMDb').href = imdbUrl;
-      $('#btnYouTube').href = mainInfo.youtube_url || $('#btnYouTube').href;
-      $('#btnLinks').href = linksHref;
-      const resumeURL = (mainInfo.resume_url && mainInfo.resume_url.trim()) || DEFAULT_RESUME;
-      $('#btnResume').href = resumeURL; $('#dockResume').href = resumeURL;
-
-      setStatus('Link established', linksHref);
-      const aboutStatus = $('#aboutStatus'); if (aboutStatus) aboutStatus.style.display = 'none';
-      document.body.classList.add('ready');
-      $('#reelHeader').textContent = 'Demo Reel';
-      $('#aboutHeader').textContent = 'About';
-      loaded.main = true;
-
-      const phone = (mainInfo.phone||DEFAULT_PHONE).trim();
-      const email = (mainInfo.email||DEFAULT_EMAIL).trim();
-      setTopContact(phone, email);
-      setContactSection(phone, email);
-      enhanceContactLinks();
-
-      // Dock copy button wires to current email
-      document.getElementById('dockCopy')?.addEventListener('click', ()=>{
-        const e = (mainInfo.email || DEFAULT_EMAIL).trim();
-        navigator.clipboard?.writeText(e).then(()=> toast('Copied: '+e)).catch(()=> toast(e));
-      });
-
-      // HUD title & strengths
-      const hudTitleEl = $('#hudTitle');
-      const assessTitle = mainInfo.ASSESSMENT || mainInfo.assessment || 'THREAT ASSESSMENT // SKNET_0001';
-      hudTitleEl.textContent = assessTitle;
-
-      const strengthsText = (mainInfo.Strengths || mainInfo.strengths || '').trim();
-      if (strengthsText){
-        const hudBody = $('#hudBody'); hudBody.innerHTML = '';
-        strengthsText.split(/\n+/).map(s=>s.trim()).filter(Boolean).forEach(s=>{
-          const m = s.match(/^([^:]+):\s*(.+)$/);
-          const tag = (m ? m[1] : 'Signal'), body = (m ? m[2] : s);
-          const row = document.createElement('div'); row.className='line';
-          const t = document.createElement('span'); t.className='tag'; t.textContent = tag.toUpperCase();
-          const b = document.createElement('div'); b.className='body'; b.textContent = body;
-          row.appendChild(t); row.appendChild(b); hudBody.appendChild(row);
+        // Dock copy button wires to current email
+        document.getElementById('dockCopy')?.addEventListener('click', ()=>{
+          const e = (mainInfo.email || DEFAULT_EMAIL).trim();
+          navigator.clipboard?.writeText(e).then(()=> toast('Copied: '+e)).catch(()=> toast(e));
         });
-        document.getElementById('hudCard').style.display='block';
+
+        // HUD title & strengths
+        const hudTitleEl = $('#hudTitle');
+        const assessTitle = mainInfo.ASSESSMENT || mainInfo.assessment || 'THREAT ASSESSMENT // SKNET_0001';
+        hudTitleEl.textContent = assessTitle;
+
+        const strengthsText = (mainInfo.Strengths || mainInfo.strengths || '').trim();
+        if (strengthsText){
+          const hudBody = $('#hudBody'); hudBody.innerHTML = '';
+          strengthsText.split(/\n+/).map(s=>s.trim()).filter(Boolean).forEach(s=>{
+            const m = s.match(/^([^:]+):\s*(.+)$/);
+            const tag = (m ? m[1] : 'Signal'), body = (m ? m[2] : s);
+            const row = document.createElement('div'); row.className='line';
+            const t = document.createElement('span'); t.className='tag'; t.textContent = tag.toUpperCase();
+            const b = document.createElement('div'); b.className='body'; b.textContent = body;
+            row.appendChild(t); row.appendChild(b); hudBody.appendChild(row);
+          });
+          document.getElementById('hudCard').style.display='block';
+        }
+
+        // Reel
+        (function loadReel(){
+          const reelInput = (mainInfo.reel_youtube_id||'').trim();
+          const reelFrame = $('#reelFrame');
+          const setIframe = src => { reelFrame.loading='lazy'; reelFrame.decoding='async'; reelFrame.fetchPriority='low'; reelFrame.src = src; };
+          if (/^\s*</i.test(reelInput)){
+            const tmp = document.createElement('div'); tmp.innerHTML = reelInput;
+            const ifr = tmp.querySelector('iframe');
+            if (ifr && ifr.src){ setIframe(ifr.src); loaded.reel=true; return; }
+          }
+          const vimeoM = reelInput.match(/vimeo\.com\/(?:video\/)?(\d+)/i);
+          if (vimeoM){ setIframe(`https://player.vimeo.com/video/${vimeoM[1]}?badge=0&autopause=0&title=0&byline=0`); loaded.reel=true; return; }
+          if (/^\d{7,}$/.test(reelInput)){ setIframe(`https://player.vimeo.com/video/${reelInput}?badge=0&autopause=0&title=0&byline=0`); loaded.reel=true; return; }
+          const ytM = reelInput.match(/[?&]v=([\w-]{6,})/) || reelInput.match(/youtu\.be\/([\w-]{6,})/);
+          if (ytM){ setIframe(`https://www.youtube.com/embed/${ytM[1]}?rel=0&modestbranding=1`); loaded.reel=true; return; }
+          if (/^[\w-]{6,}$/.test(reelInput)){ setIframe(`https://www.youtube.com/embed/${reelInput}?rel=0&modestbranding=1`); loaded.reel=true; return; }
+          loaded.reel=true;
+        })();
+
+        return mainInfo;
       }
 
-      // Reel
-      (function loadReel(){
-        const reelInput = (mainInfo.reel_youtube_id||'').trim();
-        const reelFrame = $('#reelFrame');
-        const setIframe = src => { reelFrame.loading='lazy'; reelFrame.decoding='async'; reelFrame.fetchPriority='low'; reelFrame.src = src; };
-        if (/^\s*</i.test(reelInput)){
-          const tmp = document.createElement('div'); tmp.innerHTML = reelInput;
-          const ifr = tmp.querySelector('iframe');
-          if (ifr && ifr.src){ setIframe(ifr.src); loaded.reel=true; return; }
-        }
-        const vimeoM = reelInput.match(/vimeo\.com\/(?:video\/)?(\d+)/i);
-        if (vimeoM){ setIframe(`https://player.vimeo.com/video/${vimeoM[1]}?badge=0&autopause=0&title=0&byline=0`); loaded.reel=true; return; }
-        if (/^\d{7,}$/.test(reelInput)){ setIframe(`https://player.vimeo.com/video/${reelInput}?badge=0&autopause=0&title=0&byline=0`); loaded.reel=true; return; }
-        const ytM = reelInput.match(/[?&]v=([\w-]{6,})/) || reelInput.match(/youtu\.be\/([\w-]{6,})/);
-        if (ytM){ setIframe(`https://www.youtube.com/embed/${ytM[1]}?rel=0&modestbranding=1`); loaded.reel=true; return; }
-        if (/^[\w-]{6,}$/.test(reelInput)){ setIframe(`https://www.youtube.com/embed/${reelInput}?rel=0&modestbranding=1`); loaded.reel=true; return; }
-        loaded.reel=true;
-      })();
+      const mainInfo = await pullAndApply_Main();
 
+      // After main is on screen: build banner ASAP; hydrate rest after first paint or 1.2s
       const defer = window.requestIdleCallback || (fn=>setTimeout(fn, 0));
-      defer(async ()=>{
-        // Build banner ASAP (before grids pull images)
-        setTimeout(buildBannerDeferred, 0);
-        // Wait for first few banner images (or quick timeout) before hydrating sections
-        await warmBannerFirstPaint({count:6, timeout:1200});
-        loadSections(); // hydrate grids after banner first paint
+      setTimeout(buildBannerDeferred, 0);
+      await warmBannerFirstPaint({count:6, timeout:1200});
+      loadSections(); // grids after banner first paint
+
+      // Live CSV updates apply here
+      document.addEventListener('csv-updated', (ev)=>{
+        const {name, txt} = ev.detail || {};
+        if (!name || !txt) return;
+        if (name === 'Main site info'){ pullAndApply_Main(); }
+        if (name === 'Testimonials'){ refreshTestimonials(csvToObjects(txt), txt); }
+        // others are re-applied via periodic pulls if you want; current flow relies on user nav/refresh
       });
 
       async function loadSections(){
         try{
           if (loaded.sections) return; loaded.sections = true;
 
-          const personalPull = await pullTab('Personal Youtube');
-          const proPull      = await pullTab('Ariel_Feblowitz_Works');
-          const ridesPull    = await pullTab('Rides');
-          const testiPull    = await pullTab('Testimonials');
+          const [personalPull, proPull, ridesPull, testiPull] = await Promise.all([
+            pullTab('Personal Youtube', gids),
+            pullTab('Ariel_Feblowitz_Works', gids),
+            pullTab('Rides', gids),
+            pullTab('Testimonials', gids)
+          ]);
 
           const personalTab = personalPull.rows;
           const proRows = proPull.rows;
@@ -811,7 +870,8 @@
             $('#febzHeading').textContent = febzHeading;
             $('#febzBody').textContent = febzBody;
             $('#febzLink').href = `https://www.youtube.com/watch?v=${febzId}`;
-            $('#febzThumb').src = ytThumb(febzId);
+            const ft = $('#febzThumb'); ft.fetchPriority = 'high'; ft.decoding='sync'; ft.loading='eager';
+            ft.src = ytThumb(febzId);
             $('#febzBox').style.display = 'block';
           }
 
@@ -852,81 +912,71 @@
           // Render content grids
           renderPro(proItems); renderRides(rideItems); renderPersonal(videos, (meta.featured_video_id||'').trim());
 
-          // Banner tiles
+          // Banner tiles data
           window.__tilesData = {
             pro: proItems.filter(p=>p.prio>=5).map(p=>({type:'pro', kind:'poster', title:p.title, img:p.posters[0]||'', url:p.url||'#'})),
             ride: rideItems.filter(r=>r.prio===10).map(r=>({type:'ride', kind:'wide', title:r.title, img:r.posters[0]||'', url:r.url||'#'})),
             per: videos.filter(v=>(v.prio||0)>=5 || v.includeInBanner).map(v=>({type:'personal', kind:'wide', title:v.title, img:v.thumb||'', url:v.url||'#', ytid:v.videoId||''}))
           };
 
-          // Build or refresh banner now that tiles exist
+          // Build or refresh banner now
           if (!loaded.banner) {
             buildBannerDeferred();
           } else {
             const {pro, ride, per} = window.__tilesData;
             const interleaved=[]; const L=Math.max(pro.length, ride.length, per.length);
             for(let i=0;i<L;i++){ if(pro[i]) interleaved.push(pro[i]); if(ride[i]) interleaved.push(ride[i]); if(per[i]) interleaved.push(per[i]); }
-            fillBanner(interleaved);
+            fillBannerProgressive(interleaved);
           }
 
-          // --- TESTIMONIALS: title from B1 + real rows
-          const tBox  = document.getElementById('testimonialsBox');
-          const tList = document.getElementById('testimonialsList');
-          const tTitle= document.getElementById('testimonialsTitle');
+          // Testimonials
+          refreshTestimonials(testiRows, testiRaw);
 
-          let tHeading = 'Testimonials';
-          if (testiRaw){
-            try{ const b1 = csvFirstRowSecondCol(testiRaw); if (b1) tHeading = b1; }catch{}
-          }
-          tTitle.textContent = tHeading;
-
-          const items = (testiRows||[])
-            .map(r=>({ from:(r['From']||'').trim(), text:(r['Testimonial']||r['Testimonials']||r['Quote']||r['Text']||'').trim() }))
-            .filter(t=>t.from && t.text);
-
-          if (items.length){
-            const smartQuote = s=>{
-              const t = s.trim(); const b = /^["“]/.test(t); const e = /["”]$/.test(t);
-              return (b&&e)?t:`“${t.replace(/^["“'‘`]/,'').replace(/["”'’`]$/,'')}”`;
-            };
-            const esc = s=> s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
-            tList.innerHTML = '';
-            items.forEach(it=>{
-              const el = document.createElement('div'); el.className='testimonial';
-              el.innerHTML = `<span class="quote">${esc(smartQuote(it.text))}</span><span class="from">— ${esc(it.from)}</span>`;
-              tList.appendChild(el);
-            });
-            tBox.style.display = 'block';
-          }
-
-          /* === Live auto-refresh of testimonials every 15s (only one timer) === */
+          // Live refresh (debounced every 20s)
           if (!window.__testiLiveTimer) {
             window.__testiLiveTimer = setInterval(async ()=>{
               try{
-                const fresh = await pullTab('Testimonials'); // TTL=0, always fresh
-                const rows = fresh.rows || [];
-                const items2 = rows
-                  .map(r=>({ from:(r['From']||'').trim(), text:(r['Testimonial']||r['Testimonials']||r['Quote']||r['Text']||'').trim() }))
-                  .filter(t=>t.from && t.text);
-                if (items2.length) {
-                  const smartQuote = s=>{
-                    const t = s.trim(); const b = /^["“]/.test(t); const e = /["”]$/.test(t);
-                    return (b&&e)?t:`“${t.replace(/^["“'‘`]/,'').replace(/["”'’`]$/,'')}”`;
-                  };
-                  const esc = s=> s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
-                  tList.innerHTML='';
-                  items2.forEach(it=>{
-                    const el = document.createElement('div'); el.className='testimonial';
-                    el.innerHTML = `<span class="quote">${esc(smartQuote(it.text))}</span><span class="from">— ${esc(it.from)}</span>`;
-                    tList.appendChild(el);
-                  });
-                  tBox.style.display = 'block';
-                }
+                const fresh = await pullTab('Testimonials', gids); // will revalidate & emit event
+                refreshTestimonials(fresh.rows, fresh.raw||'');
               }catch(e){ console.warn('[testimonials live refresh]', e); }
-            }, 15000);
+            }, 20000);
           }
 
         }catch(err){ console.error('[loadSections]', err); }
+      }
+
+      function refreshTestimonials(testiRows, testiRaw){
+        const tBox  = document.getElementById('testimonialsBox');
+        const tList = document.getElementById('testimonialsList');
+        const tTitle= document.getElementById('testimonialsTitle');
+
+        let tHeading = 'Testimonials';
+        if (testiRaw){
+          try{ const b1 = csvFirstRowSecondCol(testiRaw); if (b1) tHeading = b1; }catch{}
+        }
+        tTitle.textContent = tHeading;
+
+        const items = (testiRows||[])
+          .map(r=>({ from:(r['From']||'').trim(), text:(r['Testimonial']||r['Testimonials']||r['Quote']||r['Text']||'').trim() }))
+          .filter(t=>t.from && t.text);
+
+        if (items.length){
+          const smartQuote = s=>{
+            const t = s.trim(); const b = /^["“]/.test(t); const e = /["”]$/.test(t);
+            return (b&&e)?t:`“${t.replace(/^["“'‘`]/,'').replace(/["”'’`]$/,'')}”`;
+          };
+          const esc = s=> s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+          // avoid layout trashing by patching nodes
+          const frag = document.createDocumentFragment();
+          items.forEach(it=>{
+            const el = document.createElement('div'); el.className='testimonial';
+            el.innerHTML = `<span class="quote">${esc(smartQuote(it.text))}</span><span class="from">— ${esc(it.from)}</span>`;
+            frag.appendChild(el);
+          });
+          tList.innerHTML='';
+          tList.appendChild(frag);
+          tBox.style.display = 'block';
+        }
       }
 
       function renderPro(items){
@@ -964,10 +1014,11 @@
         const grid = $('#personalGrid'); grid.innerHTML='';
         if (!videos.length){ grid.innerHTML = `<div class="muted">No videos yet — add rows in the “Personal Youtube” tab.</div>`; return; }
         const fIdx = videos.findIndex(v=>v.videoId===featuredId); if (fIdx>0){ const [f]=videos.splice(fIdx,1); videos.unshift(f); }
-        videos.forEach(v=>{
+        videos.forEach((v,i)=>{
           const c=document.createElement('a'); c.className='proj card'; c.href=v.url||'#'; c.target='_blank'; c.rel='noopener';
           const wrap=document.createElement('div'); wrap.className='thumb';
-          const img=new Image(); img.alt=''; img.loading='lazy'; img.decoding='async'; img.fetchPriority='low'; img.src = v.thumb || (v.videoId? ytThumb(v.videoId) : titlePlaceholderSVG(v.title)); img.width=1280; img.height=720;
+          const img=new Image(); img.alt=''; img.fetchPriority = i<2 ? 'high' : 'low'; img.decoding = i<2 ? 'sync' : 'async'; img.loading = i<2 ? 'eager' : 'lazy';
+          img.src = v.thumb || (v.videoId? ytThumb(v.videoId) : titlePlaceholderSVG(v.title)); img.width=1280; img.height=720;
           wrap.appendChild(img);
           const meta=document.createElement('div'); meta.className='meta';
           meta.innerHTML = `<div class="title">${v.title||''}</div><div class="role">${v.role||''}</div>`;
@@ -978,13 +1029,11 @@
       // === Retry-safe banner builder ===
       function buildBannerDeferred(){
         if (loaded.banner) return;
-
         const tiles = window.__tilesData;
         if (!tiles || (!tiles.pro?.length && !tiles.ride?.length && !tiles.per?.length)) {
           setTimeout(buildBannerDeferred, 150);
           return;
         }
-
         loaded.banner = true;
         const {pro=[], ride=[], per=[]} = tiles;
         const interleaved=[]; const L=Math.max(pro.length, ride.length, per.length);
@@ -992,14 +1041,14 @@
 
         // Preload a few banner images for faster first paint
         try{
-          const urls = interleaved.slice(0, 4).map(t => t.ytid ? (`https://img.youtube.com/vi/${t.ytid}/maxresdefault.jpg`) : (t.img||'')).filter(Boolean);
+          const urls = interleaved.slice(0, 6).map(t => t.ytid ? (`https://img.youtube.com/vi/${t.ytid}/maxresdefault.jpg`) : (t.img||'')).filter(Boolean);
           urls.forEach(href=>{
             const link = document.createElement('link');
             link.rel = 'preload'; link.as = 'image'; link.href = href; document.head.appendChild(link);
           });
         }catch{}
 
-        fillBanner(interleaved);
+        fillBannerProgressive(interleaved);
       }
 
       // === BANNER-FIRST SEQUENCING HELPERS ===
