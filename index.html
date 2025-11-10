@@ -127,8 +127,15 @@
     .tab-btn{padding:.6em .9em; border-radius:12px; background:var(--panel); color:var(--txt); border:1px solid rgba(66,255,209,.32); cursor:pointer; font-weight:700}
     .tab-btn.active{outline:1px solid var(--accent); box-shadow:0 0 0 2px rgba(0,255,156,.12) inset}
 
-    /* === HERO LAYOUT === */
-    .hero{ margin:clamp(12px,1.6vw,20px) 0; display:grid; grid-template-columns: minmax(0, 2.1fr) minmax(0, .9fr); grid-template-areas: "left hud"; column-gap: calc(var(--grid) + 18px); align-items:start; }
+    /* === HERO LAYOUT === (unchanged logic; new cosmetics below) */
+    .hero{
+      margin:clamp(12px,1.6vw,20px) 0;
+      display:grid;
+      grid-template-columns: minmax(0, 2.1fr) minmax(0, .9fr);
+      grid-template-areas: "left hud";
+      column-gap: calc(var(--grid) + 18px);
+      align-items:start;
+    }
     .area-left{ grid-area:left; }
     .area-hud{ grid-area:hud; }
     .leftStack{ display:flex; flex-direction:column; gap:0; }
@@ -148,7 +155,7 @@
       .leftStack{ display:contents; }
     }
 
-    /* Card style + animated “light sweep” — non-interactive */
+    /* Card style + animated “light sweep” — NOW NON-INTERACTIVE */
     .card{
       position:relative;
       background:linear-gradient(180deg, rgba(10,18,16,.85), rgba(5,9,11,.9));
@@ -165,7 +172,7 @@
       content:""; position:absolute; top:-60%; left:-40%; width:60%; height:220%;
       background:linear-gradient(120deg, transparent 40%, rgba(255,255,255,.08), transparent 60%);
       transform:rotate(14deg); animation:sweep 8s linear infinite;
-      pointer-events:none;
+      pointer-events:none; /* <<< KEY FIX: decorative sweep never blocks clicks */
     }
     @keyframes edgeSpin{to{transform:rotate(360deg)}}
     @keyframes sweep{0%{transform:translateX(-40%) rotate(14deg)} 100%{transform:translateX(200%) rotate(14deg)}}
@@ -187,7 +194,7 @@
 
     /* Grids */
     .grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:var(--grid); content-visibility:auto}
-    @media (max-width:1000px){ .grid{grid-template-columns:repeat(2, 1 fr)} }
+    @media (max-width:1000px){ .grid{grid-template-columns:repeat(2, 1fr)} }
     @media (max-width:620px){ .grid{grid-template-columns:1fr} }
     .proj{overflow:hidden}
     .thumb{position:relative; aspect-ratio:16/9; overflow:hidden; border-radius:14px; border:1px solid rgba(66,255,209,.26)}
@@ -491,40 +498,27 @@
   const normNum = v => { const n = Number(String(v||"").replace(/[^\d.-]/g,"")); return isNaN(n)?0:n; };
   function buildCsvUrlFromGid(pubhtml, gid){ return pubhtml.replace(/\/pubhtml.*/, '/pub') + `?gid=${gid}&single=true&output=csv`; }
 
-  // === LIVE REFRESH & IOS CACHE HANDLING ==============================
-  const IOS = /iP(hone|ad|od)/i.test(navigator.userAgent);
-  const DATA_TTL_MS = 60 * 1000;        // desktop TTL (feel "live" but cache-friendly)
-  const BUSTER_SLOT_MS = 30 * 1000;     // coarse buster window (keeps requests de-duped)
-  const nowSlot = () => Math.floor(Date.now() / BUSTER_SLOT_MS);
-  const addBuster = (url, slot=nowSlot()) => url + (url.includes('?') ? '&' : '?') + 'cb=' + slot;
+  const cache = { get(key){ try{ return JSON.parse(localStorage.getItem(key)||'null'); }catch{return null} }, set(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch{} } };
 
-  const cache = {
-    get(key){
-      try{
-        const raw = JSON.parse(localStorage.getItem(key)||'null');
-        if (!raw) return null;
-        if (IOS) return null;                       // iOS always bypasses local cache
-        if ((Date.now() - (raw.ts||0)) > (window.__DATA_TTL_OVERRIDE__ || DATA_TTL_MS)) return null; // expired
-        return raw;
-      }catch{ return null; }
-    },
-    set(key, val){
-      try{
-        if (IOS) return; // don't persist on iOS
-        localStorage.setItem(key, JSON.stringify({ ts: Date.now(), ...val }));
-      }catch{}
-    }
-  };
-  // Force data refresh when returning from bfcache on iOS/Safari
-  window.addEventListener('pageshow', (e)=>{
-    if (e.persisted && IOS){
-      try{
-        Object.keys(localStorage).forEach(k=>{ if (k.startsWith('csv:')) localStorage.removeItem(k); });
-      }catch{}
-      if (window.__softRefresh) window.__softRefresh();
-    }
-  });
-  // ====================================================================
+  async function discoverGids(pubhtml){
+    const map = {};
+    try{
+      const html = await fetch(pubhtml, {mode:"cors"}).then(r=>r.text());
+      const uniqueGids = [...new Set([...html.matchAll(/gid=(\d+)/g)].map(m=>m[1]))];
+      for (const gid of uniqueGids){
+        const txt = await fetch(buildCsvUrlFromGid(pubhtml, gid)).then(r=>r.text()).catch(()=>null);
+        if (!txt) continue;
+        const rows = csvToObjects(txt);
+        const hdr = Object.keys(rows[0]||{}).join('|').toLowerCase();
+        if (hdr.includes('primary image') && hdr.includes('on set?')) map['Ariel_Feblowitz_Works']=gid;
+        else if (hdr.includes('ride image') && hdr.includes('ride name')) map['Rides']=gid;
+        else if (hdr.includes('type') && hdr.includes('video_id')) map['Personal Youtube']=gid;
+        else if (hdr.includes('key') && hdr.includes('value')) map['Main site info']=gid;
+        else if (hdr.includes('from') && hdr.includes('testimonial')) map['Testimonials']=gid;
+      }
+    }catch(e){ console.error('[discoverGids]', e); }
+    return { ...map, ...TAB_MAP };
+  }
 
   const rail = $('#bannerRail'); const scrollEl = $('#bannerScroll');
 
@@ -575,11 +569,11 @@
 
   function fillBanner(tiles){
     scrollEl.innerHTML='';
-    const seq = tiles.slice(0, 36); // === BANNER SPEED TUNING
+    const seq = tiles.slice(0, 42);
     const doubled = [...seq, ...seq];
     doubled.forEach(t=> scrollEl.appendChild(makeTile(t)));
 
-    const firstImgs = [...scrollEl.querySelectorAll('img')].slice(0,6); // warm more thumbs up front
+    const firstImgs = [...scrollEl.querySelectorAll('img')].slice(0,4);
     firstImgs.forEach(img=>{
       img.fetchPriority = 'high';
       if (img.dataset.src){ img.src = img.dataset.src; img.removeAttribute('data-src'); }
@@ -589,7 +583,7 @@
     requestAnimationFrame(()=>{
       const totalW = scrollEl.scrollWidth / 2;
       const pxPerSec = 55;
-      const dur = Math.max(24, Math.round(totalW / pxPerSec));
+      const dur = Math.max(28, Math.round(totalW / pxPerSec));
       document.documentElement.style.setProperty('--marqueeDur', dur+'s');
     });
   }
@@ -653,87 +647,29 @@
     tBox.style.display = 'block';
   })();
 
-  // === BANNER-FIRST SEQUENCING HELPERS ================================
-  async function warmBannerFirstPaint({count=6, timeout=1200} = {}){
-    const pick = () => [...document.querySelectorAll('#bannerScroll img')].slice(0, count);
-    let imgs = pick();
-    if (!imgs.length) await new Promise(r=>requestAnimationFrame(()=>{ imgs = pick(); r(); }));
-    const waiters = imgs.map(img => img.complete ? Promise.resolve() :
-      new Promise(res => img.addEventListener('load', res, { once:true })));
-    await Promise.race([ Promise.all(waiters), new Promise(r=>setTimeout(r, timeout)) ]);
-  }
-  function preloadBannerFirstImages(tiles, n=4){
-    try{
-      const urls = tiles.slice(0, n).map(t => t.ytid ? (`https://img.youtube.com/vi/${t.ytid}/maxresdefault.jpg`) : (t.img||'')).filter(Boolean);
-      urls.forEach(href=>{
-        const link = document.createElement('link');
-        link.rel = 'preload'; link.as = 'image'; link.href = href; document.head.appendChild(link);
-      });
-    }catch{}
-  }
-  // ====================================================================
-
   (async function init(){
     try{
       setStatus('Routing request to MOTHER…', sysStatus.href);
-
-      async function discoverGids(pubhtml){
-        const map = {};
-        try{
-          const html = await fetch(pubhtml, {mode:"cors"}).then(r=>r.text());
-          const uniqueGids = [...new Set([...html.matchAll(/gid=(\d+)/g)].map(m=>m[1]))];
-          for (const gid of uniqueGids){
-            const txt = await fetch(buildCsvUrlFromGid(pubhtml, gid)).then(r=>r.text()).catch(()=>null);
-            if (!txt) continue;
-            const rows = csvToObjects(txt);
-            const hdr = Object.keys(rows[0]||{}).join('|').toLowerCase();
-            if (hdr.includes('primary image') && hdr.includes('on set?')) map['Ariel_Feblowitz_Works']=gid;
-            else if (hdr.includes('ride image') && hdr.includes('ride name')) map['Rides']=gid;
-            else if (hdr.includes('type') && hdr.includes('video_id')) map['Personal Youtube']=gid;
-            else if (hdr.includes('key') && hdr.includes('value')) map['Main site info']=gid;
-            else if (hdr.includes('from') && hdr.includes('testimonial')) map['Testimonials']=gid;
-          }
-        }catch(e){ console.error('[discoverGids]', e); }
-        return { ...map, ...TAB_MAP };
-      }
-
       const gids = await discoverGids(PUBHTML);
 
-      // pullTab with iOS + TTL handling
-      async function pullTab(name, {bypassCache=false} = {}){
+      async function pullTab(name){
         const gid = gids[name]; if(!gid) return {rows:[], raw:null};
         const key = `csv:${gid}`;
         let txt;
-
-        const base = buildCsvUrlFromGid(PUBHTML, gid);
-        const liveUrl = addBuster(base);
-        const iosOpts = IOS ? { cache: 'reload' } : {};
-
-        if (name === 'Main site info' || bypassCache){
-          txt = await fetch(liveUrl, iosOpts).then(r=>r.text());
+        if (name === 'Main site info'){
+          txt = await fetch(buildCsvUrlFromGid(PUBHTML, gid) + `&cb=${Date.now()}`).then(r=>r.text());
         } else {
           const cached = cache.get(key);
           if (cached && cached.txt){ txt = cached.txt; }
-          else {
-            const url = IOS ? liveUrl : base; // iOS always busts
-            txt = await fetch(url, iosOpts).then(r=>r.text());
-            cache.set(key, {txt});
-          }
+          else { txt = await fetch(buildCsvUrlFromGid(PUBHTML, gid)).then(r=>r.text()); cache.set(key, {ts:Date.now(), txt}); }
         }
         return { rows: csvToObjects(txt), raw: txt };
       }
 
-      // MAIN INFO (always live-busted)
+      // MAIN INFO
       const mainInfoPull = await pullTab('Main site info');
       const mainInfo = {};
       (mainInfoPull.rows||[]).forEach(r=> mainInfo[(r.key||'').trim()] = (r.value||'').trim());
-
-      // Optional server-controlled TTL (seconds) from sheet
-      const ttlSheet = Number(mainInfo.cache_ttl_seconds||'');
-      if (!isNaN(ttlSheet) && ttlSheet>0) {
-        const t = Math.min(300, Math.max(15, ttlSheet));
-        window.__DATA_TTL_OVERRIDE__ = t*1000;
-      }
 
       // Labels/links
       const defaultTitle = 'Subject: ARI FEBLOWITZ';
@@ -788,7 +724,7 @@
         document.getElementById('hudCard').style.display='block';
       }
 
-      // Reel (accepts YouTube/Vimeo/embed)
+      // Reel
       (function loadReel(){
         const reelInput = (mainInfo.reel_youtube_id||'').trim();
         const reelFrame = $('#reelFrame');
@@ -807,7 +743,6 @@
         loaded.reel=true;
       })();
 
-      // === BANNER-FIRST: schedule so banner owns the early pipe =========
       const defer = window.requestIdleCallback || (fn=>setTimeout(fn, 0));
       defer(async ()=>{
         // Build banner ASAP (before grids pull images)
@@ -816,16 +751,15 @@
         await warmBannerFirstPaint({count:6, timeout:1200});
         loadSections(); // hydrate grids after banner first paint
       });
-      // ==================================================================
 
-      async function loadSections({bypassCache=false} = {}){
+      async function loadSections(){
         try{
-          if (loaded.sections && !bypassCache) return; loaded.sections = true;
+          if (loaded.sections) return; loaded.sections = true;
 
-          const personalPull = await pullTab('Personal Youtube', {bypassCache});
-          const proPull      = await pullTab('Ariel_Feblowitz_Works', {bypassCache});
-          const ridesPull    = await pullTab('Rides', {bypassCache});
-          const testiPull    = await pullTab('Testimonials', {bypassCache});
+          const personalPull = await pullTab('Personal Youtube');
+          const proPull      = await pullTab('Ariel_Feblowitz_Works');
+          const ridesPull    = await pullTab('Rides');
+          const testiPull    = await pullTab('Testimonials');
 
           const personalTab = personalPull.rows;
           const proRows = proPull.rows;
@@ -896,13 +830,17 @@
           // Render content grids
           renderPro(proItems); renderRides(rideItems); renderPersonal(videos, (meta.featured_video_id||'').trim());
 
-          // Banner tiles (keep, and refresh if banner already exists)
+          // Banner tiles
           window.__tilesData = {
             pro: proItems.filter(p=>p.prio>=5).map(p=>({type:'pro', kind:'poster', title:p.title, img:p.posters[0]||'', url:p.url||'#'})),
             ride: rideItems.filter(r=>r.prio===10).map(r=>({type:'ride', kind:'wide', title:r.title, img:r.posters[0]||'', url:r.url||'#'})),
             per: videos.filter(v=>(v.prio||0)>=5 || v.includeInBanner).map(v=>({type:'personal', kind:'wide', title:v.title, img:v.thumb||'', url:v.url||'#', ytid:v.videoId||''}))
           };
-          if (loaded.banner) { // if banner already built, you can refresh tiles quickly
+
+          // NEW: Build or refresh banner now that tiles exist
+          if (!loaded.banner) {
+            buildBannerDeferred();
+          } else {
             const {pro, ride, per} = window.__tilesData;
             const interleaved=[]; const L=Math.max(pro.length, ride.length, per.length);
             for(let i=0;i<L;i++){ if(pro[i]) interleaved.push(pro[i]); if(ride[i]) interleaved.push(ride[i]); if(per[i]) interleaved.push(per[i]); }
@@ -987,26 +925,42 @@
         });
       }
 
+      // === REPLACED: buildBannerDeferred with retry logic ===
       function buildBannerDeferred(){
-        if (loaded.banner || !window.__tilesData) return;
+        if (loaded.banner) return;
+
+        const tiles = window.__tilesData;
+        if (!tiles || (!tiles.pro?.length && !tiles.ride?.length && !tiles.per?.length)) {
+          setTimeout(buildBannerDeferred, 150);
+          return;
+        }
+
         loaded.banner = true;
-        const {pro, ride, per} = window.__tilesData || {pro:[], ride:[], per:[]};
+        const {pro=[], ride=[], per=[]} = tiles;
         const interleaved=[]; const L=Math.max(pro.length, ride.length, per.length);
         for(let i=0;i<L;i++){ if(pro[i]) interleaved.push(pro[i]); if(ride[i]) interleaved.push(ride[i]); if(per[i]) interleaved.push(per[i]); }
 
         // Preload a few banner images for faster first paint
-        preloadBannerFirstImages(interleaved, 4);
+        try{
+          const urls = interleaved.slice(0, 4).map(t => t.ytid ? (`https://img.youtube.com/vi/${t.ytid}/maxresdefault.jpg`) : (t.img||'')).filter(Boolean);
+          urls.forEach(href=>{
+            const link = document.createElement('link');
+            link.rel = 'preload'; link.as = 'image'; link.href = href; document.head.appendChild(link);
+          });
+        }catch{}
 
         fillBanner(interleaved);
       }
 
-      // Soft refresh hook used on iOS pageshow persisted returns
-      window.__softRefresh = async function(){
-        try{
-          loaded.sections = false;
-          await loadSections({bypassCache:true});
-        }catch(e){ console.warn('softRefresh failed', e); }
-      };
+      // === BANNER-FIRST SEQUENCING HELPERS ===
+      async function warmBannerFirstPaint({count=6, timeout=1200} = {}){
+        const pick = () => [...document.querySelectorAll('#bannerScroll img')].slice(0, count);
+        let imgs = pick();
+        if (!imgs.length) await new Promise(r=>requestAnimationFrame(()=>{ imgs = pick(); r(); }));
+        const waiters = imgs.map(img => img.complete ? Promise.resolve() :
+          new Promise(res => img.addEventListener('load', res, { once:true })));
+        await Promise.race([ Promise.all(waiters), new Promise(r=>setTimeout(r, timeout)) ]);
+      }
 
     }catch(err){ console.error('[init]', err); }
   })();
