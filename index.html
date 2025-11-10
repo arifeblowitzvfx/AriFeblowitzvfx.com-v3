@@ -23,7 +23,7 @@
   <link rel="dns-prefetch" href="https://i.ytimg.com">
   <link rel="dns-prefetch" href="https://www.youtube.com">
 
-  <!-- Orbitron for 80s UI headings (fallback to system sans) -->
+  <!-- Orbitron for headings -->
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
 
   <style>
@@ -44,7 +44,7 @@
       overflow-y:overlay; letter-spacing:.15px; min-height:100svh;
     }
 
-    /* Tech-Noir FX: starfield canvas + neon grid floor */
+    /* Tech-Noir FX */
     #fx-stars, #fx-grid { position:fixed; inset:0; pointer-events:none; z-index:0; }
     #fx-stars { opacity:.55; }
     #fx-grid {
@@ -60,7 +60,7 @@
       opacity:.45;
     }
 
-    /* CRT scan + glow (non-interactive) */
+    /* CRT scan + glow */
     body::after{
       content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
       background-image: repeating-linear-gradient(to bottom, rgba(0,255,156,.24), rgba(0,255,156,.24) 2px, rgba(0,0,0,0) 3px, rgba(0,0,0,0) 7px);
@@ -132,7 +132,7 @@
     .tab-btn{padding:.6em .9em; border-radius:12px; background:var(--panel); color:var(--txt); border:1px solid rgba(66,255,209,.32); cursor:pointer; font-weight:700}
     .tab-btn.active{outline:1px solid var(--accent); box-shadow:0 0 0 2px rgba(0,255,156,.12) inset}
 
-    /* === HERO LAYOUT === */
+    /* Hero */
     .hero{
       margin:clamp(12px,1.6vw,20px) 0;
       display:grid;
@@ -160,7 +160,7 @@
       .leftStack{ display:contents; }
     }
 
-    /* Card style + animated sweep — non-interactive */
+    /* Card */
     .card{
       position:relative;
       background:linear-gradient(180deg, rgba(10,18,16,.85), rgba(5,9,11,.9));
@@ -249,7 +249,7 @@
     .hud .tag{flex:0 0 auto; padding:.25em .6em; border:1px solid rgba(0,255,156,.35); border-radius:999px; font-size:.8em; color:#caffec}
     .hud .body{opacity:.95}
 
-    /* Recruiter dock (bottom-right) */
+    /* Recruiter dock */
     .recruiter-dock{
       position:fixed; z-index:20; right:12px; bottom:12px; display:flex; gap:10px; align-items:center;
       background:rgba(7,15,13,.75); border:1px solid rgba(0,255,156,.28); border-radius:14px; padding:8px 10px; backdrop-filter:blur(6px);
@@ -530,11 +530,11 @@
     } finally { clearTimeout(t); }
   }
 
-  // GID discovery memoized
+  // GID discovery memoized (safe: don't memoize empty maps; clear bad memo)
   async function discoverGids(pubhtml){
     const MEMO_KEY = 'gids:memo';
     const memo = cache.get(MEMO_KEY);
-    if (memo && memo.ts && (Date.now()-memo.ts) < 12*60*60*1000) {
+    if (memo && memo.ts && (Date.now()-memo.ts) < 12*60*60*1000 && memo.map && Object.keys(memo.map).length) {
       return { ...memo.map, ...TAB_MAP };
     }
     const map = {};
@@ -553,8 +553,15 @@
         else if (hdr.includes('key') && hdr.includes('value')) map['Main site info']=gid;
         else if (hdr.includes('from') && hdr.includes('testimonial')) map['Testimonials']=gid;
       }
-      cache.set(MEMO_KEY, {ts:Date.now(), map});
-    }catch(e){ console.error('[discoverGids]', e); }
+      if (Object.keys(map).length){
+        cache.set(MEMO_KEY, {ts:Date.now(), map});
+      } else {
+        cache.del(MEMO_KEY);
+      }
+    }catch(e){
+      console.error('[discoverGids]', e);
+      cache.del('gids:memo');
+    }
     return { ...map, ...TAB_MAP };
   }
 
@@ -709,7 +716,7 @@
       {tag:'RIGS', body:'Technodolly/Graphlite/Spydercam/MILO profiles loaded'}
     ]);
 
-    // Testimonials placeholder gag (gets replaced)
+    // Testimonials placeholder gag
     const tBox  = document.getElementById('testimonialsBox');
     const tList = document.getElementById('testimonialsList');
     const tTitle= document.getElementById('testimonialsTitle');
@@ -761,7 +768,7 @@
         setContactSection(phone, email);
         enhanceContactLinks();
 
-        // Dock copy button wires to current email
+        // Dock copy
         document.getElementById('dockCopy')?.addEventListener('click', ()=>{
           const e = (mainInfo.email || DEFAULT_EMAIL).trim();
           navigator.clipboard?.writeText(e).then(()=> toast('Copied: '+e)).catch(()=> toast(e));
@@ -810,12 +817,11 @@
 
       const mainInfo = await pullAndApply_Main();
 
-      // Build banner ASAP, and start sections immediately so tiles exist
-      const defer = window.requestIdleCallback || (fn=>setTimeout(fn, 0));
+      // Build banner ASAP, start sections immediately so tiles exist
       setTimeout(buildBannerDeferred, 0);
-      loadSections(); // start right now
+      loadSections(); // start now
 
-      // Warm first few banner images, but don't block rendering
+      // Warm first few banner images, but don't block
       warmBannerFirstPaint({count:6, timeout:1200}).catch(()=>{});
 
       // Watchdog: if banner is still empty after 1.5s, try again
@@ -828,17 +834,14 @@
         buildBannerDeferred();
       });
 
-      // Live CSV updates:
+      // Live CSV updates
       document.addEventListener('csv-updated', (ev)=>{
         const {name, txt} = ev.detail || {};
         if (!name) return;
-
         if (name === 'Main site info'){ pullAndApply_Main(); }
         if (name === 'Testimonials'){ refreshTestimonials(csvToObjects(txt), txt); }
-
-        // If a tile source changed, force recompute sections & banner tiles
         if (name === 'Ariel_Feblowitz_Works' || name === 'Rides' || name === 'Personal Youtube') {
-          loadSections(true); // force
+          loadSections(true); // force recompute tiles
         }
       });
 
@@ -846,7 +849,6 @@
       async function loadSections(force=false){
         try{
           if (loaded.sections && !force) return;
-          loaded.sections = true;
 
           const [personalPull, proPull, ridesPull, testiPull] = await Promise.all([
             pullTab('Personal Youtube', gids),
@@ -948,11 +950,14 @@
           // Testimonials
           refreshTestimonials(testiRows, testiRaw);
 
+          // ✅ Mark sections loaded only after tiles computed
+          loaded.sections = true;
+
           // Live refresh (debounced every 20s)
           if (!window.__testiLiveTimer) {
             window.__testiLiveTimer = setInterval(async ()=>{
               try{
-                const fresh = await pullTab('Testimonials', gids); // will revalidate & emit event
+                const fresh = await pullTab('Testimonials', gids);
                 refreshTestimonials(fresh.rows, fresh.raw||'');
               }catch(e){ console.warn('[testimonials live refresh]', e); }
             }, 20000);
@@ -1017,6 +1022,17 @@
         }catch{}
 
         fillBannerProgressive(interleaved);
+
+        // One-time diagnostics if banner fails to get tiles after a short while
+        if (!window.__bannerDiagTimer){
+          window.__bannerDiagTimer = setTimeout(()=>{
+            const t = window.__tilesData;
+            const counts = t ? {pro:t.pro?.length||0, ride:t.ride?.length||0, per:t.per?.length||0} : null;
+            if (!document.querySelector('#bannerScroll .tile')){
+              console.warn('[banner] still empty. tiles:', counts, 'gids memo:', cache.get('gids:memo'));
+            }
+          }, 2500);
+        }
       }
 
       // === BANNER-FIRST SEQUENCING HELPERS ===
