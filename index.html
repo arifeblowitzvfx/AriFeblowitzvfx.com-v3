@@ -194,7 +194,7 @@
 
     /* Grids */
     .grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:var(--grid); content-visibility:auto}
-    @media (max-width:1000px){ .grid{grid-template-columns:repeat(2, 1fr)} }
+    @media (max-width:1000px){ .grid{grid-template-columns:repeat(2, 1 fr)} }
     @media (max-width:620px){ .grid{grid-template-columns:1fr} }
     .proj{overflow:hidden}
     .thumb{position:relative; aspect-ratio:16/9; overflow:hidden; border-radius:14px; border:1px solid rgba(66,255,209,.26)}
@@ -500,13 +500,27 @@
 
   const cache = { get(key){ try{ return JSON.parse(localStorage.getItem(key)||'null'); }catch{return null} }, set(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch{} } };
 
+  /* === LIVE CACHE FIXES === */
+
+  // Cache policy per tab (ms). 0 = always fresh.
+  const TAB_TTL = {
+    'Main site info': 0,            // always fresh
+    'Testimonials': 0,              // always fresh (so new quotes show up right away)
+    'Personal Youtube': 30000,      // refresh every ~30s
+    'Ariel_Feblowitz_Works': 30000, // refresh every ~30s
+    'Rides': 30000                  // refresh every ~30s
+  };
+  // Time-sliced cache-buster that only changes every 30s
+  const timeBuster = () => Math.floor(Date.now() / 30000);
+
   async function discoverGids(pubhtml){
     const map = {};
     try{
-      const html = await fetch(pubhtml, {mode:"cors"}).then(r=>r.text());
+      const html = await fetch(pubhtml + `?cb=${timeBuster()}`, {mode:"cors", cache:"no-store"}).then(r=>r.text());
       const uniqueGids = [...new Set([...html.matchAll(/gid=(\d+)/g)].map(m=>m[1]))];
       for (const gid of uniqueGids){
-        const txt = await fetch(buildCsvUrlFromGid(pubhtml, gid)).then(r=>r.text()).catch(()=>null);
+        const probeUrl = buildCsvUrlFromGid(pubhtml, gid) + `&cb=${timeBuster()}`;
+        const txt = await fetch(probeUrl, {cache:"no-store"}).then(r=>r.text()).catch(()=>null);
         if (!txt) continue;
         const rows = csvToObjects(txt);
         const hdr = Object.keys(rows[0]||{}).join('|').toLowerCase();
@@ -655,14 +669,22 @@
       async function pullTab(name){
         const gid = gids[name]; if(!gid) return {rows:[], raw:null};
         const key = `csv:${gid}`;
-        let txt;
-        if (name === 'Main site info'){
-          txt = await fetch(buildCsvUrlFromGid(PUBHTML, gid) + `&cb=${Date.now()}`).then(r=>r.text());
-        } else {
-          const cached = cache.get(key);
-          if (cached && cached.txt){ txt = cached.txt; }
-          else { txt = await fetch(buildCsvUrlFromGid(PUBHTML, gid)).then(r=>r.text()); cache.set(key, {ts:Date.now(), txt}); }
+        const ttl = (name in TAB_TTL) ? TAB_TTL[name] : 30000; // default TTL 30s
+        const now = Date.now();
+        const url = buildCsvUrlFromGid(PUBHTML, gid) + `&cb=${timeBuster()}`;
+
+        if (ttl === 0) {
+          const txt = await fetch(url, {cache:"no-store"}).then(r=>r.text());
+          return { rows: csvToObjects(txt), raw: txt };
         }
+
+        const cached = cache.get(key);
+        if (cached && cached.txt && (cached.ts + ttl > now)) {
+          return { rows: csvToObjects(cached.txt), raw: cached.txt };
+        }
+
+        const txt = await fetch(url, {cache:"no-store"}).then(r=>r.text());
+        cache.set(key, { ts: now, txt });
         return { rows: csvToObjects(txt), raw: txt };
       }
 
@@ -837,7 +859,7 @@
             per: videos.filter(v=>(v.prio||0)>=5 || v.includeInBanner).map(v=>({type:'personal', kind:'wide', title:v.title, img:v.thumb||'', url:v.url||'#', ytid:v.videoId||''}))
           };
 
-          // NEW: Build or refresh banner now that tiles exist
+          // Build or refresh banner now that tiles exist
           if (!loaded.banner) {
             buildBannerDeferred();
           } else {
@@ -876,6 +898,34 @@
             });
             tBox.style.display = 'block';
           }
+
+          /* === Live auto-refresh of testimonials every 15s (only one timer) === */
+          if (!window.__testiLiveTimer) {
+            window.__testiLiveTimer = setInterval(async ()=>{
+              try{
+                const fresh = await pullTab('Testimonials'); // TTL=0, always fresh
+                const rows = fresh.rows || [];
+                const items2 = rows
+                  .map(r=>({ from:(r['From']||'').trim(), text:(r['Testimonial']||r['Testimonials']||r['Quote']||r['Text']||'').trim() }))
+                  .filter(t=>t.from && t.text);
+                if (items2.length) {
+                  const smartQuote = s=>{
+                    const t = s.trim(); const b = /^["“]/.test(t); const e = /["”]$/.test(t);
+                    return (b&&e)?t:`“${t.replace(/^["“'‘`]/,'').replace(/["”'’`]$/,'')}”`;
+                  };
+                  const esc = s=> s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+                  tList.innerHTML='';
+                  items2.forEach(it=>{
+                    const el = document.createElement('div'); el.className='testimonial';
+                    el.innerHTML = `<span class="quote">${esc(smartQuote(it.text))}</span><span class="from">— ${esc(it.from)}</span>`;
+                    tList.appendChild(el);
+                  });
+                  tBox.style.display = 'block';
+                }
+              }catch(e){ console.warn('[testimonials live refresh]', e); }
+            }, 15000);
+          }
+
         }catch(err){ console.error('[loadSections]', err); }
       }
 
@@ -925,7 +975,7 @@
         });
       }
 
-      // === REPLACED: buildBannerDeferred with retry logic ===
+      // === Retry-safe banner builder ===
       function buildBannerDeferred(){
         if (loaded.banner) return;
 
