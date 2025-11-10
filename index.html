@@ -187,7 +187,7 @@
 
     /* Grids */
     .grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:var(--grid); content-visibility:auto}
-    @media (max-width:1000px){ .grid{grid-template-columns:repeat(2, 1fr)} }
+    @media (max-width:1000px){ .grid{grid-template-columns:repeat(2, 1 fr)} }
     @media (max-width:620px){ .grid{grid-template-columns:1fr} }
     .proj{overflow:hidden}
     .thumb{position:relative; aspect-ratio:16/9; overflow:hidden; border-radius:14px; border:1px solid rgba(66,255,209,.26)}
@@ -504,7 +504,7 @@
         const raw = JSON.parse(localStorage.getItem(key)||'null');
         if (!raw) return null;
         if (IOS) return null;                       // iOS always bypasses local cache
-        if ((Date.now() - (raw.ts||0)) > DATA_TTL_MS) return null; // expired
+        if ((Date.now() - (raw.ts||0)) > (window.__DATA_TTL_OVERRIDE__ || DATA_TTL_MS)) return null; // expired
         return raw;
       }catch{ return null; }
     },
@@ -521,7 +521,6 @@
       try{
         Object.keys(localStorage).forEach(k=>{ if (k.startsWith('csv:')) localStorage.removeItem(k); });
       }catch{}
-      // Soft re-run data sections without a full reload
       if (window.__softRefresh) window.__softRefresh();
     }
   });
@@ -576,7 +575,7 @@
 
   function fillBanner(tiles){
     scrollEl.innerHTML='';
-    const seq = tiles.slice(0, 36); // === BANNER SPEED TUNING: slightly fewer to paint faster
+    const seq = tiles.slice(0, 36); // === BANNER SPEED TUNING
     const doubled = [...seq, ...seq];
     doubled.forEach(t=> scrollEl.appendChild(makeTile(t)));
 
@@ -654,11 +653,30 @@
     tBox.style.display = 'block';
   })();
 
+  // === BANNER-FIRST SEQUENCING HELPERS ================================
+  async function warmBannerFirstPaint({count=6, timeout=1200} = {}){
+    const pick = () => [...document.querySelectorAll('#bannerScroll img')].slice(0, count);
+    let imgs = pick();
+    if (!imgs.length) await new Promise(r=>requestAnimationFrame(()=>{ imgs = pick(); r(); }));
+    const waiters = imgs.map(img => img.complete ? Promise.resolve() :
+      new Promise(res => img.addEventListener('load', res, { once:true })));
+    await Promise.race([ Promise.all(waiters), new Promise(r=>setTimeout(r, timeout)) ]);
+  }
+  function preloadBannerFirstImages(tiles, n=4){
+    try{
+      const urls = tiles.slice(0, n).map(t => t.ytid ? (`https://img.youtube.com/vi/${t.ytid}/maxresdefault.jpg`) : (t.img||'')).filter(Boolean);
+      urls.forEach(href=>{
+        const link = document.createElement('link');
+        link.rel = 'preload'; link.as = 'image'; link.href = href; document.head.appendChild(link);
+      });
+    }catch{}
+  }
+  // ====================================================================
+
   (async function init(){
     try{
       setStatus('Routing request to MOTHER…', sysStatus.href);
 
-      // discoverGids() stays the same logic
       async function discoverGids(pubhtml){
         const map = {};
         try{
@@ -688,7 +706,6 @@
         let txt;
 
         const base = buildCsvUrlFromGid(PUBHTML, gid);
-        // "Main site info" should feel even more live
         const liveUrl = addBuster(base);
         const iosOpts = IOS ? { cache: 'reload' } : {};
 
@@ -714,10 +731,7 @@
       // Optional server-controlled TTL (seconds) from sheet
       const ttlSheet = Number(mainInfo.cache_ttl_seconds||'');
       if (!isNaN(ttlSheet) && ttlSheet>0) {
-        // cap between 15s and 5m
         const t = Math.min(300, Math.max(15, ttlSheet));
-        // update globals
-        // (not fatal if blocked by const; we simply shadow via window)
         window.__DATA_TTL_OVERRIDE__ = t*1000;
       }
 
@@ -774,7 +788,7 @@
         document.getElementById('hudCard').style.display='block';
       }
 
-      // Reel
+      // Reel (accepts YouTube/Vimeo/embed)
       (function loadReel(){
         const reelInput = (mainInfo.reel_youtube_id||'').trim();
         const reelFrame = $('#reelFrame');
@@ -793,10 +807,16 @@
         loaded.reel=true;
       })();
 
+      // === BANNER-FIRST: schedule so banner owns the early pipe =========
       const defer = window.requestIdleCallback || (fn=>setTimeout(fn, 0));
-      // === BANNER SPEED TUNING: kick sooner
-      defer(()=> setTimeout(buildBannerDeferred, 160));
-      defer(loadSections);
+      defer(async ()=>{
+        // Build banner ASAP (before grids pull images)
+        setTimeout(buildBannerDeferred, 0);
+        // Wait for first few banner images (or quick timeout) before hydrating sections
+        await warmBannerFirstPaint({count:6, timeout:1200});
+        loadSections(); // hydrate grids after banner first paint
+      });
+      // ==================================================================
 
       async function loadSections({bypassCache=false} = {}){
         try{
@@ -876,14 +896,18 @@
           // Render content grids
           renderPro(proItems); renderRides(rideItems); renderPersonal(videos, (meta.featured_video_id||'').trim());
 
-          // Banner tiles
+          // Banner tiles (keep, and refresh if banner already exists)
           window.__tilesData = {
             pro: proItems.filter(p=>p.prio>=5).map(p=>({type:'pro', kind:'poster', title:p.title, img:p.posters[0]||'', url:p.url||'#'})),
             ride: rideItems.filter(r=>r.prio===10).map(r=>({type:'ride', kind:'wide', title:r.title, img:r.posters[0]||'', url:r.url||'#'})),
             per: videos.filter(v=>(v.prio||0)>=5 || v.includeInBanner).map(v=>({type:'personal', kind:'wide', title:v.title, img:v.thumb||'', url:v.url||'#', ytid:v.videoId||''}))
           };
-          // If banner already ran, refresh with new data quickly
-          if (loaded.banner) { fillBanner([...window.__tilesData.pro, ...window.__tilesData.ride, ...window.__tilesData.per]); }
+          if (loaded.banner) { // if banner already built, you can refresh tiles quickly
+            const {pro, ride, per} = window.__tilesData;
+            const interleaved=[]; const L=Math.max(pro.length, ride.length, per.length);
+            for(let i=0;i<L;i++){ if(pro[i]) interleaved.push(pro[i]); if(ride[i]) interleaved.push(ride[i]); if(per[i]) interleaved.push(per[i]); }
+            fillBanner(interleaved);
+          }
 
           // --- TESTIMONIALS: title from B1 + real rows
           const tBox  = document.getElementById('testimonialsBox');
@@ -966,9 +990,13 @@
       function buildBannerDeferred(){
         if (loaded.banner || !window.__tilesData) return;
         loaded.banner = true;
-        const {pro, ride, per} = window.__tilesData;
+        const {pro, ride, per} = window.__tilesData || {pro:[], ride:[], per:[]};
         const interleaved=[]; const L=Math.max(pro.length, ride.length, per.length);
         for(let i=0;i<L;i++){ if(pro[i]) interleaved.push(pro[i]); if(ride[i]) interleaved.push(ride[i]); if(per[i]) interleaved.push(per[i]); }
+
+        // Preload a few banner images for faster first paint
+        preloadBannerFirstImages(interleaved, 4);
+
         fillBanner(interleaved);
       }
 
