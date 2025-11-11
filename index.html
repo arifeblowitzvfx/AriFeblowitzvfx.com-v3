@@ -1,12 +1,3 @@
-Here’s your script with the **safe “auto-refresh if the banner didn’t paint”** folded in. I added:
-
-* `ensureBannerOrOneTimeReload()` inside `init()` (just below the banner helpers),
-* Two guarded retries around your existing banner boot, and
-* A tiny `visibilitychange` listener (outside `init`) to catch background-tab loads.
-
-Everything else is unchanged.
-
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
