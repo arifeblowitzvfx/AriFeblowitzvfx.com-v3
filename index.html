@@ -31,7 +31,7 @@
       --bg:#070b0d; --panel:#020405; --card:#05090b; --txt:#c9ffe8; --muted:#8de7c4; --accent:#00ff9c;
       --grid:clamp(14px, 1.8vw, 24px); --radius:18px; --shadow:0 14px 40px rgba(0,0,0,.55);
       --tileH: clamp(120px, 14vw, 220px); --tileGap: clamp(10px,1.2vw,16px);
-      --stickyTop: 8px; --marqueeDur: 45s;
+      --marqueeDur: 45s;
     }
     *{box-sizing:border-box}
     html,body{height:100%}
@@ -127,7 +127,7 @@
     #topContact{ font-size:.5em; flex-basis:100%; display:flex; gap:8px; align-items:center; }
 
     /* Tabs */
-    .tabs-bar{ position:static; z-index:1; display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:clamp(8px,1vw,12px); margin:0 0 clamp(12px,1.4vw,16px); }
+    .tabs-bar{ display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:clamp(8px,1vw,12px); margin:0 0 clamp(12px,1.4vw,16px); }
     .tabs-links, .tabs-nav{ display:flex; flex-wrap:wrap; gap:clamp(6px,.8vw,10px); align-items:center; }
     .tabs-links .btn{ padding:.5em .75em; font-size:.9em; }
     .tabs-links .btn.youtube{ display:inline-flex; align-items:center; gap:.45em; }
@@ -294,7 +294,7 @@
         </div>
       </div>
 
-      <!-- Tabs -->
+      <!-- Sticky tabs -->
       <div class="tabs-bar">
         <div class="tabs-links badges">
           <a id="btnIMDb" class="btn" href="https://www.imdb.me/ArielFeblowitz" target="_blank" rel="noopener">IMDb</a>
@@ -559,20 +559,19 @@
   const DEFAULT_EMAIL = "arifeblowitzvfx@gmail.com";
   const DEFAULT_RESUME = "https://docs.google.com/document/d/1NnKyzE8TtjMOe8WdTEBE7zNscM_RIHBMGF1CMjOn29s/export?format=pdf";
 
-  function setTopContact(phone, email, linkedinUrl=''){
+  function setTopContact(phone, email){
     const top = document.getElementById('topContact'); if (!top) return; top.innerHTML = '';
     if (phone){ const a=document.createElement('a'); a.className='btn'; a.href='tel:' + phone.replace(/[^0-9+]/g,''); a.textContent=phone; top.appendChild(a); }
     if (email){ const a=document.createElement('a'); a.className='btn'; a.href='mailto:' + email; a.textContent=email; top.appendChild(a); }
-    if (linkedinUrl){ const a=document.createElement('a'); a.className='btn'; a.href=linkedinUrl; a.target='_blank'; a.rel='noopener'; a.textContent='LinkedIn'; top.appendChild(a); }
   }
-  function setContactSection(phone, email, linkedinUrl=''){
+  function setContactSection(phone, email, linkedinUrl){
     const wrap = document.getElementById('contactInfo'); if (!wrap) return; wrap.innerHTML='';
     if (phone){ const a=document.createElement('a'); a.className='btn'; a.href='tel:' + phone.replace(/[^0-9+]/g,''); a.textContent=phone; wrap.appendChild(a); }
     if (email){ const a=document.createElement('a'); a.className='btn'; a.href='mailto:' + email; a.textContent=email; wrap.appendChild(a); }
-    if (linkedinUrl){ const a=document.createElement('a'); a.className='btn'; a.href=linkedinUrl; a.target='_blank'; a.rel='noopener'; a.textContent='LinkedIn'; wrap.appendChild(a); }
+    if (linkedinUrl){ const a=document.createElement('a'); a.className='btn'; a.href=linkedinUrl; a.target='_blank'; a.rel='noopener'; a.textContent='LinkedIn'; a.setAttribute('data-extra','linkedin'); wrap.appendChild(a); }
   }
   setTopContact(DEFAULT_PHONE, DEFAULT_EMAIL);
-  setContactSection(DEFAULT_PHONE, DEFAULT_EMAIL);
+  setContactSection(DEFAULT_PHONE, DEFAULT_EMAIL, '');
   (function(){ const r = document.getElementById('btnResume'); if (r) r.href = DEFAULT_RESUME; document.getElementById('dockResume').href = r ? r.href : DEFAULT_RESUME; })();
 
   const $ = (sel, el=document) => el.querySelector(sel);
@@ -798,52 +797,15 @@
   $('#bnPrev').addEventListener('click', ()=>{ rail.scrollLeft -= 260; });
   $('#bnNext').addEventListener('click', ()=>{ rail.scrollLeft += 260; });
 
-  const TAB_PATHS = {
-    home: '',
-    professional: 'FilmRoles',
-    previs: 'Previs',
-    virtual: 'VirtualProduction',
-    ai: 'Ai',
-    unreal: 'UnrealEngine',
-    rides: 'Rides',
-    personal: 'PersonalWork',
-    contact: 'Contact'
-  };
-  const PATH_TO_TAB = Object.fromEntries(Object.entries(TAB_PATHS).map(([tab, path]) => [path.toLowerCase(), tab]));
-  let activeTabId = 'home';
-
-  function tabFromPathname(){
-    const parts = window.location.pathname.split('/').filter(Boolean);
-    if (!parts.length) return 'home';
-    const candidate = decodeURIComponent(parts[parts.length - 1] || '').toLowerCase();
-    return PATH_TO_TAB[candidate] || 'home';
-  }
-  function urlForTab(tabId){
-    const pathPart = TAB_PATHS[tabId] || '';
-    return pathPart ? `${window.location.origin}/${pathPart}` : `${window.location.origin}/`;
-  }
-  function activateTab(tabId, { updateUrl=false, smoothScroll=false } = {}){
-    const targetId = document.getElementById(tabId) ? tabId : 'home';
-    activeTabId = targetId;
-    $$('.tab-btn').forEach(b=>{
-      const isActive = b.dataset.tab === targetId;
-      b.classList.toggle('active', isActive);
-      b.setAttribute('aria-selected', String(isActive));
-    });
-    $$('section').forEach(s=>s.classList.toggle('active', s.id===targetId));
-    if (!loaded.sections) { loadSections(); }
-    if (updateUrl){
-      const nextUrl = urlForTab(targetId);
-      if (nextUrl !== window.location.href) history.pushState({ tab: targetId }, '', nextUrl);
-    }
-    if (smoothScroll){ window.scrollTo({ top: $('.wrap').offsetTop, behavior: 'smooth' }); }
-  }
-
   $$('.tab-btn').forEach(btn=>{
-    btn.addEventListener('click', ()=> activateTab(btn.dataset.tab, { updateUrl:true, smoothScroll:true }));
+    btn.addEventListener('click', ()=>{
+      $$('.tab-btn').forEach(b=>{ b.classList.toggle('active', b===btn); b.setAttribute('aria-selected', b===btn) });
+      const name = btn.dataset.tab;
+      $$('section').forEach(s=>s.classList.toggle('active', s.id===name));
+      if (!loaded.sections) { loadSections(); }
+      window.scrollTo({ top: $('.wrap').offsetTop, behavior: 'smooth' });
+    });
   });
-  window.addEventListener('popstate', ()=> activateTab(tabFromPathname(), { updateUrl:false, smoothScroll:false }));
-  activateTab(tabFromPathname(), { updateUrl:false, smoothScroll:false });
   $('#year').textContent = new Date().getFullYear();
   const sysStatus = document.getElementById('sysStatus');
   function setStatus(msg, linkHref){ if (!sysStatus) return; sysStatus.textContent = msg; if (linkHref) { sysStatus.href = linkHref; } }
@@ -924,13 +886,11 @@
         $('#about1').textContent = mainInfo.about_paragraph_1 || $('#about1').textContent;
         $('#about2').textContent = mainInfo.about_paragraph_2 || $('#about2').textContent;
         const linksHref = mainInfo.all_links_url || 'https://linktr.ee/admin/links';
-        const linkedinFromValue = (mainInfo.linkedin_url || '').trim();
-        const linkedinFromRightCol = readMainCellRightOfLabel('linkedin_url', 1);
-        const linkedinHref = linkedinFromValue || linkedinFromRightCol || 'https://www.linkedin.com';
+        const linkedInUrl = readMainCellRightOfLabel('linkedin_url', 1) || (mainInfo.linkedin_url || '').trim();
         $('#btnIMDb').href = imdbUrl;
         $('#btnYouTube').href = mainInfo.youtube_url || $('#btnYouTube').href;
         $('#btnLinks').href = linksHref;
-        $('#btnLinkedIn').href = linkedinHref;
+        if (linkedInUrl) $('#btnLinkedIn').href = linkedInUrl;
         const resumeURL = (mainInfo.resume_url && mainInfo.resume_url.trim()) || DEFAULT_RESUME;
         $('#btnResume').href = resumeURL; $('#dockResume').href = resumeURL;
 
@@ -943,8 +903,8 @@
 
         const phone = (mainInfo.phone||DEFAULT_PHONE).trim();
         const email = (mainInfo.email||DEFAULT_EMAIL).trim();
-        setTopContact(phone, email, linkedinHref);
-        setContactSection(phone, email, linkedinHref);
+        setTopContact(phone, email);
+        setContactSection(phone, email, linkedInUrl);
         enhanceContactLinks();
 
         // Dock copy button wires to current email
@@ -1465,6 +1425,7 @@
     function tryInject(){
       const wrap = document.getElementById('contactInfo');
       const links = document.getElementById('btnLinks');
+      const linkedin = document.getElementById('btnLinkedIn');
       const resume = document.getElementById('btnResume');
       if (!wrap || !links) return false;
       if (!wrap.querySelector('[data-extra="links"]')){
@@ -1476,6 +1437,11 @@
         const a = document.createElement('a');
         a.className='btn'; a.href=resume.href; a.download='';
         a.textContent='Download Résumé'; a.setAttribute('data-extra','resume'); wrap.appendChild(a);
+      }
+      if (linkedin && linkedin.href && !wrap.querySelector('[data-extra="linkedin"]')){
+        const a = document.createElement('a');
+        a.className='btn'; a.href=linkedin.href; a.target='_blank'; a.rel='noopener';
+        a.textContent='LinkedIn'; a.setAttribute('data-extra','linkedin'); wrap.appendChild(a);
       }
       return true;
     }
