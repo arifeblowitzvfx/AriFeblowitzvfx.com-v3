@@ -127,7 +127,11 @@
     #topContact{ font-size:.5em; flex-basis:100%; display:flex; gap:8px; align-items:center; }
 
     /* Sticky tabs */
-    .tabs-bar{ position:sticky; top:var(--stickyTop); z-index:5; display:flex; justify-content:flex-end; flex-wrap:wrap; gap:clamp(6px,.8vw,10px); margin:0 0 clamp(12px,1.4vw,16px); }
+    .tabs-bar{ position:sticky; top:var(--stickyTop); z-index:5; display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:clamp(8px,1vw,12px); margin:0 0 clamp(12px,1.4vw,16px); }
+    .tabs-links, .tabs-nav{ display:flex; flex-wrap:wrap; gap:clamp(6px,.8vw,10px); align-items:center; }
+    .tabs-links .btn{ padding:.5em .75em; font-size:.9em; }
+    .tabs-links .btn.youtube{ display:inline-flex; align-items:center; gap:.45em; }
+    .tabs-links .btn.youtube img{ width:18px; height:18px; object-fit:contain; filter: drop-shadow(0 0 4px rgba(0,255,156,.35)); }
     @media (max-width:920px){ .tabs-bar{justify-content:flex-start} }
     .tab-btn{padding:.6em .9em; border-radius:12px; background:var(--panel); color:var(--txt); border:1px solid rgba(66,255,209,.32); cursor:pointer; font-weight:700}
     .tab-btn.active{outline:1px solid var(--accent); box-shadow:0 0 0 2px rgba(0,255,156,.12) inset}
@@ -291,12 +295,24 @@
       </div>
 
       <!-- Sticky tabs -->
-      <div class="tabs-bar" role="tablist" aria-label="Sections">
-        <button class="tab-btn active" data-tab="home" role="tab" aria-selected="true">Home</button>
-        <button class="tab-btn" data-tab="professional" role="tab" aria-selected="false">Professional Work</button>
-        <button class="tab-btn" data-tab="rides" role="tab" aria-selected="false">Rides</button>
-        <button class="tab-btn" data-tab="personal" role="tab" aria-selected="false">Personal Work</button>
-        <button class="tab-btn" data-tab="contact" role="tab" aria-selected="false">Contact</button>
+      <div class="tabs-bar">
+        <div class="tabs-links badges">
+          <a id="btnIMDb" class="btn" href="https://www.imdb.me/ArielFeblowitz" target="_blank" rel="noopener">IMDb</a>
+          <a id="btnLinks" class="btn" href="https://linktr.ee/admin/links" target="_blank" rel="noopener">All My Links</a>
+          <a id="btnResume" class="btn primary" href="#" download>Download Résumé</a>
+          <a id="btnNews" class="btn" href="https://www.youtube.com/watch?v=gM5H6vsGIcs" target="_blank" rel="noopener">Ari in the News</a>
+          <a id="btnYouTube" class="btn youtube" href="https://www.youtube.com/@DirectorPsycho" target="_blank" rel="noopener"><span>YouTube: @Director Psycho</span><img src="https://github.com/arifeblowitzvfx/AriFeblowitzvfx.com-v3/blob/main/directorPsycho_alpha.png?raw=1" alt="Director Psycho logo"></a>
+        </div>
+        <div class="tabs-nav" role="tablist" aria-label="Sections">
+          <button class="tab-btn active" data-tab="home" role="tab" aria-selected="true">Home</button>
+          <button class="tab-btn" data-tab="professional" role="tab" aria-selected="false">Film Roles</button>
+          <button class="tab-btn" data-tab="previs" role="tab" aria-selected="false">Previs</button>
+          <button class="tab-btn" data-tab="virtual" role="tab" aria-selected="false">Virtual Production</button>
+          <button class="tab-btn" data-tab="ai" role="tab" aria-selected="false">Ai</button>
+          <button class="tab-btn" data-tab="rides" role="tab" aria-selected="false">Rides</button>
+          <button class="tab-btn" data-tab="personal" role="tab" aria-selected="false">Personal Work</button>
+          <button class="tab-btn" data-tab="contact" role="tab" aria-selected="false">Contact</button>
+        </div>
       </div>
 
       <!-- HOME -->
@@ -326,13 +342,6 @@
                     <iframe id="aiReelFrame" src="https://player.vimeo.com/video/1134518013?badge=0&autopause=0&title=0&byline=0" title="Ari Feblowitz — Ai Reel" frameborder="0" loading="lazy" decoding="async" fetchpriority="low" allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" allowfullscreen></iframe>
                   </div>
                 </div>
-              </div>
-              <div class="badges">
-                <a id="btnIMDb" class="btn" href="https://www.imdb.me/ArielFeblowitz" target="_blank" rel="noopener">IMDb</a>
-                <a id="btnYouTube" class="btn" href="https://www.youtube.com/@DirectorPsycho" target="_blank" rel="noopener">YouTube</a>
-                <a id="btnLinks" class="btn" href="https://linktr.ee/admin/links" target="_blank" rel="noopener">All My Links</a>
-                <a id="btnResume" class="btn primary" href="#" download>Download Résumé</a>
-                <a id="btnNews" class="btn" href="https://www.youtube.com/watch?v=gM5H6vsGIcs" target="_blank" rel="noopener">Ari in the News</a>
               </div>
             </div>
 
@@ -369,6 +378,59 @@
             <small class="muted">Selected credits</small>
           </div>
           <div id="proGrid" class="grid"></div>
+        </div>
+      </section>
+
+      <section id="previs" role="tabpanel">
+        <div class="card pad">
+          <div class="nav" style="gap:8px; justify-content:space-between; align-items:flex-end">
+            <h2 class="crt-glow" style="margin:0">Previs</h2>
+            <small class="muted">Filtered from film roles</small>
+          </div>
+          <div class="reel-panel" style="margin-top:12px; margin-bottom:12px;">
+            <h3 id="previsReelTitle" class="crt-glow">Visualization/Animation Reel</h3>
+            <div class="reel"><iframe id="previsReelFrame" src="" title="Ari Feblowitz — Previs Reel" frameborder="0" loading="lazy" decoding="async" fetchpriority="low" allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" allowfullscreen></iframe></div>
+          </div>
+          <div class="card pad" style="margin-bottom:12px;">
+            <h3 class="crt-glow" style="margin-top:0">Description</h3>
+            <p id="previsDescText" class="muted" style="margin:0">Previs description will load from Main site info.</p>
+          </div>
+          <div id="previsGrid" class="grid"></div>
+        </div>
+      </section>
+
+      <section id="virtual" role="tabpanel">
+        <div class="card pad">
+          <div class="nav" style="gap:8px; justify-content:space-between; align-items:flex-end">
+            <h2 class="crt-glow" style="margin:0">Virtual Production</h2>
+            <small class="muted">Filtered from film roles</small>
+          </div>
+          <div class="reel-panel" style="margin-top:12px; margin-bottom:12px;">
+            <h3 id="virtualReelTitle" class="crt-glow">Virtual Production/Techvis Reel</h3>
+            <div class="reel"><iframe id="virtualReelFrame" src="" title="Ari Feblowitz — Virtual Production Reel" frameborder="0" loading="lazy" decoding="async" fetchpriority="low" allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" allowfullscreen></iframe></div>
+          </div>
+          <div class="card pad" style="margin-bottom:12px;">
+            <h3 class="crt-glow" style="margin-top:0">Description</h3>
+            <p id="virtualDescText" class="muted" style="margin:0">Techvis description will load from Main site info.</p>
+          </div>
+          <div id="virtualGrid" class="grid"></div>
+        </div>
+      </section>
+
+      <section id="ai" role="tabpanel">
+        <div class="card pad">
+          <div class="nav" style="gap:8px; justify-content:space-between; align-items:flex-end">
+            <h2 class="crt-glow" style="margin:0">Ai</h2>
+            <small class="muted">Demo reel</small>
+          </div>
+          <div class="reel-panel" style="margin-top:12px; margin-bottom:12px;">
+            <h3 id="aiTabReelTitle" class="crt-glow">Ai Reel</h3>
+            <div class="reel"><iframe id="aiTabReelFrame" src="" title="Ari Feblowitz — Ai Reel" frameborder="0" loading="lazy" decoding="async" fetchpriority="low" allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" allowfullscreen></iframe></div>
+          </div>
+          <div class="card pad">
+            <h3 class="crt-glow" style="margin-top:0">Description</h3>
+            <p id="aiDescText" class="muted" style="margin:0">Ai description will load from Main site info.</p>
+          </div>
         </div>
       </section>
 
@@ -869,9 +931,15 @@
           const vizFrame = $('#vizReelFrame');
           const vpFrame = $('#vpReelFrame');
           const aiFrame = $('#aiReelFrame');
+          const previsFrame = $('#previsReelFrame');
+          const virtualFrame = $('#virtualReelFrame');
+          const aiTabFrame = $('#aiTabReelFrame');
           const vizTitleEl = $('#vizReelTitle');
           const vpTitleEl = $('#vpReelTitle');
           const aiTitleEl = $('#aiReelTitle');
+          const previsTitleEl = $('#previsReelTitle');
+          const virtualTitleEl = $('#virtualReelTitle');
+          const aiTabTitleEl = $('#aiTabReelTitle');
           const setIframe = (frame, src)=>{
             if (!frame || !src) return;
             frame.loading='lazy'; frame.decoding='async'; frame.fetchPriority='low'; frame.src = src;
@@ -880,13 +948,33 @@
           if (vizTitleEl) vizTitleEl.textContent = vizTitle;
           if (vpTitleEl) vpTitleEl.textContent = vpTitle;
           if (aiTitleEl) aiTitleEl.textContent = aiTitle;
+          if (previsTitleEl) previsTitleEl.textContent = vizTitle;
+          if (virtualTitleEl) virtualTitleEl.textContent = vpTitle;
+          if (aiTabTitleEl) aiTabTitleEl.textContent = aiTitle;
           if (vizFrame) vizFrame.title = `Ari Feblowitz — ${vizTitle}`;
           if (vpFrame) vpFrame.title = `Ari Feblowitz — ${vpTitle}`;
           if (aiFrame) aiFrame.title = `Ari Feblowitz — ${aiTitle}`;
+          if (previsFrame) previsFrame.title = `Ari Feblowitz — ${vizTitle}`;
+          if (virtualFrame) virtualFrame.title = `Ari Feblowitz — ${vpTitle}`;
+          if (aiTabFrame) aiTabFrame.title = `Ari Feblowitz — ${aiTitle}`;
 
-          setIframe(vizFrame, parseReelEmbed(vizInput));
-          setIframe(vpFrame, parseReelEmbed(vpInput));
-          setIframe(aiFrame, parseReelEmbed(aiInput));
+          const vizEmbed = parseReelEmbed(vizInput);
+          const vpEmbed = parseReelEmbed(vpInput);
+          const aiEmbed = parseReelEmbed(aiInput);
+
+          setIframe(vizFrame, vizEmbed);
+          setIframe(vpFrame, vpEmbed);
+          setIframe(aiFrame, aiEmbed);
+          setIframe(previsFrame, vizEmbed);
+          setIframe(virtualFrame, vpEmbed);
+          setIframe(aiTabFrame, aiEmbed);
+
+          const previsDesc = readMainCellRightOfLabel('Previs description', 1) || readMainValueByLabel('Previs description') || mainInfo.previs_description || '';
+          const techvisDesc = readMainCellRightOfLabel('Techvis description', 1) || readMainValueByLabel('Techvis description') || mainInfo.techvis_description || '';
+          const aiDesc = readMainCellRightOfLabel('Ai description', 1) || readMainValueByLabel('Ai description') || mainInfo.ai_description || '';
+          if ($('#previsDescText')) $('#previsDescText').textContent = previsDesc || $('#previsDescText').textContent;
+          if ($('#virtualDescText')) $('#virtualDescText').textContent = techvisDesc || $('#virtualDescText').textContent;
+          if ($('#aiDescText')) $('#aiDescText').textContent = aiDesc || $('#aiDescText').textContent;
           loaded.reel = true;
         })();
 
@@ -997,8 +1085,18 @@
           .filter(x=>x.title && x.prio>0)
           .sort((a,b)=> b.prio-a.prio || a.title.localeCompare(b.title));
 
+          const hasRoleTerm = (role, terms)=>{
+            const value = String(role || '').toLowerCase();
+            return terms.some(term => value.includes(term));
+          };
+          const previsItems = proItems.filter(p => hasRoleTerm(p.role, ['visualization', 'previs']));
+          const virtualItems = proItems.filter(p => hasRoleTerm(p.role, ['techvis', 'virtual production', 'motion control']));
+
           // Render content grids
-          renderPro(proItems); renderRides(rideItems); renderPersonal(videos, (meta.featured_video_id||'').trim());
+          renderPro('#proGrid', proItems, 'No items yet — add rows in the “Ariel_Feblowitz_Works” tab.');
+          renderPro('#previsGrid', previsItems, 'No previs items found (filtered by “visualization” or “previs” in My Role).');
+          renderPro('#virtualGrid', virtualItems, 'No virtual production items found (filtered by “techvis”, “virtual production”, or “motion control” in My Role).');
+          renderRides(rideItems); renderPersonal(videos, (meta.featured_video_id||'').trim());
 
           // Banner tiles data
           window.__tilesData = {
@@ -1067,9 +1165,11 @@
         }
       }
 
-      function renderPro(items){
-        const grid = $('#proGrid'); grid.innerHTML='';
-        if (!items.length){ grid.innerHTML = `<div class="muted">No items yet — add rows in the “Ariel_Feblowitz_Works” tab.</div>`; return; }
+      function renderPro(gridSel, items, emptyMsg){
+        const grid = $(gridSel);
+        if (!grid) return;
+        grid.innerHTML='';
+        if (!items.length){ grid.innerHTML = `<div class="muted">${emptyMsg}</div>`; return; }
         items.forEach(p=>{
           const c=document.createElement('a'); c.className='proj card'; c.href=p.url||'#'; c.target='_blank'; c.rel='noopener';
           const wrap=document.createElement('div'); wrap.className='thumb poster';
