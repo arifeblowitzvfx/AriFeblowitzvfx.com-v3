@@ -185,7 +185,7 @@
     .pad{padding:clamp(14px,1.6vw,20px)}
 
     /* Reel frame */
-    .reels-grid{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:clamp(10px,1.2vw,16px)}
+    .reels-grid{display:grid; grid-template-columns:1fr; gap:clamp(10px,1.2vw,16px)}
     .reel-panel h3{margin:0 0 .45em; font-size:clamp(14px,1.1vw,17px); color:#d9fff1; letter-spacing:.04em}
     .reel{ position:relative; aspect-ratio:16/9; width:100%; border-radius:14px; overflow:hidden; background:#000;
       border:1px solid rgba(0,255,156,.34); outline:1px solid rgba(0,255,156,.2);
@@ -309,15 +309,21 @@
               <h2 id="reelHeader" class="crt-glow" style="margin:0 0 .6em">Initializing video uplink…</h2>
               <div class="reels-grid" id="reelBox">
                 <div class="reel-panel">
-                  <h3 class="crt-glow">Visualization/Animation Reel</h3>
+                  <h3 id="vizReelTitle" class="crt-glow">Visualization/Animation Reel</h3>
                   <div class="reel">
                     <iframe id="vizReelFrame" src="https://player.vimeo.com/video/1134518013?badge=0&autopause=0&title=0&byline=0" title="Ari Feblowitz — Visualization/Animation Reel" frameborder="0" loading="lazy" decoding="async" fetchpriority="low" allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" allowfullscreen></iframe>
                   </div>
                 </div>
                 <div class="reel-panel">
-                  <h3 class="crt-glow">Virtual Production/Techvis Reel</h3>
+                  <h3 id="vpReelTitle" class="crt-glow">Virtual Production/Techvis Reel</h3>
                   <div class="reel">
                     <iframe id="vpReelFrame" src="https://player.vimeo.com/video/1134518013?badge=0&autopause=0&title=0&byline=0" title="Ari Feblowitz — Virtual Production/Techvis Reel" frameborder="0" loading="lazy" decoding="async" fetchpriority="low" allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" allowfullscreen></iframe>
+                  </div>
+                </div>
+                <div class="reel-panel">
+                  <h3 id="aiReelTitle" class="crt-glow">Ai Reel</h3>
+                  <div class="reel">
+                    <iframe id="aiReelFrame" src="https://player.vimeo.com/video/1134518013?badge=0&autopause=0&title=0&byline=0" title="Ari Feblowitz — Ai Reel" frameborder="0" loading="lazy" decoding="async" fetchpriority="low" allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" allowfullscreen></iframe>
                   </div>
                 </div>
               </div>
@@ -495,6 +501,17 @@
     if (!rows.length) return [];
     const headers = rows[0].map(h=>h.trim());
     return rows.slice(1).filter(r=>r.length>1).map(r=>{ const o={}; headers.forEach((h,i)=>o[h]=r[i]!==undefined?r[i]:""); return o; });
+  }
+  function csvToMatrix(csvText){
+    const rows = []; let field="", row=[], inQ=false;
+    for (let c of String(csvText||"").replace(/\r/g,'')){
+      if (c==='"'){ inQ = !inQ; field+=c; }
+      else if (c===',' && !inQ){ row.push(field.replace(/^("|“)|("|”)$/g,'').replace(/""/g,'"')); field=""; }
+      else if (c==='\n' && !inQ){ row.push(field.replace(/^("|“)|("|”)$/g,'').replace(/""/g,'"')); rows.push(row); row=[]; field=""; }
+      else field+=c;
+    }
+    if (field.length || row.length){ row.push(field.replace(/^("|“)|("|”)$/g,'').replace(/""/g,'"')); rows.push(row); }
+    return rows;
   }
   function csvFirstRowSecondCol(csvText){
     let inQ=false, col=0, val="";
@@ -750,12 +767,22 @@
       async function pullAndApply_Main(){
         const mainPull = await pullTab('Main site info', gids);
         const rows = mainPull.rows;
+        const mainMatrix = csvToMatrix(mainPull.raw||'');
         if (!rows.length) return;
         const mainInfo = {}; rows.forEach(r=> mainInfo[(r.key||'').trim()] = (r.value||'').trim());
         const readMainValueByLabel = (label)=>{
           const wanted = String(label||'').trim().toLowerCase();
           const found = rows.find(r => String(r.key||'').trim().toLowerCase() === wanted);
           return (found && found.value) ? String(found.value).trim() : '';
+        };
+        const readMainCellRightOfLabel = (label, offset=1)=>{
+          const wanted = String(label||'').trim().toLowerCase();
+          for (const row of mainMatrix.slice(1)){
+            const idx = row.findIndex(cell => String(cell||'').trim().toLowerCase() === wanted);
+            if (idx === -1) continue;
+            return String(row[idx + offset] || '').trim();
+          }
+          return '';
         };
 
         // Labels/links
@@ -776,7 +803,7 @@
         setStatus('Link established', linksHref);
         const aboutStatus = $('#aboutStatus'); if (aboutStatus) aboutStatus.style.display = 'none';
         document.body.classList.add('ready');
-        $('#reelHeader').textContent = 'Demo Reel';
+        $('#reelHeader').textContent = 'DEMO REELS';
         $('#aboutHeader').textContent = 'About';
         loaded.main = true;
 
@@ -831,18 +858,35 @@
           };
 
           const fallbackReel = (mainInfo.reel_youtube_id||'').trim();
-          const vizInput = readMainValueByLabel('Visualization Reel') || mainInfo.visualization_reel || fallbackReel;
-          const vpInput = readMainValueByLabel('Virtual Production Reel') || mainInfo.virtual_production_reel || fallbackReel;
+          const vizInput = readMainCellRightOfLabel('Visualization Reel', 1) || readMainValueByLabel('Visualization Reel') || mainInfo.visualization_reel || fallbackReel;
+          const vpInput = readMainCellRightOfLabel('Virtual Production Reel', 1) || readMainValueByLabel('Virtual Production Reel') || mainInfo.virtual_production_reel || fallbackReel;
+          const aiInput = readMainCellRightOfLabel('Ai Reel', 1) || readMainValueByLabel('Ai Reel') || mainInfo.ai_reel || fallbackReel;
+
+          const vizTitle = readMainCellRightOfLabel('Visualization Reel', 2) || $('#vizReelTitle')?.textContent || 'Visualization/Animation Reel';
+          const vpTitle = readMainCellRightOfLabel('Virtual Production Reel', 2) || $('#vpReelTitle')?.textContent || 'Virtual Production/Techvis Reel';
+          const aiTitle = readMainCellRightOfLabel('Ai Reel', 2) || $('#aiReelTitle')?.textContent || 'Ai Reel';
 
           const vizFrame = $('#vizReelFrame');
           const vpFrame = $('#vpReelFrame');
+          const aiFrame = $('#aiReelFrame');
+          const vizTitleEl = $('#vizReelTitle');
+          const vpTitleEl = $('#vpReelTitle');
+          const aiTitleEl = $('#aiReelTitle');
           const setIframe = (frame, src)=>{
             if (!frame || !src) return;
             frame.loading='lazy'; frame.decoding='async'; frame.fetchPriority='low'; frame.src = src;
           };
 
+          if (vizTitleEl) vizTitleEl.textContent = vizTitle;
+          if (vpTitleEl) vpTitleEl.textContent = vpTitle;
+          if (aiTitleEl) aiTitleEl.textContent = aiTitle;
+          if (vizFrame) vizFrame.title = `Ari Feblowitz — ${vizTitle}`;
+          if (vpFrame) vpFrame.title = `Ari Feblowitz — ${vpTitle}`;
+          if (aiFrame) aiFrame.title = `Ari Feblowitz — ${aiTitle}`;
+
           setIframe(vizFrame, parseReelEmbed(vizInput));
           setIframe(vpFrame, parseReelEmbed(vpInput));
+          setIframe(aiFrame, parseReelEmbed(aiInput));
           loaded.reel = true;
         })();
 
