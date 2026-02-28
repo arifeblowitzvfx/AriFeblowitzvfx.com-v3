@@ -1081,7 +1081,18 @@
               const videoId=(r.video_id||'').trim();
               const url=(r.youtube_url||'').trim() || (videoId?`https://www.youtube.com/watch?v=${videoId}`:'');
               const thumb=(r.thumb_url||'').trim() || (videoId? ytThumb(videoId) : '');
-              videos.push({ prio:normNum(r.prio), includeInBanner: normBool(r.include_in_banner) || normNum(r.prio)>=5, featured: normBool(r.featured), videoId, title:(r.title||'').trim(), role:(r.role||'').trim(), url, thumb, ytid: videoId });
+              videos.push({
+                prio:normNum(r.prio),
+                includeInBanner: normBool(r.include_in_banner) || normNum(r.prio)>=5,
+                featured: normBool(r.featured),
+                videoId,
+                title:(r.title||'').trim(),
+                role:(r.role||'').trim(),
+                description:(r.description||'').trim(),
+                url,
+                thumb,
+                ytid: videoId
+              });
             }
           });
 
@@ -1136,14 +1147,31 @@
             const value = String(role || '').toLowerCase();
             return terms.some(term => value.includes(term));
           };
+          const hasAnyTerm = (values, terms)=>{
+            const haystack = values.filter(Boolean).join(' ').toLowerCase();
+            return terms.some(term => haystack.includes(term));
+          };
+          const virtualTerms = ['techvis', 'virtual production'];
           const previsItems = proItems.filter(p => hasRoleTerm(p.role, ['visualization', 'previs']));
-          const virtualItems = proItems.filter(p => hasRoleTerm(p.role, ['techvis', 'virtual production', 'motion control']));
+          const virtualFilmItems = proItems.filter(p => hasRoleTerm(p.role, [...virtualTerms, 'motion control']));
+          const virtualPersonalItems = videos
+            .filter(v => hasAnyTerm([v.role, v.title, v.description], virtualTerms))
+            .map(v => ({
+              title: v.title,
+              url: v.url,
+              role: v.role,
+              prod: 'Personal YouTube',
+              onSet: false,
+              prio: v.prio,
+              posters: [v.thumb].filter(Boolean)
+            }));
+          const virtualItems = [...virtualFilmItems, ...virtualPersonalItems];
           const unrealItems = proItems.filter(p => /\bunreal engine\b/i.test(p.role) || /\bue\b/i.test(p.role));
 
           // Render content grids
           renderPro('#proGrid', proItems, 'No items yet — add rows in the “Ariel_Feblowitz_Works” tab.');
           renderPro('#previsGrid', previsItems, 'No previs items found (filtered by “visualization” or “previs” in My Role).');
-          renderPro('#virtualGrid', virtualItems, 'No virtual production items found (filtered by “techvis”, “virtual production”, or “motion control” in My Role).');
+          renderPro('#virtualGrid', virtualItems, 'No virtual production items found (filtered by “techvis”, “virtual production”, or “motion control” in Film Roles, plus matching title/role/description from “Personal Youtube”).');
           renderPro('#unrealGrid', unrealItems, 'No Unreal Engine film items found (filtered by “UE” or “Unreal Engine” in My Role).');
           renderRides(rideItems); renderPersonal(videos, (meta.featured_video_id||'').trim());
           renderPersonalGrid('#unrealPersonalGrid', videos);
