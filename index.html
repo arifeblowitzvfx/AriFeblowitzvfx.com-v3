@@ -309,6 +309,7 @@
           <button class="tab-btn" data-tab="previs" role="tab" aria-selected="false">Previs</button>
           <button class="tab-btn" data-tab="virtual" role="tab" aria-selected="false">Virtual Production</button>
           <button class="tab-btn" data-tab="ai" role="tab" aria-selected="false">Ai</button>
+          <button class="tab-btn" data-tab="unreal" role="tab" aria-selected="false">Unreal Engine</button>
           <button class="tab-btn" data-tab="rides" role="tab" aria-selected="false">Rides</button>
           <button class="tab-btn" data-tab="personal" role="tab" aria-selected="false">Personal Work</button>
           <button class="tab-btn" data-tab="contact" role="tab" aria-selected="false">Contact</button>
@@ -340,6 +341,12 @@
                   <h3 id="aiReelTitle" class="crt-glow">Ai Reel</h3>
                   <div class="reel">
                     <iframe id="aiReelFrame" src="https://player.vimeo.com/video/1134518013?badge=0&autopause=0&title=0&byline=0" title="Ari Feblowitz — Ai Reel" frameborder="0" loading="lazy" decoding="async" fetchpriority="low" allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" allowfullscreen></iframe>
+                  </div>
+                </div>
+                <div class="reel-panel">
+                  <h3 id="ueReelTitle" class="crt-glow">Unreal Engine Reel</h3>
+                  <div class="reel">
+                    <iframe id="ueReelFrame" src="https://player.vimeo.com/video/1134518013?badge=0&autopause=0&title=0&byline=0" title="Ari Feblowitz — Unreal Engine Reel" frameborder="0" loading="lazy" decoding="async" fetchpriority="low" allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" allowfullscreen></iframe>
                   </div>
                 </div>
               </div>
@@ -430,6 +437,31 @@
           <div class="card pad">
             <h3 class="crt-glow" style="margin-top:0">Description</h3>
             <p id="aiDescText" class="muted" style="margin:0">Ai description will load from Main site info.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="unreal" role="tabpanel">
+        <div class="card pad">
+          <div class="nav" style="gap:8px; justify-content:space-between; align-items:flex-end">
+            <h2 class="crt-glow" style="margin:0">Unreal Engine</h2>
+            <small class="muted">Demo reel + selected projects</small>
+          </div>
+          <div class="reel-panel" style="margin-top:12px; margin-bottom:12px;">
+            <h3 id="ueTabReelTitle" class="crt-glow">Unreal Engine Reel</h3>
+            <div class="reel"><iframe id="ueTabReelFrame" src="" title="Ari Feblowitz — Unreal Engine Reel" frameborder="0" loading="lazy" decoding="async" fetchpriority="low" allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" allowfullscreen></iframe></div>
+          </div>
+          <div class="card pad" style="margin-bottom:12px;">
+            <h3 class="crt-glow" style="margin-top:0">Description</h3>
+            <p id="ueDescText" class="muted" style="margin:0">Unreal Engine description will load from Main site info.</p>
+          </div>
+          <div class="card pad" style="margin-bottom:12px;">
+            <h3 class="crt-glow" style="margin-top:0">Unreal Engine Film Work</h3>
+            <div id="unrealGrid" class="grid"></div>
+          </div>
+          <div class="card pad">
+            <h3 class="crt-glow" style="margin-top:0">Personal Projects</h3>
+            <div id="unrealPersonalGrid" class="grid"></div>
           </div>
         </div>
       </section>
@@ -923,23 +955,29 @@
           const vizInput = readMainCellRightOfLabel('Visualization Reel', 1) || readMainValueByLabel('Visualization Reel') || mainInfo.visualization_reel || fallbackReel;
           const vpInput = readMainCellRightOfLabel('Virtual Production Reel', 1) || readMainValueByLabel('Virtual Production Reel') || mainInfo.virtual_production_reel || fallbackReel;
           const aiInput = readMainCellRightOfLabel('Ai Reel', 1) || readMainValueByLabel('Ai Reel') || mainInfo.ai_reel || fallbackReel;
+          const ueInput = readMainCellRightOfLabel('UE reel', 1) || readMainValueByLabel('UE reel') || mainInfo.ue_reel || fallbackReel;
 
           const vizTitle = readMainCellRightOfLabel('Visualization Reel', 2) || $('#vizReelTitle')?.textContent || 'Visualization/Animation Reel';
           const vpTitle = readMainCellRightOfLabel('Virtual Production Reel', 2) || $('#vpReelTitle')?.textContent || 'Virtual Production/Techvis Reel';
           const aiTitle = readMainCellRightOfLabel('Ai Reel', 2) || $('#aiReelTitle')?.textContent || 'Ai Reel';
+          const ueTitle = readMainCellRightOfLabel('UE reel', 2) || $('#ueReelTitle')?.textContent || 'Unreal Engine Reel';
 
           const vizFrame = $('#vizReelFrame');
           const vpFrame = $('#vpReelFrame');
           const aiFrame = $('#aiReelFrame');
+          const ueFrame = $('#ueReelFrame');
           const previsFrame = $('#previsReelFrame');
           const virtualFrame = $('#virtualReelFrame');
           const aiTabFrame = $('#aiTabReelFrame');
+          const ueTabFrame = $('#ueTabReelFrame');
           const vizTitleEl = $('#vizReelTitle');
           const vpTitleEl = $('#vpReelTitle');
           const aiTitleEl = $('#aiReelTitle');
+          const ueTitleEl = $('#ueReelTitle');
           const previsTitleEl = $('#previsReelTitle');
           const virtualTitleEl = $('#virtualReelTitle');
           const aiTabTitleEl = $('#aiTabReelTitle');
+          const ueTabTitleEl = $('#ueTabReelTitle');
           const setIframe = (frame, src)=>{
             if (!frame || !src) return;
             frame.loading='lazy'; frame.decoding='async'; frame.fetchPriority='low'; frame.src = src;
@@ -948,33 +986,42 @@
           if (vizTitleEl) vizTitleEl.textContent = vizTitle;
           if (vpTitleEl) vpTitleEl.textContent = vpTitle;
           if (aiTitleEl) aiTitleEl.textContent = aiTitle;
+          if (ueTitleEl) ueTitleEl.textContent = ueTitle;
           if (previsTitleEl) previsTitleEl.textContent = vizTitle;
           if (virtualTitleEl) virtualTitleEl.textContent = vpTitle;
           if (aiTabTitleEl) aiTabTitleEl.textContent = aiTitle;
+          if (ueTabTitleEl) ueTabTitleEl.textContent = ueTitle;
           if (vizFrame) vizFrame.title = `Ari Feblowitz — ${vizTitle}`;
           if (vpFrame) vpFrame.title = `Ari Feblowitz — ${vpTitle}`;
           if (aiFrame) aiFrame.title = `Ari Feblowitz — ${aiTitle}`;
+          if (ueFrame) ueFrame.title = `Ari Feblowitz — ${ueTitle}`;
           if (previsFrame) previsFrame.title = `Ari Feblowitz — ${vizTitle}`;
           if (virtualFrame) virtualFrame.title = `Ari Feblowitz — ${vpTitle}`;
           if (aiTabFrame) aiTabFrame.title = `Ari Feblowitz — ${aiTitle}`;
+          if (ueTabFrame) ueTabFrame.title = `Ari Feblowitz — ${ueTitle}`;
 
           const vizEmbed = parseReelEmbed(vizInput);
           const vpEmbed = parseReelEmbed(vpInput);
           const aiEmbed = parseReelEmbed(aiInput);
+          const ueEmbed = parseReelEmbed(ueInput);
 
           setIframe(vizFrame, vizEmbed);
           setIframe(vpFrame, vpEmbed);
           setIframe(aiFrame, aiEmbed);
+          setIframe(ueFrame, ueEmbed);
           setIframe(previsFrame, vizEmbed);
           setIframe(virtualFrame, vpEmbed);
           setIframe(aiTabFrame, aiEmbed);
+          setIframe(ueTabFrame, ueEmbed);
 
           const previsDesc = readMainCellRightOfLabel('Previs description', 1) || readMainValueByLabel('Previs description') || mainInfo.previs_description || '';
           const techvisDesc = readMainCellRightOfLabel('Techvis description', 1) || readMainValueByLabel('Techvis description') || mainInfo.techvis_description || '';
           const aiDesc = readMainCellRightOfLabel('Ai description', 1) || readMainValueByLabel('Ai description') || mainInfo.ai_description || '';
+          const ueDesc = readMainCellRightOfLabel('UE description', 1) || readMainValueByLabel('UE description') || mainInfo.ue_description || '';
           if ($('#previsDescText')) $('#previsDescText').textContent = previsDesc || $('#previsDescText').textContent;
           if ($('#virtualDescText')) $('#virtualDescText').textContent = techvisDesc || $('#virtualDescText').textContent;
           if ($('#aiDescText')) $('#aiDescText').textContent = aiDesc || $('#aiDescText').textContent;
+          if ($('#ueDescText')) $('#ueDescText').textContent = ueDesc || $('#ueDescText').textContent;
           loaded.reel = true;
         })();
 
@@ -1091,12 +1138,15 @@
           };
           const previsItems = proItems.filter(p => hasRoleTerm(p.role, ['visualization', 'previs']));
           const virtualItems = proItems.filter(p => hasRoleTerm(p.role, ['techvis', 'virtual production', 'motion control']));
+          const unrealItems = proItems.filter(p => /\bunreal engine\b/i.test(p.role) || /\bue\b/i.test(p.role));
 
           // Render content grids
           renderPro('#proGrid', proItems, 'No items yet — add rows in the “Ariel_Feblowitz_Works” tab.');
           renderPro('#previsGrid', previsItems, 'No previs items found (filtered by “visualization” or “previs” in My Role).');
           renderPro('#virtualGrid', virtualItems, 'No virtual production items found (filtered by “techvis”, “virtual production”, or “motion control” in My Role).');
+          renderPro('#unrealGrid', unrealItems, 'No Unreal Engine film items found (filtered by “UE” or “Unreal Engine” in My Role).');
           renderRides(rideItems); renderPersonal(videos, (meta.featured_video_id||'').trim());
+          renderPersonalGrid('#unrealPersonalGrid', videos);
 
           // Banner tiles data
           window.__tilesData = {
@@ -1202,6 +1252,23 @@
         const grid = $('#personalGrid'); grid.innerHTML='';
         if (!videos.length){ grid.innerHTML = `<div class="muted">No videos yet — add rows in the “Personal Youtube” tab.</div>`; return; }
         const fIdx = videos.findIndex(v=>v.videoId===featuredId); if (fIdx>0){ const [f]=videos.splice(fIdx,1); videos.unshift(f); }
+        videos.forEach((v,i)=>{
+          const c=document.createElement('a'); c.className='proj card'; c.href=v.url||'#'; c.target='_blank'; c.rel='noopener';
+          const wrap=document.createElement('div'); wrap.className='thumb';
+          const img=new Image(); img.alt=''; img.fetchPriority = i<2 ? 'high' : 'low'; img.decoding = i<2 ? 'sync' : 'async'; img.loading = i<2 ? 'eager' : 'lazy';
+          img.src = v.thumb || (v.videoId? ytThumb(v.videoId) : titlePlaceholderSVG(v.title)); img.width=1280; img.height=720;
+          wrap.appendChild(img);
+          const meta=document.createElement('div'); meta.className='meta';
+          meta.innerHTML = `<div class="title">${v.title||''}</div><div class="role">${v.role||''}</div>`;
+          c.appendChild(wrap); c.appendChild(meta); grid.appendChild(c);
+        });
+      }
+
+      function renderPersonalGrid(gridSel, videos){
+        const grid = $(gridSel);
+        if (!grid) return;
+        grid.innerHTML='';
+        if (!videos.length){ grid.innerHTML = `<div class="muted">No videos yet — add rows in the “Personal Youtube” tab.</div>`; return; }
         videos.forEach((v,i)=>{
           const c=document.createElement('a'); c.className='proj card'; c.href=v.url||'#'; c.target='_blank'; c.rel='noopener';
           const wrap=document.createElement('div'); wrap.className='thumb';
