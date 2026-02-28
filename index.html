@@ -185,12 +185,15 @@
     .pad{padding:clamp(14px,1.6vw,20px)}
 
     /* Reel frame */
+    .reels-grid{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:clamp(10px,1.2vw,16px)}
+    .reel-panel h3{margin:0 0 .45em; font-size:clamp(14px,1.1vw,17px); color:#d9fff1; letter-spacing:.04em}
     .reel{ position:relative; aspect-ratio:16/9; width:100%; border-radius:14px; overflow:hidden; background:#000;
       border:1px solid rgba(0,255,156,.34); outline:1px solid rgba(0,255,156,.2);
       box-shadow:0 0 20px rgba(0,255,156,.12) inset, 0 0 18px rgba(0,0,0,.6); contain:layout paint; isolation:isolate; }
     .reel > iframe{position:absolute; inset:0; width:100%; height:100%; border:0; display:block; box-sizing:border-box}
     .reel iframe{ max-width:100%; max-height:100%; }
     @media (min-height:900px){ .reel{min-height:560px} }
+    @media (max-width:920px){ .reels-grid{grid-template-columns:1fr} }
 
     .badges{display:flex; flex-wrap:wrap; gap:clamp(8px,1vw,12px); margin-top:clamp(8px,1vw,12px)}
 
@@ -304,8 +307,19 @@
             <!-- Reel -->
             <div class="card pad area-reel">
               <h2 id="reelHeader" class="crt-glow" style="margin:0 0 .6em">Initializing video uplink…</h2>
-              <div class="reel" id="reelBox">
-                <iframe id="reelFrame" src="https://player.vimeo.com/video/1134518013?badge=0&autopause=0&title=0&byline=0" title="Ari Feblowitz — Demo Reel" frameborder="0" loading="lazy" decoding="async" fetchpriority="low" allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" allowfullscreen></iframe>
+              <div class="reels-grid" id="reelBox">
+                <div class="reel-panel">
+                  <h3 class="crt-glow">Visualization/Animation Reel</h3>
+                  <div class="reel">
+                    <iframe id="vizReelFrame" src="https://player.vimeo.com/video/1134518013?badge=0&autopause=0&title=0&byline=0" title="Ari Feblowitz — Visualization/Animation Reel" frameborder="0" loading="lazy" decoding="async" fetchpriority="low" allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" allowfullscreen></iframe>
+                  </div>
+                </div>
+                <div class="reel-panel">
+                  <h3 class="crt-glow">Virtual Production/Techvis Reel</h3>
+                  <div class="reel">
+                    <iframe id="vpReelFrame" src="https://player.vimeo.com/video/1134518013?badge=0&autopause=0&title=0&byline=0" title="Ari Feblowitz — Virtual Production/Techvis Reel" frameborder="0" loading="lazy" decoding="async" fetchpriority="low" allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" allowfullscreen></iframe>
+                  </div>
+                </div>
               </div>
               <div class="badges">
                 <a id="btnIMDb" class="btn" href="https://www.imdb.me/ArielFeblowitz" target="_blank" rel="noopener">IMDb</a>
@@ -738,6 +752,11 @@
         const rows = mainPull.rows;
         if (!rows.length) return;
         const mainInfo = {}; rows.forEach(r=> mainInfo[(r.key||'').trim()] = (r.value||'').trim());
+        const readMainValueByLabel = (label)=>{
+          const wanted = String(label||'').trim().toLowerCase();
+          const found = rows.find(r => String(r.key||'').trim().toLowerCase() === wanted);
+          return (found && found.value) ? String(found.value).trim() : '';
+        };
 
         // Labels/links
         const defaultTitle = 'Subject: ARI FEBLOWITZ';
@@ -792,23 +811,39 @@
           document.getElementById('hudCard').style.display='block';
         }
 
-        // Reel
-        (function loadReel(){
-          const reelInput = (mainInfo.reel_youtube_id||'').trim();
-          const reelFrame = $('#reelFrame');
-          const setIframe = src => { reelFrame.loading='lazy'; reelFrame.decoding='async'; reelFrame.fetchPriority='low'; reelFrame.src = src; };
-          if (/^\s*</i.test(reelInput)){
-            const tmp = document.createElement('div'); tmp.innerHTML = reelInput;
-            const ifr = tmp.querySelector('iframe');
-            if (ifr && ifr.src){ setIframe(ifr.src); loaded.reel=true; return; }
-          }
-          const vimeoM = reelInput.match(/vimeo\.com\/(?:video\/)?(\d+)/i);
-          if (vimeoM){ setIframe(`https://player.vimeo.com/video/${vimeoM[1]}?badge=0&autopause=0&title=0&byline=0`); loaded.reel=true; return; }
-          if (/^\d{7,}$/.test(reelInput)){ setIframe(`https://player.vimeo.com/video/${reelInput}?badge=0&autopause=0&title=0&byline=0`); loaded.reel=true; return; }
-          const ytM = reelInput.match(/[?&]v=([\w-]{6,})/) || reelInput.match(/youtu\.be\/([\w-]{6,})/);
-          if (ytM){ setIframe(`https://www.youtube.com/embed/${ytM[1]}?rel=0&modestbranding=1`); loaded.reel=true; return; }
-          if (/^[\w-]{6,}$/.test(reelInput)){ setIframe(`https://www.youtube.com/embed/${reelInput}?rel=0&modestbranding=1`); loaded.reel=true; return; }
-          loaded.reel=true;
+        // Reels
+        (function loadReels(){
+          const parseReelEmbed = (input)=>{
+            const val = String(input||'').trim();
+            if (!val) return '';
+            if (/^\s*</i.test(val)){
+              const tmp = document.createElement('div'); tmp.innerHTML = val;
+              const ifr = tmp.querySelector('iframe');
+              if (ifr && ifr.src) return ifr.src;
+            }
+            const vimeoM = val.match(/vimeo\.com\/(?:video\/)?(\d+)/i);
+            if (vimeoM) return `https://player.vimeo.com/video/${vimeoM[1]}?badge=0&autopause=0&title=0&byline=0`;
+            if (/^\d{7,}$/.test(val)) return `https://player.vimeo.com/video/${val}?badge=0&autopause=0&title=0&byline=0`;
+            const ytM = val.match(/[?&]v=([\w-]{6,})/) || val.match(/youtu\.be\/([\w-]{6,})/);
+            if (ytM) return `https://www.youtube.com/embed/${ytM[1]}?rel=0&modestbranding=1`;
+            if (/^[\w-]{6,}$/.test(val)) return `https://www.youtube.com/embed/${val}?rel=0&modestbranding=1`;
+            return val;
+          };
+
+          const fallbackReel = (mainInfo.reel_youtube_id||'').trim();
+          const vizInput = readMainValueByLabel('Visualization Reel') || mainInfo.visualization_reel || fallbackReel;
+          const vpInput = readMainValueByLabel('Virtual Production Reel') || mainInfo.virtual_production_reel || fallbackReel;
+
+          const vizFrame = $('#vizReelFrame');
+          const vpFrame = $('#vpReelFrame');
+          const setIframe = (frame, src)=>{
+            if (!frame || !src) return;
+            frame.loading='lazy'; frame.decoding='async'; frame.fetchPriority='low'; frame.src = src;
+          };
+
+          setIframe(vizFrame, parseReelEmbed(vizInput));
+          setIframe(vpFrame, parseReelEmbed(vpInput));
+          loaded.reel = true;
         })();
 
         return mainInfo;
